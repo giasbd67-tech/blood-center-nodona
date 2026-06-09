@@ -2,403 +2,467 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 
 export default function App() {
-  const [view, setView] = useState('home'); // home, register, login, dashboard, change_password
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // ডাটা স্টেট
+  // অ্যাপ স্টেটসমূহ
   const [donors, setDonors] = useState([]);
-  const [emergencies, setEmergencies] = useState([]);
+  const [emergencyRequests, setEmergencyRequests] = useState([]);
+  const [volunteers, setVolunteers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('All');
+  
+  // ফর্ম স্টেটসমূহ
+  const [newDonor, setNewDonor] = useState({ name: '', blood_group: 'A+', phone: '', location: '' });
+  const [newRequest, setNewRequest] = useState({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
+  const [newVolunteer, setNewVolunteer] = useState({ name: '', phone: '' });
 
-  // ফরম ইনপুট স্টেট
-  const [inputPassword, setInputPassword] = useState('');
-  const [donorForm, setDonorForm] = useState({ name: '', blood_group: 'A+', phone: '', location: '', activity_count: 0 });
-  const [emergencyForm, setEmergencyForm] = useState({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
-  const [passwordForm, setPasswordForm] = useState({ master_code: '', new_password: '' });
+  // সিকিউরিটি ও অথেনটিকেশন স্টেট
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [volunteerPhone, setVolunteerPhone] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
 
-  // নির্দিষ্ট সিক্রেট কোডসমূহ
-  const FIXED_USER_ID = "BloodCenterNN";
-  const MASTER_CODE = "BCNN2013";
-  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+  // পাসওয়ার্ড পরিবর্তনের স্টেট
+  const [showPassModal, setShowPassModal] = useState(false);
+  const [masterCode, setMasterCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
+  // গ্রুপ লিস্ট
+  const bloodGroups = ['All', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+
+  // অ্যাপ লোড হওয়ার সাথে সাথে ডাটাবেজ থেকে ডাটা আনা
   useEffect(() => {
     fetchDonors();
-    fetchEmergencies();
-    const savedSession = localStorage.getItem('bcnn_logged_in');
-    if (savedSession === 'true') {
-      setIsLoggedIn(true);
+    fetchRequests();
+    // পূর্বে ভলান্টিয়ার নম্বর দিয়ে আনলক করা থাকলে অটো-আনলক হবে
+    const savedPhone = localStorage.getItem('v_phone');
+    if (savedPhone) {
+      checkVolunteerAccess(savedPhone);
     }
   }, []);
 
+  // অ্যাডমিন লগইন হলে ভলান্টিয়ারদের তালিকা লোড হবে
+  useEffect(() => {
+    if (isAdmin) {
+      fetchVolunteers();
+    }
+  }, [isAdmin]);
+
   const fetchDonors = async () => {
-    const { data } = await supabase.from('donors').select('*').order('created_at', { ascending: false });
+    const { data } = await supabase.from('donors').select('*').order('activity_count', { ascending: false });
     if (data) setDonors(data);
   };
 
-  const fetchEmergencies = async () => {
-    const { data } = await supabase.from('emergency_requests').select('*').order('created_at', { ascending: false });
-    if (data) setEmergencies(data);
+  const fetchRequests = async () => {
+    const { data } = await supabase.from('emergency_requests').select('*').order('id', { ascending: false });
+    if (data) setEmergencyRequests(data);
   };
 
-  // লগইন প্রসেস
-  const handleLogin = async (e) => {
+  const fetchVolunteers = async () => {
+    const { data } = await supabase.from('volunteers').select('*').order('id', { ascending: false });
+    if (data) setVolunteers(data);
+  };
+
+  // ভলান্টিয়ার মোবাইল নম্বর দিয়ে লক খোলার লজিক
+  const handleVolunteerUnlock = async (e) => {
     e.preventDefault();
-    const { data } = await supabase
-      .from('app_auth')
+    await checkVolunteerAccess(volunteerPhone);
+  };
+
+  const checkVolunteerAccess = async (phone) => {
+    const { data, error } = await supabase
+      .from('volunteers')
       .select('*')
-      .eq('user_id', FIXED_USER_ID)
-      .eq('password', inputPassword.trim())
+      .eq('phone', phone)
+      .eq('is_active', true)
       .single();
 
     if (data) {
-      setIsLoggedIn(true);
-      localStorage.setItem('bcnn_logged_in', 'true');
-      setView('dashboard');
-      setInputPassword('');
+      setIsUnlocked(true);
+      localStorage.setItem('v_phone', phone);
+      setVolunteerPhone(phone);
     } else {
-      alert('❌ ভুল পাসওয়ার্ড! অনুগ্রহ করে সঠিক পাসওয়ার্ড দিন।');
+      alert('দুঃখিত! এই মোবাইল নম্বরটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।');
+      setIsUnlocked(false);
+      localStorage.removeItem('v_phone');
     }
   };
 
-  // পাসওয়ার্ড পরিবর্তন
+  // ভলান্টিয়ার লগআউট (পুনরায় লক করা)
+  const handleLockData = () => {
+    setIsUnlocked(false);
+    localStorage.removeItem('v_phone');
+    setVolunteerPhone('');
+  };
+
+  // নতুন রক্তদাতা নিবন্ধন ফরম সাবমিট
+  const handleRegisterDonor = async (e) => {
+    e.preventDefault();
+    if (!newDonor.name || !newDonor.phone || !newDonor.location) return alert('অনুগ্রহ করে সব তথ্য সঠিকভাবে দিন');
+    
+    const { error } = await supabase.from('donors').insert([newDonor]);
+    if (error) {
+      alert('এই নম্বরটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!');
+    } else {
+      alert('রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!');
+      setNewDonor({ name: '', blood_group: 'A+', phone: '', location: '' });
+      fetchDonors();
+    }
+  };
+
+  // জরুরি রক্ত রিকোয়েস্ট পোস্ট (শুধুমাত্র অ্যাডমিন)
+  const handleAddRequest = async (e) => {
+    e.preventDefault();
+    const { error } = await supabase.from('emergency_requests').insert([newRequest]);
+    if (!error) {
+      alert('জরুরি রক্তের নোটিশ বোর্ড আপডেট হয়েছে!');
+      setNewRequest({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
+      fetchRequests();
+    }
+  };
+
+  // রক্তদানের সংখ্যা বাড়ানো (+1 বাটন)
+  const handleIncrementActivity = async (id, currentCount) => {
+    if (!isAdmin) return;
+    await supabase.from('donors').update({ activity_count: currentCount + 1 }).eq('id', id);
+    fetchDonors();
+  };
+
+  // নতুন ভলান্টিয়ার অনুমোদন দেওয়া (শুধুমাত্র অ্যাডমিন)
+  const handleAddVolunteer = async (e) => {
+    e.preventDefault();
+    const { error } = await supabase.from('volunteers').insert([newVolunteer]);
+    if (error) {
+      alert('এই ভলান্টিয়ার নম্বরটি অলরেডি ডাটাবেজে অনুমোদিত আছে!');
+    } else {
+      alert('নতুন ভলান্টিয়ার সফলভাবে যোগ করা হয়েছে!');
+      setNewVolunteer({ name: '', phone: '' });
+      fetchVolunteers();
+    }
+  };
+
+  // ভলান্টিয়ার ব্লক বা আনব্লক (অ্যাক্টিভ) করার লজিক
+  const toggleVolunteerStatus = async (id, currentStatus) => {
+    await supabase.from('volunteers').update({ is_active: !currentStatus }).eq('id', id);
+    fetchVolunteers();
+  };
+
+  // অ্যাডমিন প্যানেল লগইন
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    const { data } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
+    if (data) {
+      setIsAdmin(true);
+      setShowAdminLogin(false);
+    } else {
+      alert('ভুল ইউজার আইডি অথবা পাসওয়ার্ড!');
+    }
+  };
+
+  // পাসওয়ার্ড পরিবর্তন (মাস্টার কোড BCNN2013 দিয়ে চেক)
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    if (passwordForm.master_code !== MASTER_CODE) {
-      alert('❌ ভুল মাস্টার কোড! পাসওয়ার্ড পরিবর্তন করার অনুমতি নেই।');
-      return;
+    if (masterCode !== 'BCNN2013') {
+      return alert('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।');
     }
-
-    const { data } = await supabase
-      .from('app_auth')
-      .update({ password: passwordForm.new_password.trim() })
-      .eq('user_id', FIXED_USER_ID)
-      .select();
-
-    if (data && data.length > 0) {
-      alert('✅ পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে! নতুন পাসওয়ার্ড দিয়ে লগইন করুন।');
-      setIsLoggedIn(false);
-      localStorage.removeItem('bcnn_logged_in');
-      setView('login');
-      setPasswordForm({ master_code: '', new_password: '' });
-    } else {
-      alert('❌ সমস্যা হয়েছে। ডাটাবেজ চেক করুন।');
-    }
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    localStorage.removeItem('bcnn_logged_in');
-    setView('home');
-  };
-
-  const handleAddDonor = async (e) => {
-    e.preventDefault();
-    const { error } = await supabase.from('donors').insert([donorForm]);
+    const { error } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
     if (!error) {
-      alert('✅ রক্তদাতা সফলভাবে নিবন্ধিত হয়েছেন!');
-      setDonorForm({ name: '', blood_group: 'A+', phone: '', location: '', activity_count: 0 });
-      fetchDonors();
-      if (!isLoggedIn) setView('home');
-    } else {
-      alert('❌ এই নম্বরটি ইতিমধ্যে ডাটাবেজে রয়েছে।');
+      alert('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!');
+      setShowPassModal(false);
+      setMasterCode('');
+      setNewPassword('');
     }
   };
 
-  const handleAddEmergency = async (e) => {
-    e.preventDefault();
-    const { error } = await supabase.from('emergency_requests').insert([emergencyForm]);
-    if (!error) {
-      alert('🚀 জরুরি রক্তের রিকোয়েস্টটি বোর্ডে পোস্ট হয়েছে!');
-      setEmergencyForm({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
-      fetchEmergencies();
-    }
-  };
-
-  const incrementActivity = async (id, currentCount) => {
-    const { error } = await supabase
-      .from('donors')
-      .update({ activity_count: (currentCount || 0) + 1 })
-      .eq('id', id);
-    if (!error) fetchDonors();
-  };
-
-  const filteredDonors = selectedGroup === 'All' ? donors : donors.filter(d => d.blood_group === selectedGroup);
+  // সার্চ ও ব্লাড গ্রুপ ফিল্টারিং সিস্টেম
+  const filteredDonors = donors.filter(donor => {
+    const matchesGroup = selectedGroup === 'All' || donor.blood_group === selectedGroup;
+    const matchesSearch = donor.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          donor.location.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesGroup && matchesSearch;
+  });
 
   return (
-    <div className="min-h-screen bg-slate-50 font-bengali text-slate-800 flex flex-col justify-between">
-      <div>
-        {/* নতুন হেডার সেকশন (আপনার দেওয়া নতুন হেডলাইন ও ঠিকানা সহ) */}
-        <header className="bg-gradient-to-r from-red-800 to-red-700 text-white text-center py-6 px-4 shadow-md flex flex-col items-center">
-          <img src="/logo.png" alt="ব্লাড সেন্টার নদোনা নোয়াখালী" className="w-16 h-16 rounded-full border-2 border-white mb-2 shadow-md object-cover bg-white" />
-          <h1 className="text-2xl font-bold tracking-wide flex items-center gap-1">🩸 ব্লাড সেন্টার নদোনা নোয়াখালী</h1>
-          <p className="text-xs mt-1 opacity-95 flex items-center gap-1 font-medium">📍 ঠিকানা: নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী।</p>
-          <span className="text-[10px] mt-1 bg-red-900/50 px-2 py-0.5 rounded-full border border-red-600/30">📅 স্থাপিত: ২০১৩ ইং</span>
-        </header>
-
-        {/* ডিজিটাল আইকনযুক্ত নেভিগেশন মেনু */}
-        <nav className="bg-white border-b border-slate-200 flex justify-center p-2 space-x-2 shadow-xs overflow-x-auto">
-          <button onClick={() => setView('home')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${view === 'home' ? 'bg-red-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-            🏠 হোম ও তালিকা
-          </button>
-          <button onClick={() => setView('register')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${view === 'register' ? 'bg-red-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-            📝 নতুন রক্তদাতা নিবন্ধন
-          </button>
-          {isLoggedIn ? (
-            <>
-              <button onClick={() => setView('dashboard')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${view === 'dashboard' ? 'bg-red-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-                📊 ড্যাশবোর্ড প্যানেল
-              </button>
-              <button onClick={handleLogout} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 flex items-center gap-1">
-                🚪 লগআউট
-              </button>
-            </>
-          ) : (
-            <button onClick={() => setView('login')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${view === 'login' ? 'bg-red-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-              🔐 লগইন
+    <div className="min-h-screen bg-slate-50 text-slate-800 pb-12">
+      {/* হেডার ডিজাইন */}
+      <header className="bg-red-600 text-white text-center py-6 shadow-md px-4 relative">
+        <div className="flex flex-col items-center justify-center gap-2">
+          <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain rounded-full bg-white p-1 shadow" />
+          <h1 className="text-2xl font-bold tracking-wide">ব্লাড সেন্টার নদোনা নোয়াখালী</h1>
+          <p className="text-xs text-red-100 font-light flex items-center gap-1 justify-center">📍 ঠিকানা: নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী</p>
+        </div>
+        
+        {/* অ্যাডমিন প্যানেল কন্ট্রোল বাটন */}
+        <div className="absolute top-4 right-4">
+          {!isAdmin ? (
+            <button onClick={() => setShowAdminLogin(!showAdminLogin)} className="bg-red-700 hover:bg-red-800 text-xs px-3 py-1.5 rounded text-white font-medium flex items-center gap-1 shadow">
+              ⚙️ অ্যাডমিন প্যানেল
             </button>
+          ) : (
+            <div className="flex gap-2">
+              <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-xs px-3 py-1.5 rounded text-white flex items-center gap-1 shadow">🔑 পাসওয়ার্ড পরিবর্তন</button>
+              <button onClick={() => setIsAdmin(false)} className="bg-slate-800 text-xs px-3 py-1.5 rounded text-white flex items-center gap-1 shadow">🚪 লগআউট</button>
+            </div>
           )}
-        </nav>
+        </div>
+      </header>
 
-        {/* মূল কনটেন্ট এরিয়া */}
-        <main className="p-4 max-w-5xl mx-auto w-full">
+      {/* মোবাইল ফ্রেন্ডলি মেইন লেআউট */}
+      <main className="max-w-md mx-auto px-4 mt-6 space-y-6">
+
+        {/* অ্যাডমিন লগইন ফর্ম প্যানেল */}
+        {showAdminLogin && (
+          <div className="bg-white p-5 rounded-xl shadow border border-red-100">
+            <h3 className="text-lg font-bold text-red-600 mb-3 text-center flex items-center justify-center gap-1">🔐 অ্যাডমিন লগইন</h3>
+            <form onSubmit={handleAdminLogin} className="space-y-3">
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">👤</span>
+                <input type="text" placeholder="ইউজার আইডি" value={userId} onChange={e => setUserId(e.target.value)} className="w-full border pl-9 p-2.5 rounded text-sm focus:outline-red-500" />
+              </div>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔒</span>
+                <input type="password" placeholder="পাসওয়ার্ড" value={password} onChange={e => setPassword(e.target.value)} className="w-full border pl-9 p-2.5 rounded text-sm focus:outline-red-500" />
+              </div>
+              <button type="submit" className="w-full bg-red-600 text-white p-2.5 rounded font-bold text-sm flex items-center justify-center gap-1 shadow">✅ লগইন করুন</button>
+            </form>
+          </div>
+        )}
+
+        {/* ভলান্টিয়ার মোবাইল নম্বর দিয়ে আনলক বাটন */}
+        {!isAdmin && (
+          <div className="bg-white p-4 rounded-xl shadow border border-slate-200">
+            {isUnlocked ? (
+              <div className="flex justify-between items-center bg-green-50 p-2.5 rounded border border-green-200">
+                <span className="text-sm font-medium text-green-700 flex items-center gap-1">🟢 ডাটা আনলক আছে ({volunteerPhone})</span>
+                <button onClick={handleLockData} className="text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded hover:bg-red-200 flex items-center gap-1">🔒 লক করুন</button>
+              </div>
+            ) : (
+              <form onSubmit={handleVolunteerUnlock} className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">📱</span>
+                  <input 
+                    type="tel" 
+                    placeholder="ভলান্টিয়ার মোবাইল নম্বর দিন..." 
+                    value={volunteerPhone} 
+                    onChange={e => setVolunteerPhone(e.target.value)} 
+                    className="w-full border pl-9 p-2 rounded text-sm focus:outline-red-500" 
+                    required
+                  />
+                </div>
+                <button type="submit" className="bg-slate-800 text-white px-4 py-2 rounded font-bold text-xs hover:bg-slate-900 flex items-center gap-1 shadow">🔓 আনলক</button>
+              </form>
+            )}
+          </div>
+        )}
+
+        {/* অ্যাডমিনের ভলান্টিয়ার ম্যানেজমেন্ট কন্ট্রোল (ব্লক/আনব্লক করার সম্পূর্ণ অপশন সহ) */}
+        {isAdmin && (
+          <div className="bg-white p-5 rounded-xl shadow-md border-t-4 border-blue-600 space-y-4">
+            <h3 className="text-lg font-bold text-blue-600 flex items-center gap-1.5">👥 ভলান্টিয়ার কন্ট্রোল প্যানেল</h3>
+            
+            {/* নতুন ভলান্টিয়ার যোগ করার ফরম */}
+            <form onSubmit={handleAddVolunteer} className="space-y-2 bg-slate-50 p-3 rounded border">
+              <p className="text-xs font-bold text-slate-500 flex items-center gap-1">➕ নতুন ভলান্টিয়ার অনুমোদন দিন:</p>
+              <div className="grid grid-cols-2 gap-2">
+                <input type="text" placeholder="ভলান্টিয়ারের নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})} className="border p-2 rounded text-xs" required />
+                <input type="tel" placeholder="মোবাইল নম্বর" value={newVolunteer.phone} onChange={e => setNewVolunteer({...newVolunteer, phone: e.target.value})} className="border p-2 rounded text-xs" required />
+              </div>
+              <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded text-xs font-bold flex items-center justify-center gap-1 shadow">💾 ভলান্টিয়ার যুক্ত করুন</button>
+            </form>
+
+            {/* ভলান্টিয়ারদের তালিকা ও ব্লক/আনব্লক বাটন */}
+            <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
+              {volunteers.map(v => (
+                <div key={v.id} className="flex justify-between items-center p-2 bg-slate-50 rounded border text-xs">
+                  <div className="flex items-center gap-2">
+                    <span>👤</span>
+                    <div>
+                      <p className="font-bold">{v.name}</p>
+                      <p className="text-slate-500">📞 {v.phone} {v.is_active ? '' : '(🚫 ব্লকড)'}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => toggleVolunteerStatus(v.id, v.is_active)} 
+                    className={`px-3 py-1.5 rounded font-bold text-white shadow-sm flex items-center gap-0.5 transition-colors ${v.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}
+                  >
+                    {v.is_active ? '🚫 ব্লক করুন' : '🔓 আনব্লক করুন'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* লাইভ জরুরি রক্তের নোটিশ বোর্ড */}
+        <div className="bg-white p-5 rounded-xl shadow-md border-t-4 border-red-500 space-y-4">
+          <h2 className="text-lg font-bold text-red-600 flex items-center gap-1.5 animate-pulse">📢 জরুরি রক্তের লাইভ নোটিশ বোর্ড</h2>
           
-          {/* ১. হোম ভিউ */}
-          {view === 'home' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* লাইভ নোটিশ বোর্ড */}
-              <div className="md:col-span-1 space-y-4">
-                <div className="bg-gradient-to-br from-red-50 to-orange-50 p-4 rounded-2xl border border-red-200 shadow-xs">
-                  <h2 className="text-sm font-bold text-red-800 flex items-center gap-1.5 mb-3">📢 লাইভ জরুরি রক্তের নোটিশ</h2>
-                  <div className="space-y-3">
-                    {emergencies.length === 0 ? (
-                      <p className="text-xs text-red-700 flex items-center gap-1">ℹ️ বর্তমানে কোনো জরুরি রক্তের নোটিশ নেই।</p>
-                    ) : (
-                      emergencies.map(e => (
-                        <div key={e.id} className="bg-white p-3 rounded-xl border border-red-100 shadow-3xs">
-                          <div className="flex justify-between items-start">
-                            <span className="bg-red-700 text-white font-bold text-xs px-2 py-0.5 rounded shadow-3xs">🩸 {e.blood_group}</span>
-                            <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">⏱️ {e.needed_time}</span>
-                          </div>
-                          <p className="text-xs font-bold mt-2 text-slate-800 flex items-center gap-1">👤 রোগী: {e.patient_name}</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">🏥 স্থান: {e.hospital}</p>
-                          <a href={`tel:${e.phone}`} className="mt-3 text-center text-[11px] bg-red-600 hover:bg-red-700 text-white py-1.5 rounded font-bold block transition shadow-3xs flex items-center justify-center gap-1">
-                            📞 সরাসরি কল দিন
-                          </a>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
+          {/* নোটিশ ইনপুট ফরম (শুধু অ্যাডমিন দেখবে) */}
+          {isAdmin && (
+            <form onSubmit={handleAddRequest} className="bg-red-50 p-3 rounded-lg border border-red-100 space-y-2">
+              <p className="text-xs font-bold text-red-500 flex items-center gap-1">📝 নতুন জরুরি নোটিশ লিখুন:</p>
+              <input type="text" placeholder="রোগীর নাম" value={newRequest.patient_name} onChange={e => setNewRequest({...newRequest, patient_name: e.target.value})} className="w-full border p-2 rounded text-xs" required />
+              <div className="grid grid-cols-2 gap-2">
+                <select value={newRequest.blood_group} onChange={e => setNewRequest({...newRequest, blood_group: e.target.value})} className="border p-2 rounded text-xs bg-white">
+                  {bloodGroups.filter(g => g !== 'All').map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+                <input type="tel" placeholder="যোগাযোগের নম্বর" value={newRequest.phone} onChange={e => setNewRequest({...newRequest, phone: e.target.value})} className="border p-2 rounded text-xs" required />
               </div>
-
-              {/* রক্তদাতা ডিরেক্টরি */}
-              <div className="md:col-span-2 space-y-4">
-                <div className="bg-white p-4 rounded-xl shadow-xs border border-slate-200">
-                  <p className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1">🔍 গ্রুপ ফিল্টার করে রক্তদাতা খুঁজুন:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <button onClick={() => setSelectedGroup('All')} className={`px-2.5 py-1 text-xs font-bold rounded transition flex items-center gap-1 ${selectedGroup === 'All' ? 'bg-red-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                      👥 সবাই ({donors.length})
-                    </button>
-                    {bloodGroups.map(group => {
-                      const count = donors.filter(d => d.blood_group === group).length;
-                      return (
-                        <button key={group} onClick={() => setSelectedGroup(group)} className={`px-2.5 py-1 text-xs font-bold rounded transition ${selectedGroup === group ? 'bg-red-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                          🩸 {group} ({count})
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                  <h2 className="text-base font-bold mb-4 flex justify-between items-center border-b pb-2">
-                    <span className="flex items-center gap-1">📋 রক্তদাতাদের কেন্দ্রীয় তালিকা</span>
-                    <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-normal flex items-center gap-1">🔢 ফিল্টার্ড: {filteredDonors.length} জন</span>
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {filteredDonors.length === 0 ? (
-                      <p className="text-xs text-slate-400 p-2 col-span-2 text-center flex items-center justify-center gap-1">⚠️ এই গ্রুপের কোনো রক্তদাতা এখনো নিবন্ধিত হয়নি।</p>
-                    ) : (
-                      filteredDonors.map(donor => (
-                        <div key={donor.id} className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 flex justify-between items-center hover:border-slate-300 transition">
-                          <div>
-                            <h3 className="font-bold text-xs text-slate-800 flex items-center gap-1">👤 {donor.name}</h3>
-                            <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">📍 {donor.location}</p>
-                            <p className="text-[10px] text-emerald-700 font-bold mt-1 flex items-center gap-1">❤️ রক্ত দিয়েছেন: {donor.activity_count || 0} বার</p>
-                          </div>
-                          <div className="flex flex-col items-end gap-1.5">
-                            <span className="w-7 h-7 flex items-center justify-center bg-red-100 text-red-700 font-bold text-xs rounded-full shadow-3xs">{donor.blood_group}</span>
-                            <a href={`tel:${donor.phone}`} className="text-[11px] bg-white border border-slate-200 hover:border-red-500 text-slate-700 font-bold px-2 py-0.5 rounded shadow-3xs transition flex items-center gap-0.5">
-                              📞 কল দিন
-                            </a>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+              <input type="text" placeholder="হাসপাতালের নাম ও ঠিকানা" value={newRequest.hospital} onChange={e => setNewRequest({...newRequest, hospital: e.target.value})} className="w-full border p-2 rounded text-xs" required />
+              <input type="text" placeholder="কখন রক্ত লাগবে (উদা: আজ বিকেল ৪টা)" value={newRequest.needed_time} onChange={e => setNewRequest({...newRequest, needed_time: e.target.value})} className="w-full border p-2 rounded text-xs" required />
+              <button type="submit" className="w-full bg-red-600 text-white p-2 rounded text-xs font-bold flex items-center justify-center gap-1 shadow">🚀 পোস্ট করুন</button>
+            </form>
           )}
 
-          {/* ২. নতুন নিবন্ধন ভিউ */}
-          {view === 'register' && (
-            <div className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <h2 className="text-lg font-bold text-red-700 mb-4 text-center flex items-center justify-center gap-1">📝 নতুন রক্তদাতা ফরম</h2>
-              <form onSubmit={handleAddDonor} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1 flex items-center gap-1">👤 রক্তদাতার নাম</label>
-                  <input type="text" required value={donorForm.name} onChange={e => setDonorForm({...donorForm, name: e.target.value})} className="w-full p-2.5 border rounded-lg text-sm" placeholder="পূর্ণ নাম লিখুন" />
+          {/* নোটিশカードের তালিকা */}
+          <div className="space-y-3">
+            {emergencyRequests.length === 0 ? (
+              <p className="text-center text-xs text-slate-400 py-4 flex items-center justify-center gap-1">ℹ️ বর্তমানে কোনো জরুরি রক্তের রিকোয়েস্ট নেই।</p>
+            ) : (
+              emergencyRequests.map(req => (
+                <div key={req.id} className="border-2 border-red-200 bg-red-50/40 p-4 rounded-xl relative shadow-sm">
+                  <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">🩸 {req.blood_group}</span>
+                  <h4 className="font-bold text-sm text-slate-800">👤 রোগী: {req.patient_name}</h4>
+                  <p className="text-xs text-slate-600 mt-1">🏥 স্থান: {req.hospital}</p>
+                  <p className="text-xs text-red-600 font-medium mt-0.5">⏰ সময়: {req.needed_time}</p>
+                  <a href={`tel:${req.phone}`} className="mt-3 block w-full text-center bg-red-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 flex items-center justify-center gap-1 shadow">📞 সরাসরি কল দিন</a>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1 flex items-center gap-1">🩸 রক্তের গ্রুপ</label>
-                    <select value={donorForm.blood_group} onChange={e => setDonorForm({...donorForm, blood_group: e.target.value})} className="w-full p-2.5 border rounded-lg text-sm bg-white">
-                      {bloodGroups.map(g => <option key={g} value={g}>{g}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1 flex items-center gap-1">📱 মোবাইল নম্বর</label>
-                    <input type="tel" required value={donorForm.phone} onChange={e => setDonorForm({...donorForm, phone: e.target.value})} className="w-full p-2.5 border rounded-lg text-sm" placeholder="০১৭XXXXXXXX" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1 flex items-center gap-1">📍 ঠিকানা (ইউনিয়ন/গ্রাম)</label>
-                  <input type="text" required value={donorForm.location} onChange={e => setDonorForm({...donorForm, location: e.target.value})} className="w-full p-2.5 border rounded-lg text-sm" placeholder="নদোনা, সোনাইমুড়ী" />
-                </div>
-                <button type="submit" className="w-full bg-red-700 text-white font-bold py-2.5 rounded-lg text-sm transition hover:bg-red-800 shadow flex items-center justify-center gap-1">
-                  💾 নিবন্ধন সম্পন্ন করুন
-                </button>
-              </form>
-            </div>
-          )}
+              ))
+            )}
+          </div>
+        </div>
 
-          {/* ৩. লগইন প্যানেল */}
-          {view === 'login' && (
-            <div className="max-w-md mx-auto p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-xl font-bold text-red-700 text-center mb-6 flex items-center justify-center gap-1">🔐 ম্যানেজমেন্ট প্যানেল লগইন</h2>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1 text-slate-500 flex items-center gap-1">🆔 ইউজার আইডি</label>
-                  <input type="text" value={FIXED_USER_ID} disabled className="w-full p-2.5 border rounded-lg text-sm bg-slate-100 font-mono text-slate-600 font-bold" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1 flex items-center gap-1">🔑 পাসওয়ার্ড দিন</label>
-                  <input type="password" required value={inputPassword} onChange={e => setInputPassword(e.target.value)} className="w-full p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-red-500 font-mono" placeholder="******" />
-                </div>
-                <button type="submit" className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2.5 rounded-lg shadow transition flex items-center justify-center gap-1">
-                  🔓 লগইন করুন
-                </button>
-              </form>
-              <div className="mt-6 pt-4 border-t text-center text-xs">
-                <button onClick={() => setView('change_password')} className="text-amber-700 font-bold underline flex items-center justify-center gap-1 mx-auto">
-                  🔄 পাসওয়ার্ড পরিবর্তন করতে চান?
-                </button>
-              </div>
+        {/* সার্চ এবং ব্লাড ফিল্টার সেকশন */}
+        <div className="space-y-3">
+          <h2 className="text-lg font-bold flex items-center gap-1.5 text-slate-700">🔍 রক্তদাতা খুঁজুন</h2>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔎</span>
+              <input 
+                type="text" 
+                placeholder="নাম বা ইউনিয়ন/গ্রাম দিয়ে খুঁজুন..." 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full border pl-9 p-2.5 rounded-xl shadow-sm text-sm focus:outline-red-500"
+              />
             </div>
-          )}
-
-          {/* ৪. পাসওয়ার্ড পরিবর্তন প্যানেল */}
-          {view === 'change_password' && (
-            <div className="max-w-md mx-auto p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-xl font-bold text-amber-700 text-center mb-2 flex items-center justify-center gap-1">🔑 পাসওয়ার্ড রিসেট প্যানেল</h2>
-              <p className="text-[11px] text-center text-slate-400 mb-6 font-mono">🆔 User ID: {FIXED_USER_ID}</p>
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1 flex items-center gap-1">⚙️ মাস্টার ভেরিফিকেশন কোড (Master Code)</label>
-                  <input type="password" required value={passwordForm.master_code} onChange={e => setPasswordForm({...passwordForm, master_code: e.target.value})} className="w-full p-2.5 border rounded-lg text-sm border-amber-300 focus:ring-2 focus:ring-amber-500 font-mono" placeholder="সিক্রেট মাস্টার কোড দিন" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1 flex items-center gap-1">🔒 নতুন পাসওয়ার্ড (New Password)</label>
-                  <input type="password" required value={passwordForm.new_password} onChange={e => setPasswordForm({...passwordForm, new_password: e.target.value})} className="w-full p-2.5 border rounded-lg text-sm font-mono" placeholder="নতুন পাসওয়ার্ড লিখুন" />
-                </div>
-                <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg shadow transition flex items-center justify-center gap-1">
-                  💾 পাসওয়ার্ড আপডেট করুন
-                </button>
-              </form>
-              <button onClick={() => setView('login')} className="w-full mt-4 text-center text-xs text-slate-500 underline flex items-center justify-center gap-1">
-                ⬅️ লগইন পেজে ফিরে যান
+          </div>
+          <div className="flex gap-1 overflow-x-auto pb-1 max-w-full">
+            {bloodGroups.map(group => (
+              <button
+                key={group}
+                onClick={() => setSelectedGroup(group)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-sm transition-all flex items-center gap-0.5 ${selectedGroup === group ? 'bg-red-600 text-white' : 'bg-white border text-slate-600 hover:bg-slate-100'}`}
+              >
+                🅰️ {group === 'All' ? 'সব গ্রুপ' : group}
               </button>
-            </div>
-          )}
+            ))}
+          </div>
+        </div>
 
-          {/* ৫. ড্যাশবোর্ড ভিউ */}
-          {isLoggedIn && view === 'dashboard' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-2">
-              {/* নোটিশ ইনপুট ফর্ম */}
-              <div className="md:col-span-1 space-y-6">
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                  <h2 className="text-sm font-bold text-amber-800 mb-3 border-b pb-1.5 flex items-center gap-1">📢 জরুরি রক্তের নোটিশ দিন</h2>
-                  <form onSubmit={handleAddEmergency} className="space-y-3.5">
+        {/* রক্তদাতাদের মূল ডাইরেক্টরি তালিকা */}
+        <div className="space-y-3">
+          {filteredDonors.length === 0 ? (
+            <p className="text-center text-xs text-slate-400 py-8 bg-white rounded-xl shadow flex items-center justify-center gap-1">📭 এই গ্রুপের কোনো রক্তদাতা পাওয়া যায়নি।</p>
+          ) : (
+            filteredDonors.map(donor => (
+              <div key={donor.id} className="bg-white p-4 rounded-xl shadow border border-slate-100 flex justify-between items-center">
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-full bg-red-100 text-red-600 font-bold text-xs flex items-center justify-center shadow-inner">{donor.blood_group}</span>
                     <div>
-                      <label className="block text-[11px] text-slate-500 mb-0.5 flex items-center gap-0.5">👤 রোগীর নাম ও বিবরণ</label>
-                      <input type="text" required value={emergencyForm.patient_name} onChange={e => setEmergencyForm({...emergencyForm, patient_name: e.target.value})} className="w-full p-2 border rounded-lg text-xs" placeholder="যেমন: রহিমা বেগম, সিজারিয়ান অপারেশন" />
+                      <h4 className="font-bold text-sm text-slate-800">{donor.name}</h4>
+                      <p className="text-xs text-slate-500">📍 {donor.location}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-[11px] text-slate-500 mb-0.5 flex items-center gap-0.5">🩸 রক্ত গ্রুপ</label>
-                        <select value={emergencyForm.blood_group} onChange={e => setEmergencyForm({...emergencyForm, blood_group: e.target.value})} className="w-full p-2 border rounded-lg text-xs bg-white">
-                          {bloodGroups.map(g => <option key={g} value={g}>{g}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[11px] text-slate-500 mb-0.5 flex items-center gap-0.5">📱 মোবাইল</label>
-                        <input type="tel" required value={emergencyForm.phone} onChange={e => setEmergencyForm({...emergencyForm, phone: e.target.value})} className="w-full p-2 border rounded-lg text-xs" placeholder="যোগাযোগের নম্বর" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[11px] text-slate-500 mb-0.5 flex items-center gap-0.5">🏥 হাসপাতাল বা স্থান</label>
-                      <input type="text" required value={emergencyForm.hospital} onChange={e => setEmergencyForm({...emergencyForm, hospital: e.target.value})} className="w-full p-2 border rounded-lg text-xs" placeholder="যেমন: সোনাইমুড়ী জেনারেল হাসপাতাল" />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] text-slate-500 mb-0.5 flex items-center gap-0.5">⏱️ কখন লাগবে (সময়)</label>
-                      <input type="text" required value={emergencyForm.needed_time} onChange={e => setEmergencyForm({...emergencyForm, needed_time: e.target.value})} className="w-full p-2 border rounded-lg text-xs" placeholder="যেমন: আজ বিকেল ৪টায়" />
-                    </div>
-                    <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2 rounded-lg shadow transition flex items-center justify-center gap-1">
-                      🚀 বোর্ডে পাবলিশ করুন
-                    </button>
-                  </form>
-                </div>
-              </div>
-
-              {/* ট্র্যাকিং ও কন্ট্রোল */}
-              <div className="md:col-span-2">
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                  <h2 className="text-base font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-1">⚙️ কেন্দ্রীয় রক্তদাতা কন্ট্রোল ও কার্যক্রম ট্র্যাকিং</h2>
-                  <div className="space-y-2 max-h-[450px] overflow-y-auto pr-1">
-                    {donors.length === 0 ? (
-                      <p className="text-xs text-slate-400 text-center py-4 flex items-center justify-center gap-1">ℹ️ কোনো রক্তদাতা নিবন্ধিত নেই।</p>
+                  </div>
+                  <div className="pt-2">
+                    {/* সিকিউরিটি কন্ডিশন: ভলান্টিয়ার মোবাইল নম্বর দিয়ে আনলক করলে অথবা মূল অ্যাডমিন থাকলে নম্বর দেখা যাবে */}
+                    {isUnlocked || isAdmin ? (
+                      <a href={`tel:${donor.phone}`} className="inline-block bg-green-600 text-white text-xs font-bold px-4 py-1.5 rounded-lg hover:bg-green-700 flex items-center gap-1 shadow-sm">
+                        📞 কল করুন ({donor.phone})
+                      </a>
                     ) : (
-                      donors.map(d => (
-                        <div key={d.id} className="flex justify-between items-center p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs hover:border-slate-300 transition">
-                          <div>
-                            <span className="font-bold text-slate-800 text-sm flex items-center gap-1">👤 {d.name} <span className="bg-red-100 text-red-700 font-bold px-1.5 py-0.2 rounded text-[10px]">{d.blood_group}</span></span>
-                            <p className="text-[11px] text-slate-500 mt-0.5">📱 {d.phone} | 📍 {d.location}</p>
-                            <p className="text-[11px] text-emerald-700 font-bold mt-0.5 flex items-center gap-0.5">❤️ রক্তদানের মোট সংখ্যা: {d.activity_count || 0} বার</p>
-                          </div>
-                          <button onClick={() => incrementActivity(d.id, d.activity_count)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold shadow-3xs transition flex items-center gap-0.5">
-                            ➕ কাজ যোগ করুন
-                          </button>
-                        </div>
-                      ))
+                      <span className="inline-block bg-slate-100 text-slate-400 text-xs font-medium px-3 py-1.5 rounded-lg border border-dashed flex items-center gap-1 max-w-fit">
+                        🔒 নম্বর দেখতে আনলক করুন
+                      </span>
                     )}
                   </div>
                 </div>
+
+                {/* ডোনেশন ট্র্যাকিং কাউন্টার */}
+                <div className="text-right flex flex-col items-end gap-1">
+                  <span className="text-[10px] bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded border border-red-100 flex items-center gap-0.5">
+                    🩸 ডোনেশন: {donor.activity_count} বার
+                  </span>
+                  {isAdmin && (
+                    <button 
+                      onClick={() => handleIncrementActivity(donor.id, donor.activity_count)}
+                      className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded font-bold hover:bg-slate-900 shadow-sm mt-1 flex items-center gap-0.5"
+                    >
+                      ➕ কাজ যোগ করুন
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* সাধারণ রক্তদাতাদের জন্য নাম নিবন্ধনের খোলা ফরম */}
+        <div className="bg-white p-5 rounded-xl shadow-md border-t-4 border-green-500 space-y-4">
+          <h2 className="text-lg font-bold text-green-600 flex items-center gap-1.5">🩸 নতুন রক্তদাতা হিসেবে নাম লেখান</h2>
+          <form onSubmit={handleRegisterDonor} className="space-y-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">📝 আপনার নাম *</label>
+              <input type="text" placeholder="উদা: মোহাম্মদ আলী" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border p-2.5 rounded-lg text-sm focus:outline-green-500" required />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1">🅰️ ব্লাড গ্রুপ *</label>
+                <select value={newDonor.blood_group} onChange={e => setNewDonor({...newDonor, blood_group: e.target.value})} className="w-full border p-2.5 rounded-lg text-sm bg-white focus:outline-green-500">
+                  {bloodGroups.filter(g => g !== 'All').map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1">📱 মোবাইল নম্বর *</label>
+                <input type="tel" placeholder="০১৭XXXXXXXX" value={newDonor.phone} onChange={e => setNewDonor({...newDonor, phone: e.target.value})} className="w-full border p-2.5 rounded-lg text-sm focus:outline-green-500" required />
               </div>
             </div>
-          )}
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">🏡 ঠিকানা (গ্রাম এবং ইউনিয়ন) *</label>
+              <input type="text" placeholder="উদা: নদোনা, সোনাইমুড়ী" value={newDonor.location} onChange={e => setNewDonor({...newDonor, location: e.target.value})} className="w-full border p-2.5 rounded-lg text-sm focus:outline-green-500" required />
+            </div>
+            <button type="submit" className="w-full bg-green-600 text-white p-3 rounded-xl font-bold text-sm shadow hover:bg-green-700 flex items-center justify-center gap-1">🎯 নিবন্ধন সম্পন্ন করুন</button>
+          </form>
+        </div>
 
-        </main>
-      </div>
+      </main>
 
-      {/* ব্র্যান্ডিং ও ছবির ফুটার সেকশন */}
-      <footer className="bg-slate-900 text-slate-400 text-center py-5 border-t border-slate-800 text-xs mt-12">
-        <p className="font-bold text-slate-300 text-sm flex items-center justify-center gap-1">🤝 সার্বিক সহযোগিতায়ঃ মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
-        <p className="mt-2 text-[11px] flex items-center justify-center">
-          <span className="text-slate-500 mr-2">কারিগরি সহযোগিতায়:</span>
-          <img src="/gias.png" alt="গিয়াস উদ্দিন" className="w-5 h-5 rounded-full mr-1.5 object-cover border border-slate-700 shadow-sm" />
-          <span className="font-bold text-red-500">অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</span>
-        </p>
+      {/* মাস্টার পাসওয়ার্ড পরিবর্তনের হিডেন পপআপ */}
+      {showPassModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-5 rounded-xl max-w-sm w-full space-y-4 shadow-lg">
+            <h3 className="text-base font-bold text-slate-800 flex items-center gap-1">🔑 পাসওয়ার্ড পরিবর্তন করুন</h3>
+            <form onSubmit={handleChangePassword} className="space-y-3">
+              <input type="password" placeholder="🛠️ মাস্টার কোড (Master Code) দিন" value={masterCode} onChange={e => setMasterCode(e.target.value)} className="w-full border p-2 rounded text-sm" required />
+              <input type="password" placeholder="🔒 নতুন শক্তিশালী পাসওয়ার্ড" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full border p-2 rounded text-sm" required />
+              <div className="flex gap-2 pt-2">
+                <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded text-xs font-bold flex items-center justify-center gap-0.5 shadow">💾 আপডেট</button>
+                <button type="button" onClick={() => { setShowPassModal(false); setMasterCode(''); }} className="flex-1 bg-slate-200 text-slate-700 py-2 rounded text-xs font-bold flex items-center justify-center gap-0.5 border">❌ বাতিল</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ব্র্যান্ডিং ও প্রফেশনাল ফুটার সেকশন */}
+      <footer className="text-center text-xs text-slate-400 mt-12 space-y-1">
+        <p>© ২০২৬ ব্লাড সেন্টার নদোনা। সর্বস্বত্ব সংরক্ষিত।</p>
+        <div className="flex items-center justify-center gap-1.5 pt-1">
+          <span className="text-[10px]">🛠️ কারিগরি সহযোগিতায়:</span>
+          <img src="/gias.png" alt="Developer" className="w-5 h-5 rounded-full object-cover border" />
+          <span className="font-bold text-slate-500 text-[10px]">অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</span>
+        </div>
       </footer>
     </div>
   );
