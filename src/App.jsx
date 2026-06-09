@@ -188,7 +188,7 @@ export default function App() {
       <header className="bg-red-600 text-white text-center py-6 shadow-md px-4 relative">
         <div className="flex flex-col items-center justify-center gap-2">
           <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain rounded-full bg-white p-1 shadow" />
-          <h1 className="text-2xl font-bold tracking-wide">ব্লাড সেন্টার নদোনা নোয়াখালী</h1>
+          <h1 className="text-2xl font-bold tracking-wide flex items-center gap-2 justify-center">💉 ব্লাড সেন্টার নদোনা নোয়াখালী</h1>
           <p className="text-xs text-red-100 font-light flex items-center gap-1 justify-center">📍 ঠিকানা: নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী</p>
         </div>
         
@@ -223,7 +223,7 @@ export default function App() {
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔒</span>
                 <input type="password" placeholder="পাসওয়ার্ড" value={password} onChange={e => setPassword(e.target.value)} className="w-full border pl-9 p-2.5 rounded text-sm focus:outline-red-500" />
               </div>
-              <button type="submit" className="w-full bg-red-600 text-white p-2.5 rounded font-bold text-sm flex items-center justify-center gap-1 shadow">✅ লগইন করুন</button>
+              <button type="submit" className="w-full bg-red-600 text-white p-2.5 rounded font-bold text-sm flex items-center justify-center gap-1 shadow">⚡ লগইন ভেরিফাই করুন</button>
             </form>
           </div>
         )}
@@ -249,13 +249,13 @@ export default function App() {
                     required
                   />
                 </div>
-                <button type="submit" className="bg-slate-800 text-white px-4 py-2 rounded font-bold text-xs hover:bg-slate-900 flex items-center gap-1 shadow">🔓 আনলক</button>
+                <button type="submit" className="bg-slate-800 text-white px-4 py-2 rounded font-bold text-xs hover:bg-slate-900 flex items-center gap-1 shadow">🔓 ডাটা আনলক</button>
               </form>
             )}
           </div>
         )}
 
-        {/* অ্যাডমিনের ভলান্টিয়ার ম্যানেজমেন্ট কন্ট্রোল (ব্লক/আনব্লক করার সম্পূর্ণ অপশন সহ) */}
+        {/* অ্যাডমিনের ভলান্টিয়ার ম্যানেজমেন্ট কন্ট্রোল */}
         {isAdmin && (
           <div className="bg-white p-5 rounded-xl shadow-md border-t-4 border-blue-600 space-y-4">
             <h3 className="text-lg font-bold text-blue-600 flex items-center gap-1.5">👥 ভলান্টিয়ার কন্ট্রোল প্যানেল</h3>
@@ -264,10 +264,16 @@ export default function App() {
             <form onSubmit={handleAddVolunteer} className="space-y-2 bg-slate-50 p-3 rounded border">
               <p className="text-xs font-bold text-slate-500 flex items-center gap-1">➕ নতুন ভলান্টিয়ার অনুমোদন দিন:</p>
               <div className="grid grid-cols-2 gap-2">
-                <input type="text" placeholder="ভলান্টিয়ারের নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})} className="border p-2 rounded text-xs" required />
-                <input type="tel" placeholder="মোবাইল নম্বর" value={newVolunteer.phone} onChange={e => setNewVolunteer({...newVolunteer, phone: e.target.value})} className="border p-2 rounded text-xs" required />
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-slate-400 text-xs">✍️</span>
+                  <input type="text" placeholder="ভলান্টিয়ারের নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})} className="w-full border pl-7 p-2 rounded text-xs" required />
+                </div>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-slate-400 text-xs">📱</span>
+                  <input type="tel" placeholder="মোবাইল নম্বর" value={newVolunteer.phone} onChange={e => setNewVolunteer({...newVolunteer, phone: e.target.value})} className="w-full border pl-7 p-2 rounded text-xs" required />
+                </div>
               </div>
-              <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded text-xs font-bold flex items-center justify-center gap-1 shadow">💾 ভলান্টিয়ার যুক্ত করুন</button>
+              <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded text-xs font-bold flex items-center justify-center gap-1 shadow">💾 ভলান্টিয়ার লিস্টে যুক্ত করুন</button>
             </form>
 
             {/* ভলান্টিয়ারদের তালিকা ও ব্লক/আনব্লক বাটন */}
@@ -275,7 +281,7 @@ export default function App() {
               {volunteers.map(v => (
                 <div key={v.id} className="flex justify-between items-center p-2 bg-slate-50 rounded border text-xs">
                   <div className="flex items-center gap-2">
-                    <span>👤</span>
+                    <span>🛡️</span>
                     <div>
                       <p className="font-bold">{v.name}</p>
                       <p className="text-slate-500">📞 {v.phone} {v.is_active ? '' : '(🚫 ব্লকড)'}</p>
@@ -301,20 +307,35 @@ export default function App() {
           {isAdmin && (
             <form onSubmit={handleAddRequest} className="bg-red-50 p-3 rounded-lg border border-red-100 space-y-2">
               <p className="text-xs font-bold text-red-500 flex items-center gap-1">📝 নতুন জরুরি নোটিশ লিখুন:</p>
-              <input type="text" placeholder="রোগীর নাম" value={newRequest.patient_name} onChange={e => setNewRequest({...newRequest, patient_name: e.target.value})} className="w-full border p-2 rounded text-xs" required />
-              <div className="grid grid-cols-2 gap-2">
-                <select value={newRequest.blood_group} onChange={e => setNewRequest({...newRequest, blood_group: e.target.value})} className="border p-2 rounded text-xs bg-white">
-                  {bloodGroups.filter(g => g !== 'All').map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-                <input type="tel" placeholder="যোগাযোগের নম্বর" value={newRequest.phone} onChange={e => setNewRequest({...newRequest, phone: e.target.value})} className="border p-2 rounded text-xs" required />
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-slate-400 text-xs">👤</span>
+                <input type="text" placeholder="রোগীর নাম" value={newRequest.patient_name} onChange={e => setNewRequest({...newRequest, patient_name: e.target.value})} className="w-full border pl-7 p-2 rounded text-xs" required />
               </div>
-              <input type="text" placeholder="হাসপাতালের নাম ও ঠিকানা" value={newRequest.hospital} onChange={e => setNewRequest({...newRequest, hospital: e.target.value})} className="w-full border p-2 rounded text-xs" required />
-              <input type="text" placeholder="কখন রক্ত লাগবে (উদা: আজ বিকেল ৪টা)" value={newRequest.needed_time} onChange={e => setNewRequest({...newRequest, needed_time: e.target.value})} className="w-full border p-2 rounded text-xs" required />
-              <button type="submit" className="w-full bg-red-600 text-white p-2 rounded text-xs font-bold flex items-center justify-center gap-1 shadow">🚀 পোস্ট করুন</button>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-slate-400 text-xs">🅰️</span>
+                  <select value={newRequest.blood_group} onChange={e => setNewRequest({...newRequest, blood_group: e.target.value})} className="w-full border pl-7 p-2 rounded text-xs bg-white">
+                    {bloodGroups.filter(g => g !== 'All').map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-slate-400 text-xs">📱</span>
+                  <input type="tel" placeholder="যোগাযোগের নম্বর" value={newRequest.phone} onChange={e => setNewRequest({...newRequest, phone: e.target.value})} className="w-full border pl-7 p-2 rounded text-xs" required />
+                </div>
+              </div>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-slate-400 text-xs">🏥</span>
+                <input type="text" placeholder="হাসপাতালের নাম ও ঠিকানা" value={newRequest.hospital} onChange={e => setNewRequest({...newRequest, hospital: e.target.value})} className="w-full border pl-7 p-2 rounded text-xs" required />
+              </div>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-slate-400 text-xs">⏰</span>
+                <input type="text" placeholder="কখন রক্ত লাগবে (উদা: আজ বিকেল ৪টা)" value={newRequest.needed_time} onChange={e => setNewRequest({...newRequest, needed_time: e.target.value})} className="w-full border pl-7 p-2 rounded text-xs" required />
+              </div>
+              <button type="submit" className="w-full bg-red-600 text-white p-2 rounded text-xs font-bold flex items-center justify-center gap-1 shadow">🚀 লাইভ পোস্ট করুন</button>
             </form>
           )}
 
-          {/* নোটিশカードের তালিকা */}
+          {/* নোটিশ কার্ডের তালিকা */}
           <div className="space-y-3">
             {emergencyRequests.length === 0 ? (
               <p className="text-center text-xs text-slate-400 py-4 flex items-center justify-center gap-1">ℹ️ বর্তমানে কোনো জরুরি রক্তের রিকোয়েস্ট নেই।</p>
@@ -322,9 +343,9 @@ export default function App() {
               emergencyRequests.map(req => (
                 <div key={req.id} className="border-2 border-red-200 bg-red-50/40 p-4 rounded-xl relative shadow-sm">
                   <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">🩸 {req.blood_group}</span>
-                  <h4 className="font-bold text-sm text-slate-800">👤 রোগী: {req.patient_name}</h4>
-                  <p className="text-xs text-slate-600 mt-1">🏥 স্থান: {req.hospital}</p>
-                  <p className="text-xs text-red-600 font-medium mt-0.5">⏰ সময়: {req.needed_time}</p>
+                  <h4 className="font-bold text-sm text-slate-800 flex items-center gap-1">👤 রোগী: {req.patient_name}</h4>
+                  <p className="text-xs text-slate-600 mt-1 flex items-center gap-1">🏥 স্থান: {req.hospital}</p>
+                  <p className="text-xs text-red-600 font-medium mt-0.5 flex items-center gap-1">⏰ সময়: {req.needed_time}</p>
                   <a href={`tel:${req.phone}`} className="mt-3 block w-full text-center bg-red-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 flex items-center justify-center gap-1 shadow">📞 সরাসরি কল দিন</a>
                 </div>
               ))
@@ -334,7 +355,7 @@ export default function App() {
 
         {/* সার্চ এবং ব্লাড ফিল্টার সেকশন */}
         <div className="space-y-3">
-          <h2 className="text-lg font-bold flex items-center gap-1.5 text-slate-700">🔍 রক্তদাতা খুঁজুন</h2>
+          <h2 className="text-lg font-bold flex items-center gap-1.5 text-slate-700">🔍 রক্তদাতা অনুসন্ধান প্যানেল</h2>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔎</span>
@@ -371,8 +392,8 @@ export default function App() {
                   <div className="flex items-center gap-2">
                     <span className="w-8 h-8 rounded-full bg-red-100 text-red-600 font-bold text-xs flex items-center justify-center shadow-inner">{donor.blood_group}</span>
                     <div>
-                      <h4 className="font-bold text-sm text-slate-800">{donor.name}</h4>
-                      <p className="text-xs text-slate-500">📍 {donor.location}</p>
+                      <h4 className="font-bold text-sm text-slate-800 flex items-center gap-1">👤 {donor.name}</h4>
+                      <p className="text-xs text-slate-500 flex items-center gap-0.5">📍 {donor.location}</p>
                     </div>
                   </div>
                   <div className="pt-2">
@@ -392,14 +413,14 @@ export default function App() {
                 {/* ডোনেশন ট্র্যাকিং কাউন্টার */}
                 <div className="text-right flex flex-col items-end gap-1">
                   <span className="text-[10px] bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded border border-red-100 flex items-center gap-0.5">
-                    🩸 ডোনেশন: {donor.activity_count} বার
+                    📊 ডোনেশন: {donor.activity_count} বার
                   </span>
                   {isAdmin && (
                     <button 
                       onClick={() => handleIncrementActivity(donor.id, donor.activity_count)}
                       className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded font-bold hover:bg-slate-900 shadow-sm mt-1 flex items-center gap-0.5"
                     >
-                      ➕ কাজ যোগ করুন
+                      ➕ কাউন্ট বাড়ান
                     </button>
                   )}
                 </div>
@@ -413,26 +434,38 @@ export default function App() {
           <h2 className="text-lg font-bold text-green-600 flex items-center gap-1.5">🩸 নতুন রক্তদাতা হিসেবে নাম লেখান</h2>
           <form onSubmit={handleRegisterDonor} className="space-y-3">
             <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1">📝 আপনার নাম *</label>
-              <input type="text" placeholder="উদা: মোহাম্মদ আলী" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border p-2.5 rounded-lg text-sm focus:outline-green-500" required />
+              <label className="block text-xs font-bold text-slate-600 mb-1">✍️ আপনার সম্পূর্ণ নাম *</label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm">👤</span>
+                <input type="text" placeholder="উদা: মোহাম্মদ আলী" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border pl-9 p-2.5 rounded-lg text-sm focus:outline-green-500" required />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">🅰️ ব্লাড গ্রুপ *</label>
-                <select value={newDonor.blood_group} onChange={e => setNewDonor({...newDonor, blood_group: e.target.value})} className="w-full border p-2.5 rounded-lg text-sm bg-white focus:outline-green-500">
-                  {bloodGroups.filter(g => g !== 'All').map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
+                <label className="block text-xs font-bold text-slate-600 mb-1">🅰️ ব্লাড গ্রুপ সিলেক্ট করুন *</label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm">🩸</span>
+                  <select value={newDonor.blood_group} onChange={e => setNewDonor({...newDonor, blood_group: e.target.value})} className="w-full border pl-9 p-2.5 rounded-lg text-sm bg-white focus:outline-green-500">
+                    {bloodGroups.filter(g => g !== 'All').map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">📱 মোবাইল নম্বর *</label>
-                <input type="tel" placeholder="০১৭XXXXXXXX" value={newDonor.phone} onChange={e => setNewDonor({...newDonor, phone: e.target.value})} className="w-full border p-2.5 rounded-lg text-sm focus:outline-green-500" required />
+                <label className="block text-xs font-bold text-slate-600 mb-1">📱 একটি সক্রিয় মোবাইল নম্বর *</label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm">📱</span>
+                  <input type="tel" placeholder="০১৭XXXXXXXX" value={newDonor.phone} onChange={e => setNewDonor({...newDonor, phone: e.target.value})} className="w-full border pl-9 p-2.5 rounded-lg text-sm focus:outline-green-500" required />
+                </div>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1">🏡 ঠিকানা (গ্রাম এবং ইউনিয়ন) *</label>
-              <input type="text" placeholder="উদা: নদোনা, সোনাইমুড়ী" value={newDonor.location} onChange={e => setNewDonor({...newDonor, location: e.target.value})} className="w-full border p-2.5 rounded-lg text-sm focus:outline-green-500" required />
+              <label className="block text-xs font-bold text-slate-600 mb-1">🏡 বর্তমান ঠিকানা (গ্রাম এবং ইউনিয়ন) *</label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm">📍</span>
+                <input type="text" placeholder="উদা: নদোনা, সোনাইমুড়ী" value={newDonor.location} onChange={e => setNewDonor({...newDonor, location: e.target.value})} className="w-full border pl-9 p-2.5 rounded-lg text-sm focus:outline-green-500" required />
+              </div>
             </div>
-            <button type="submit" className="w-full bg-green-600 text-white p-3 rounded-xl font-bold text-sm shadow hover:bg-green-700 flex items-center justify-center gap-1">🎯 নিবন্ধন সম্পন্ন করুন</button>
+            <button type="submit" className="w-full bg-green-600 text-white p-3 rounded-xl font-bold text-sm shadow hover:bg-green-700 flex items-center justify-center gap-1">💾 ডেটাবেজে সাবমিট করুন</button>
           </form>
         </div>
 
@@ -456,10 +489,11 @@ export default function App() {
       )}
 
       {/* ব্র্যান্ডিং ও প্রফেশনাল ফুটার সেকশন */}
-      <footer className="text-center text-xs text-slate-400 mt-12 space-y-1">
+      <footer className="text-center text-xs text-slate-400 mt-12 space-y-2 px-4">
         <p>© ২০২৬ ব্লাড সেন্টার নদোনা। সর্বস্বত্ব সংরক্ষিত।</p>
-        <div className="flex items-center justify-center gap-1.5 pt-1">
-          <span className="text-[10px]">🛠️ কারিগরি সহযোগিতায়:</span>
+        <p className="text-slate-500 font-medium text-[11px]">🤝 সার্বিক সহযোগিতায়: মরহুম হাজী তфসির আহমেদ ট্রাস্ট</p>
+        <div className="flex items-center justify-center gap-1.5 pt-1 border-t border-slate-200 max-w-xs mx-auto">
+          <span className="text-[10px]">⚙️ কারিগরি সহযোগিতায়:</span>
           <img src="/gias.png" alt="Developer" className="w-5 h-5 rounded-full object-cover border" />
           <span className="font-bold text-slate-500 text-[10px]">অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</span>
         </div>
