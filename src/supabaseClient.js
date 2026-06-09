@@ -1,7 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-// আপনার সুপাবেস প্রজেক্টের URL এবং Anon Key এখানে বসাবেন
-const supabaseUrl = 'YOUR_SUPABASE_PROJECT_URL'; 
-const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+// এই কোডটি Vercel-এর এনভায়রনমেন্ট ভ্যারিয়েবল থেকে অটোমেটিক ডাটা রিড করবে
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
