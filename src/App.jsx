@@ -252,7 +252,7 @@ export default function App() {
         <div className="flex flex-col items-center justify-center gap-3">
           <img src="/logo.png" alt="Logo" className="w-20 h-20 object-contain rounded-full bg-white p-1 shadow-md" />
           <h1 className="text-3xl font-black tracking-wide flex items-center gap-2 justify-center">🩸 ব্লাড সেন্টার নদোনা নোয়াখালী</h1>
-          <p className="text-sm text-red-100 font-medium flex items-center gap-1 justify-center bg-red-700/50 px-3 py-1 rounded-full">📍 ঠিকানা: নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী</p>
+          <p className="text-sm text-red-100 font-medium flex items-center gap-1 justify-center bg-red-700/50 px-3 py-1 rounded-full">📍 ঠিকানা: নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩</p>
         </div>
         
         <div className="absolute top-4 right-4">
@@ -319,7 +319,7 @@ export default function App() {
                 <input type="text" placeholder="ভলান্টিয়ারের নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base" required />
                 <input type="tel" placeholder="সক্রিয় মোবাইল নম্বর" value={newVolunteer.phone} onChange={e => setNewVolunteer({...newVolunteer, phone: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base" required />
               </div>
-              <button type="submit" className="w-full bg-blue-600 text-white p-3 rounded-xl font-bold text-base flex items-center justify-center gap-1 shadow">💾 ভলান্টিয়ার লিস্টে যুক্ত করুন</button>
+              <button type="submit" className="w-full bg-blue-600 text-white p-3 rounded-xl font-bold text-base flex items-center justify-center gap-1 shadow">✍️ ভলান্টিয়ার লিস্টে যুক্ত করুন</button>
             </form>
             <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
               {volunteers.map(v => (
@@ -390,7 +390,7 @@ export default function App() {
           <div className="flex gap-1.5 overflow-x-auto pb-2 max-w-full">
             {bloodGroups.map(group => (
               <button key={group} onClick={() => setSelectedGroup(group)} className={`px-4 py-2 rounded-full text-sm font-black whitespace-nowrap shadow-sm transition-all ${selectedGroup === group ? 'bg-red-600 text-white' : 'bg-white border-2 text-slate-600 hover:bg-slate-100'}`}>
-                🅰️ {group === 'All' ? 'সব গ্রুপ' : group}
+                🩸 {group === 'All' ? 'সব গ্রুপ' : group}
               </button>
             ))}
           </div>
@@ -495,14 +495,14 @@ export default function App() {
 
             {/* ২. মোবাইল নম্বর */}
             <div>
-              <label className="block text-sm font-black text-slate-700 mb-1">📱 একটি সক্রিয় মোবাইল নম্বর *</label>
+              <label className="block text-sm font-black text-slate-700 mb-1">☎️ মোবাইল নাম্বার *</label>
               <input type="tel" placeholder="মোবাইল নম্বর লিখুন" value={newDonor.phone} onChange={e => setNewDonor({...newDonor, phone: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500" required />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               {/* ৩. ব্লাড গ্রুপ */}
               <div>
-                <label className="block text-sm font-black text-slate-700 mb-1">🅰️ রক্তের গ্রুপ সিলেক্ট করুন *</label>
+                <label className="block text-sm font-black text-slate-700 mb-1">🩸 রক্তের গ্রুপ সিলেক্ট করুন *</label>
                 <select value={newDonor.blood_group} onChange={e => setNewDonor({...newDonor, blood_group: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base bg-white focus:outline-green-500">
                   {bloodGroups.filter(g => g !== 'All').map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
