@@ -49,7 +49,7 @@ export default function App() {
   }, [isAdmin]);
 
   const fetchDonors = async () => {
-    const { data } = await supabase.from('donors').select('*').order('activity_count', { ascending: false });
+    const { data } = await supabase.from('donors').select('*').order('donation_count', { ascending: false });
     if (data) setDonors(data);
   };
 
