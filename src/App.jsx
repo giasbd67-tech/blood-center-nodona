@@ -9,7 +9,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('All');
   const [eligibilityFilter, setEligibilityFilter] = useState('All'); 
-  const [activeTab, setActiveTab] = useState('home'); // ৫টি ট্যাব: home, notice, search, register, volunteer
+  const [activeTab, setActiveTab] = useState('home'); // ৫টি টগল ট্যাব: home, notice, search, register, volunteer
   const [visibleDonorsCount, setVisibleDonorsCount] = useState(10); // লোড মোর লিমিট
   
   // কাস্টম নোটিফিকেশন স্টেট (alert() এর পরিবর্তে চমৎকার মেসেজ বক্স)
@@ -88,11 +88,11 @@ export default function App() {
     if (data) setVolunteers(data);
   };
 
-  // রক্তদানের সংখ্যা অনুযায়ী আপনার পছন্দের আসল ব্যাজ নির্ধারণকারী ফাংশন
+  // রক্তদানের সংখ্যা অনুযায়ী আপনার পছন্দের আসল ব্যাজ নির্ধারণকারী ফাংশন (সংশোধিত)
   const getDonorBadge = (count) => {
     const num = Number(count) || 0;
     if (num === 0) return { text: '🌱 New Donor', classes: 'bg-slate-100 text-slate-700 border-slate-300' };
-    if (num <= 2) return { text: '🤝 Helping Donor, classes: 'bg-green-100 text-green-700 border-green-200' };
+    if (num <= 2) return { text: '🤝 Helping Donor', classes: 'bg-green-100 text-green-700 border-green-200' };
     if (num <= 5) return { text: '🥈 Silver Donor', classes: 'bg-gray-200 text-gray-700 border-gray-300' };
     if (num <= 10) return { text: '🥇 Gold Donor', classes: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
     return { text: '💎 Platinum Donor', classes: 'bg-blue-100 text-blue-700 border-blue-200 font-bold shadow-sm' };
@@ -117,7 +117,7 @@ export default function App() {
       setVolunteerPhone(phone);
       showToast('ডাটা সফলভাবে আনলক হয়েছে!', 'success');
     } else {
-      showToast('দুঃখিত! এই মোবাইল নম্বরটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
+      showToast('দুঃখিত! এই মোবাইল নাম্বারটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
       setIsUnlocked(false);
       localStorage.removeItem('v_phone');
     }
@@ -178,12 +178,12 @@ export default function App() {
       const { error } = await supabase.from('donors').insert([donorPayload]);
       if (error) {
         if (error.code === '23505') {
-          showToast('এই নম্বরটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!', 'error');
+          showToast('এই নাম্বারটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!', 'error');
         } else {
           showToast('নিবন্ধন ব্যর্থ হয়েছে: ' + error.message, 'error');
         }
       } else {
-        showToast('রক্তदाता হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!', 'success');
+        showToast('রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!', 'success');
         resetDonorForm();
         fetchDonors();
         setActiveTab('search'); 
@@ -250,7 +250,7 @@ export default function App() {
   };
 
   const handleEditDonor = (donor) => {
-    if (!isAdmin && !isUnlocked) return showToast('অনুগ্রহ করে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন', 'error');
+    if (!isAdmin && !isUnlocked) return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড বা নাম্বার দিয়ে ডাটা আনলক করুন', 'error');
     setNewDonor({
       id: donor.id,
       name: donor.name,
@@ -282,7 +282,7 @@ export default function App() {
 
   const handleCopyDonorInfo = (donor) => {
     if (!isUnlocked && !isAdmin) {
-      showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error');
+      showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার কোড বা নাম্বার দিয়ে ডাটা আনলক করুন।', 'error');
       return;
     }
     const infoText = `🩸 ব্লাড সেন্টার নদোনা নোয়াখালী 🩸\nরক্তদাতা: ${donor.name}\nগ্রুপ: ${donor.blood_group}\nমোবাইল: ${donor.phone}\nঠিকানা: ${donor.location || donor.village || ''}`;
@@ -428,7 +428,7 @@ export default function App() {
               <select value={newRequest.blood_group} onChange={e => setNewRequest({...newRequest, blood_group: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white">
                 {bloodGroups.filter(g => g !== 'All').map(g => <option key={g} value={g}>{g}</option>)}
               </select>
-              <input type="tel" placeholder="যোগাযোগের নম্বর" value={newRequest.phone} onChange={e => setNewRequest({...newRequest, phone: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
+              <input type="tel" placeholder="যোগাযোগের নাম্বার" value={newRequest.phone} onChange={e => setNewRequest({...newRequest, phone: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             </div>
             <input type="text" placeholder="হাসপাতালের নাম ও ঠিকানা" value={newRequest.hospital} onChange={e => setNewRequest({...newRequest, hospital: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             <input type="text" placeholder="কখন রক্ত লাগবে" value={newRequest.needed_time} onChange={e => setNewRequest({...newRequest, needed_time: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
@@ -468,7 +468,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* রক্তদানের সুফল ও শর্তাবলীর বড় কার্ড */}
+      {/* সুফল ও শর্তাবলীর বড় কার্ড */}
       <div className="space-y-4">
         <div className="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 flex gap-3 shadow-xs">
           <span className="text-2xl bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center shrink-0">🎗️</span>
@@ -487,7 +487,7 @@ export default function App() {
           <div>
             <h4 className="font-black text-sm text-slate-800 mb-0.5 leading-relaxed">কখন রক্ত দিতে পারবেন?</h4>
             <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside font-semibold leading-relaxed">
-              <li>पुरुषরা প্রতি ৩ মাস অন্তর রক্ত দিতে পারবেন।</li>
+              <li>পুরুষরা প্রতি ৩ মাস অন্তর রক্ত দিতে পারবেন।</li>
               <li>নারীরা প্রতি ৪ মাস অন্তর রক্ত দিতে পারবেন।</li>
               <li>শারীরিকভাবে সম্পূর্ণ সুস্থ ও নিরোগ শরীর থাকলে।</li>
               <li>রক্তদাতার ওজন কমপক্ষে ৪৫ কেজি বা তার বেশি হতে হবে।</li>
@@ -590,7 +590,7 @@ export default function App() {
                           📄
                         </button>
                       ) : (
-                        <button type="button" onClick={() => showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-200 text-slate-400 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                        <button type="button" onClick={() => showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার কোড বা মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-200 text-slate-400 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center cursor-not-allowed">
                           🔒
                         </button>
                       )}
@@ -600,7 +600,7 @@ export default function App() {
                           📞
                         </a>
                       ) : (
-                        <button type="button" onClick={() => showToast('মোবাইল নম্বর দেখতে ও কল করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                        <button type="button" onClick={() => showToast('মোবাইল নাম্বার দেখতে ও কল করতে ভলান্টিয়ার কোড বা মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
                           🔒
                         </button>
                       )}
@@ -609,7 +609,7 @@ export default function App() {
 
                   <div className="flex justify-between items-center text-sm pt-1 border-t border-dashed leading-normal">
                     <span className="font-bold text-red-600">📊 মোট দান: {donor.activity_count || 0} বার</span>
-                    <span className="text-slate-500 font-medium">📅 সর্বশেষ দান: {donor.last_donation_date || 'কখনো দেওয়া হয়নি'}</span>
+                    <span className="text-slate-500 font-medium">🗓️ সর্বশেষ দান: {donor.last_donation_date || 'কখনো দেওয়া হয়নি'}</span>
                   </div>
 
                   {isAdmin && (
@@ -663,7 +663,7 @@ export default function App() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚧️  লিঙ্গ *</label>
+            <label className="block text-xs font-black text-slate-700 mb-1 style leading-normal">⚧️  লিঙ্গ *</label>
             <select value={newDonor.gender} onChange={e => setNewDonor({...newDonor, gender: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white focus:outline-green-500 leading-normal">
               <option value="পুরুষ">পুরুষ</option>
               <option value="মহিলা">মহিলা</option>
@@ -673,8 +673,8 @@ export default function App() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚖️  ওজন (কেজি) *</label>
-            <input type="number" placeholder="ওজন কেজি" value={newDonor.weight} onChange={e => setNewDonor({...newDonor, weight: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚖️  ওজন *</label>
+            <input type="number" placeholder="ওজন" value={newDonor.weight} onChange={e => setNewDonor({...newDonor, weight: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
           </div>
           <div>
             <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🎂  বয়স *</label>
@@ -684,7 +684,7 @@ export default function App() {
 
         <div>
           <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🏡  রক্তদাতার সম্পূর্ণ ঠিকানা *</label>
-          <input type="text" placeholder="নদোনা, সোনাইমুড়ী, নোয়াখালী 🇧🇩" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+          <input type="text" placeholder="নদোনা, সোনাইমুড়ী, নোয়াখালী 🇧🇩🇨🇦" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div>
@@ -693,7 +693,7 @@ export default function App() {
         </div>
 
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">📅  সর্বশেষ রক্তদানের তারিখ (ঐচ্ছিক)</label>
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🗓️ সর্বশেষ রক্তদানের তারিখ (ঐচ্ছিক)</label>
           <input type="date" value={newDonor.last_donation_date} onChange={e => setNewDonor({...newDonor, last_donation_date: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" />
           <p className="text-[10px] text-slate-400 mt-1 leading-normal">নোট: যদি পূর্বে কখনো রক্ত না দিয়ে থাকেন, তবে এই ঘরটি ফাঁকা রাখুন।</p>
         </div>
@@ -929,7 +929,7 @@ export default function App() {
 
       {/* ফুটার ও ক্রেডিট */}
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed">
-        <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং।</p>
+        <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
         <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">🤝 সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
         <div className="flex items-center justify-center gap-2 pt-3 border-t border-slate-200 max-w-sm mx-auto whitespace-nowrap">
           <span className="text-xs font-medium text-slate-400 leading-normal">⚙️ কারিগরি সহযোগিতায়:</span>
