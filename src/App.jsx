@@ -117,7 +117,7 @@ export default function App() {
       setVolunteerPhone(phone);
       showToast('ডাটা সফলভাবে আনলক হয়েছে!', 'success');
     } else {
-      showToast('দুঃখিত! এই মোবাইল নাম্বারটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
+      showToast('দুঃখিত! এই মোবাইল নম্বরটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
       setIsUnlocked(false);
       localStorage.removeItem('v_phone');
     }
@@ -134,7 +134,7 @@ export default function App() {
   const checkEligibility = (lastDate, gender) => {
     if (!lastDate) return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)' };
     
-    const today = new Date('2026-06-12'); 
+    const today = new Date('2026-06-13'); 
     const donationDate = new Date(lastDate);
     const diffTime = Math.abs(today - donationDate);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -178,12 +178,12 @@ export default function App() {
       const { error } = await supabase.from('donors').insert([donorPayload]);
       if (error) {
         if (error.code === '23505') {
-          showToast('এই নাম্বারটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!', 'error');
+          showToast('এই নম্বরটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!', 'error');
         } else {
           showToast('নিবন্ধন ব্যর্থ হয়েছে: ' + error.message, 'error');
         }
       } else {
-        showToast('রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!', 'success');
+        showToast('রক্তदाता হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!', 'success');
         resetDonorForm();
         fetchDonors();
         setActiveTab('search'); 
@@ -282,7 +282,7 @@ export default function App() {
 
   const handleCopyDonorInfo = (donor) => {
     if (!isUnlocked && !isAdmin) {
-      showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার কোড বা নাম্বার দিয়ে ডাটা আনলক করুন।', 'error');
+      showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error');
       return;
     }
     const infoText = `🩸 ব্লাড সেন্টার নদোনা নোয়াখালী 🩸\nরক্তদাতা: ${donor.name}\nগ্রুপ: ${donor.blood_group}\nমোবাইল: ${donor.phone}\nঠিকানা: ${donor.location || donor.village || ''}`;
@@ -503,7 +503,7 @@ export default function App() {
   const renderSearchSection = () => (
     <div className="space-y-4">
       <div className="space-y-3">
-        <h2 className="text-xl font-black flex items-center gap-2 text-slate-700">🔍 রক্তদাতা অনুসন্ধান প্যানেল</h2>
+        <h2 className="text-xl font-black flex items-center gap-2 text-slate-700">🔍  রক্তদাতা অনুসন্ধান প্যানেল</h2>
         <div className="space-y-2">
           <div className="relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-lg">🔎</span>
@@ -609,12 +609,12 @@ export default function App() {
 
                   <div className="flex justify-between items-center text-sm pt-1 border-t border-dashed leading-normal">
                     <span className="font-bold text-red-600">📊 মোট দান: {donor.activity_count || 0} বার</span>
-                    <span className="text-slate-500 font-medium">🗓️ সর্বশেষ দান: {donor.last_donation_date || 'কখনো দেওয়া হয়নি'}</span>
+                    <span className="text-slate-500 font-medium">📅 সর্বশেষ দান: {donor.last_donation_date || 'কখনো দেওয়া হয়নি'}</span>
                   </div>
 
                   {isAdmin && (
                     <button onClick={() => handleIncrementActivity(donor.id, donor.activity_count || 0)} className="w-full bg-slate-800 hover:bg-slate-900 text-white py-1.5 rounded-xl font-bold text-xs shadow mt-2 leading-normal">
-                      ➕ রক্তদানের সংখ্যা ১ বার বৃদ্ধি করুন (+1)
+                      ➕  রক্তদানের সংখ্যা ১ বার বৃদ্ধি করুন (+1)
                     </button>
                   )}
 
@@ -625,7 +625,7 @@ export default function App() {
             {filteredDonors.length > visibleDonorsCount && (
               <button 
                 onClick={() => setVisibleDonorsCount(prev => prev + 10)} 
-                className="w-full bg-slate-800 hover:bg-slate-955 text-white p-3 rounded-2xl font-black text-sm tracking-wide shadow transition-colors flex items-center justify-center gap-1"
+                className="w-full bg-slate-800 hover:bg-slate-950 text-white p-3 rounded-2xl font-black text-sm tracking-wide shadow transition-colors flex items-center justify-center gap-1"
               >
                 🔄 আরো রক্তদাতা দেখুন (Load More)
               </button>
@@ -647,7 +647,7 @@ export default function App() {
       <form onSubmit={handleRegisterDonor} className="space-y-4">
         <div>
           <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">✍️  রক্তদাতার সম্পূর্ণ নাম *</label>
-          <input type="text" placeholder="বীরশ্রেষ্ঠ শহীদ রুহুল আমিন" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+          <input type="text" placeholder="বীরশ্রেষ্ঠ মোহাম্মদ রুহুল আমিন" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div>
@@ -663,7 +663,7 @@ export default function App() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1 style leading-normal">⚧️  লিঙ্গ *</label>
+            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚧️  লিঙ্গ *</label>
             <select value={newDonor.gender} onChange={e => setNewDonor({...newDonor, gender: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white focus:outline-green-500 leading-normal">
               <option value="পুরুষ">পুরুষ</option>
               <option value="মহিলা">মহিলা</option>
@@ -673,11 +673,11 @@ export default function App() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚖️  ওজন *</label>
+            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚖️  ওজন (কেজি)*</label>
             <input type="number" placeholder="ওজন" value={newDonor.weight} onChange={e => setNewDonor({...newDonor, weight: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
           </div>
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🎂  বয়স *</label>
+            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🎂  বয়স (বছর)*</label>
             <input type="number" placeholder="বয়স" value={newDonor.age} onChange={e => setNewDonor({...newDonor, age: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
           </div>
         </div>
@@ -700,7 +700,7 @@ export default function App() {
 
         {newDonor.weight && (
           <div className={`p-3.5 rounded-xl border font-bold text-sm flex items-center gap-2 leading-relaxed ${Number(newDonor.weight) >= 45 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-            {Number(newDonor.weight) >= 45 ? '✅ আপনি রক্তদানের জন্য উপযুক্ত (যোগ্য)' : '❌ রক্তদানের জন্য ন্যূনতম ৪৫ কেজি ওজন প্রয়োজন'}
+            {Number(newDonor.weight) >= 45 ? '✅ আপনি রক্তদানের জন্য উপযুক্ত (যোগ্য)' : '❌  রক্তদানের জন্য ন্যূনতম ৪৫ কেজি ওজন প্রয়োজন'}
           </div>
         )}
 
@@ -772,7 +772,7 @@ export default function App() {
                   <button onClick={() => handleEditVolunteer(v)} title="সংশোধন" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">🖊️</button>
                   <button onClick={() => handleDeleteVolunteer(v.id)} title="মুছে ফেলুন" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">🗑️</button>
                   <button onClick={() => toggleVolunteerStatus(v.id, v.is_active)} className={`px-2.5 py-1.5 rounded-lg font-bold text-xs text-white ${v.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}>
-                    {v.is_active ? '🚫  ব্লক' : '🔓 আনব্লক'}
+                    {v.is_active ? '🚫  ব্লক' : '🔓  আনব্লক'}
                   </button>
                 </div>
               </div>
@@ -791,7 +791,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 leading-normal">
-      {/* চমৎকার ভাসমান কাস্টম নোটিফিকেশন মেসেজ বক্স */}
+      {/* চমৎকার ভাসমান কাস্টম নোটিফিকেশন মেসেজ BOX */}
       {notification.show && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-sm w-11/12 mx-auto animate-bounce">
           <div className={`p-4 rounded-2xl shadow-2xl border text-center font-bold text-sm ${
@@ -823,7 +823,7 @@ export default function App() {
             </button>
           ) : (
             <div className="flex gap-1.5">
-              <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-xs font-bold px-2.5 py-1.5 rounded-xl text-white shadow">🔑 পাসওয়ার্ড</button>
+              <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-xs font-bold px-2.5 py-1.5 rounded-xl text-white shadow">🔑  পাসওয়ার্ড</button>
               <button onClick={() => setIsAdmin(false)} className="bg-slate-800 text-xs font-bold px-2.5 py-1.5 rounded-xl text-white shadow">🚪 লগআউট</button>
             </div>
           )}
