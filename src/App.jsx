@@ -812,7 +812,8 @@ export default function App() {
             🩸 ব্লাড সেন্টার নদোনা নোয়াখালী 🩸
           </h1>
           <p className="text-xs text-red-100 font-medium flex items-center gap-1 justify-center bg-red-700/50 px-2.5 py-1 rounded-full leading-normal">
-            🏡 স্থাপিত: ২০১৩ ইং 📍 নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩
+               🏡 স্থাপিত: ২০১৩ ইং 
+        📍 নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩
           </p>
         </div>
         
@@ -845,21 +846,21 @@ export default function App() {
             className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'notice' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
           >
             <span className="text-lg">📢</span>
-            <span>জরুরি নোটিশ</span>
+            <span>জরুরি রক্ত প্রয়োজন</span>
           </button>
           <button 
             onClick={() => setActiveTab('search')} 
             className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'search' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
           >
             <span className="text-lg">🔍</span>
-            <span>দাতা খুঁজুন</span>
+            <span>রক্তদাতা খুঁজুন</span>
           </button>
           <button 
             onClick={() => setActiveTab('register')} 
             className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'register' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
           >
             <span className="text-lg">✍️</span>
-            <span>নিবন্ধন</span>
+            <span>রক্তদাতা নিবন্ধন</span>
           </button>
           <button 
             onClick={() => setActiveTab('volunteer')} 
