@@ -9,9 +9,12 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('All');
   const [eligibilityFilter, setEligibilityFilter] = useState('All'); 
-  const [activeTab, setActiveTab] = useState('home'); // ৫টি ট্যাব: home, search, notice, register, volunteer
+  const [activeTab, setActiveTab] = useState('home'); // ৫টি ট্যাব: home, notice, search, register, volunteer
   const [visibleDonorsCount, setVisibleDonorsCount] = useState(10); // লোড মোর লিমিট
   
+  // কাস্টম নোটিফিকেশন স্টেট (alert() এর পরিবর্তে চমৎকার মেসেজ বক্স)
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
+
   // ফর্ম স্টেটসমূহ
   const [newDonor, setNewDonor] = useState({ 
     id: null,
@@ -46,6 +49,14 @@ export default function App() {
 
   const bloodGroups = ['All', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
+  // কাস্টম নোটিফিকেশন প্রদর্শনকারী হেল্পার
+  const showToast = (message, type = 'info') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: 'info' });
+    }, 4000);
+  };
+
   // অ্যাপ লোড হওয়ার সাথে সাথে ডাটাবেজ থেকে ডাটা আনা
   useEffect(() => {
     fetchDonors();
@@ -77,14 +88,14 @@ export default function App() {
     if (data) setVolunteers(data);
   };
 
-  // রক্তদানের সংখ্যা অনুযায়ী আসল ইংরেজি ব্যাজ নির্ধারণকারী ফাংশন
+  // রক্তদানের সংখ্যা অনুযায়ী আপনার পছন্দের আসল ব্যাজ নির্ধারণকারী ফাংশন
   const getDonorBadge = (count) => {
     const num = Number(count) || 0;
     if (num === 0) return { text: '🌱 New Donor', classes: 'bg-slate-100 text-slate-700 border-slate-300' };
     if (num <= 2) return { text: '🤝 Helper', classes: 'bg-green-100 text-green-700 border-green-200' };
     if (num <= 5) return { text: '🥈 Silver Donor', classes: 'bg-gray-200 text-gray-700 border-gray-300' };
     if (num <= 10) return { text: '🥇 Gold Donor', classes: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
-    return { text: '💎 Platinum Donor', classes: 'bg-blue-100 text-blue-700 border-blue-200 font-bold' };
+    return { text: '💎 Platinum Donor', classes: 'bg-blue-100 text-blue-700 border-blue-200 font-bold shadow-sm' };
   };
 
   const handleVolunteerUnlock = async (e) => {
@@ -104,8 +115,9 @@ export default function App() {
       setIsUnlocked(true);
       localStorage.setItem('v_phone', phone);
       setVolunteerPhone(phone);
+      showToast('ডাটা সফলভাবে আনলক হয়েছে!', 'success');
     } else {
-      alert('দুঃখিত! এই মোবাইল নাম্বারটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।');
+      showToast('দুঃখিত! এই মোবাইল নম্বরটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
       setIsUnlocked(false);
       localStorage.removeItem('v_phone');
     }
@@ -115,6 +127,7 @@ export default function App() {
     setIsUnlocked(false);
     localStorage.removeItem('v_phone');
     setVolunteerPhone('');
+    showToast('ডাটা পুনরায় লক করা হয়েছে।', 'info');
   };
 
   // রক্তদাতার যোগ্যতা যাচাইয়ের নিখুঁত লজিক (পুরুষ ৯০ দিন, মহিলা ১২০ দিন)
@@ -138,7 +151,7 @@ export default function App() {
 
   const handleRegisterDonor = async (e) => {
     e.preventDefault();
-    if (!newDonor.name || !newDonor.phone || !newDonor.address) return alert('অনুগ্রহ করে সব তথ্য সঠিকভাবে দিন');
+    if (!newDonor.name || !newDonor.phone || !newDonor.address) return showToast('অনুগ্রহ করে সব তথ্য সঠিকভাবে দিন', 'error');
     
     const donorPayload = {
       name: newDonor.name,
@@ -154,9 +167,9 @@ export default function App() {
     if (newDonor.id) {
       const { error } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
       if (error) {
-        alert('তথ্য সংশোধন করার সময় সমস্যা হয়েছে: ' + error.message);
+        showToast('তথ্য সংশোধন করার সময় সমস্যা হয়েছে: ' + error.message, 'error');
       } else {
-        alert('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!');
+        showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
         resetDonorForm();
         fetchDonors();
         setActiveTab('search'); 
@@ -165,12 +178,12 @@ export default function App() {
       const { error } = await supabase.from('donors').insert([donorPayload]);
       if (error) {
         if (error.code === '23505') {
-          alert('এই নাম্বারটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!');
+          showToast('এই নম্বরটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!', 'error');
         } else {
-          alert('রেজিস্ট্রেশন ব্যর্থ হয়েছে: ' + error.message);
+          showToast('নিবন্ধন ব্যর্থ হয়েছে: ' + error.message, 'error');
         }
       } else {
-        alert('রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!');
+        showToast('রক্তदाता হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!', 'success');
         resetDonorForm();
         fetchDonors();
         setActiveTab('search'); 
@@ -190,7 +203,7 @@ export default function App() {
     if (editRequestId) {
       const { error } = await supabase.from('emergency_requests').update(newRequest).eq('id', editRequestId);
       if (!error) {
-        alert('জরুরি রক্তের নোটিশ সফলভাবে সংশোধন হয়েছে!');
+        showToast('জরুরি রক্তের নোটিশ সফলভাবে সংশোধন হয়েছে!', 'success');
         setNewRequest({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
         setEditRequestId(null);
         fetchRequests();
@@ -198,7 +211,7 @@ export default function App() {
     } else {
       const { error } = await supabase.from('emergency_requests').insert([newRequest]);
       if (!error) {
-        alert('জরুরি রক্তের নোটিশ বোর্ড আপডেট হয়েছে!');
+        showToast('জরুরি রক্তের নোটিশ বোর্ড আপডেট হয়েছে!', 'success');
         setNewRequest({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
         fetchRequests();
       }
@@ -221,7 +234,7 @@ export default function App() {
     if (confirm('আপনি কি নিশ্চিতভাবে এই জরুরি নোটিশটি মুছে ফেলতে চান?')) {
       const { error } = await supabase.from('emergency_requests').delete().eq('id', id);
       if (!error) {
-        alert('নোটিশটি সফলভাবে মুছে ফেলা হয়েছে।');
+        showToast('নোটিশটি সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchRequests();
       }
     }
@@ -229,12 +242,15 @@ export default function App() {
 
   const handleIncrementActivity = async (id, currentCount) => {
     if (!isAdmin) return;
-    await supabase.from('donors').update({ activity_count: currentCount + 1 }).eq('id', id);
-    fetchDonors();
+    const { error } = await supabase.from('donors').update({ activity_count: currentCount + 1 }).eq('id', id);
+    if (!error) {
+      showToast('রক্তদানের সংখ্যা বৃদ্ধি করা হয়েছে!', 'success');
+      fetchDonors();
+    }
   };
 
   const handleEditDonor = (donor) => {
-    if (!isAdmin && !isUnlocked) return alert('অনুগ্রহ করে ভলান্টিয়ার নাম্বার দিয়ে ডাটা আনলক করুন');
+    if (!isAdmin && !isUnlocked) return showToast('অনুগ্রহ করে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন', 'error');
     setNewDonor({
       id: donor.id,
       name: donor.name,
@@ -254,11 +270,11 @@ export default function App() {
   };
 
   const handleDeleteDonor = async (id) => {
-    if (!isAdmin) return alert('শুধুমাত্র মূল অ্যাডমিন প্যানেল থেকে তথ্য ডিলিট করা সম্ভব।');
+    if (!isAdmin) return showToast('শুধুমাত্র মূল অ্যাডমিন প্যানেল থেকে তথ্য ডিলিট করা সম্ভব।', 'error');
     if (confirm('আপনি কি নিশ্চিতভাবে এই রক্তদাতার সম্পূর্ণ রেকর্ড ডিলিট করতে চান?')) {
       const { error } = await supabase.from('donors').delete().eq('id', id);
       if (!error) {
-        alert('রক্তদাতার তথ্য সফলভাবে মুছে ফেলা হয়েছে।');
+        showToast('রক্তদাতার তথ্য সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchDonors();
       }
     }
@@ -266,12 +282,23 @@ export default function App() {
 
   const handleCopyDonorInfo = (donor) => {
     if (!isUnlocked && !isAdmin) {
-      alert('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নাম্বার দিয়ে ডাটা আনলক করুন।');
+      showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error');
       return;
     }
     const infoText = `🩸 ব্লাড সেন্টার নদোনা নোয়াখালী 🩸\nরক্তদাতা: ${donor.name}\nগ্রুপ: ${donor.blood_group}\nমোবাইল: ${donor.phone}\nঠিকানা: ${donor.location || donor.village || ''}`;
-    navigator.clipboard.writeText(infoText);
-    alert('রক্তদাতার সমস্ত তথ্য ক্লিপবোর্ডে কপি করা হয়েছে!');
+    
+    // আইফ্রেম সিকিউরিটি গার্ড সহ নিরাপদ কপি মেকানিজম
+    try {
+      const el = document.createElement('textarea');
+      el.value = infoText;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast('রক্তদাতার সমস্ত তথ্য ক্লিপবোর্ডে কপি করা হয়েছে!', 'success');
+    } catch (e) {
+      showToast('কপি করতে ব্যর্থ হয়েছে, অনুগ্রহ করে ম্যানুয়ালি কপি করুন।', 'error');
+    }
   };
 
   const handleAddVolunteer = async (e) => {
@@ -279,7 +306,7 @@ export default function App() {
     if (editVolunteerId) {
       const { error } = await supabase.from('volunteers').update(newVolunteer).eq('id', editVolunteerId);
       if (!error) {
-        alert('ভলান্টিয়ারের তথ্য সফলভাবে সংশোধন করা হয়েছে!');
+        showToast('ভলান্টিয়ারের তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
         setNewVolunteer({ name: '', phone: '' });
         setEditVolunteerId(null);
         fetchVolunteers();
@@ -287,9 +314,9 @@ export default function App() {
     } else {
       const { error } = await supabase.from('volunteers').insert([newVolunteer]);
       if (error) {
-        alert('এই ভলান্টিয়ার নাম্বারটি অলরেডি ডাটাবেজে অনুমোদিত আছে!');
+        showToast('এই ভলান্টিয়ার নম্বরটি অলরেডি অনুমোদিত আছে!', 'error');
       } else {
-        alert('নতুন ভলান্টিয়ার সফলভাবে যোগ করা হয়েছে!');
+        showToast('নতুন ভলান্টিয়ার সফলভাবে যোগ করা হয়েছে!', 'success');
         setNewVolunteer({ name: '', phone: '' });
         fetchVolunteers();
       }
@@ -305,7 +332,7 @@ export default function App() {
     if (confirm('আপনি কি নিশ্চিতভাবে এই ভলান্টিয়ারকে ডিলিট করতে চান?')) {
       const { error } = await supabase.from('volunteers').delete().eq('id', id);
       if (!error) {
-        alert('ভলান্টিয়ার সফলভাবে মুছে ফেলা হয়েছে।');
+        showToast('ভলান্টিয়ার সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchVolunteers();
       }
     }
@@ -313,6 +340,7 @@ export default function App() {
 
   const toggleVolunteerStatus = async (id, currentStatus) => {
     await supabase.from('volunteers').update({ is_active: !currentStatus }).eq('id', id);
+    showToast('ভলান্টিয়ারের অবস্থা সফলভাবে পরিবর্তন করা হয়েছে।', 'info');
     fetchVolunteers();
   };
 
@@ -322,19 +350,20 @@ export default function App() {
     if (data) {
       setIsAdmin(true);
       setShowAdminLogin(false);
+      showToast('অ্যাডমিন ভেরিফিকেশন সফল হয়েছে!', 'success');
     } else {
-      alert('ভুল ইউজার আইডি অথবা পাসওয়ার্ড!');
+      showToast('ভুল ইউজার আইডি অথবা পাসওয়ার্ড!', 'error');
     }
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (masterCode !== 'BCNN2013') {
-      return alert('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।');
+      return showToast('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
     }
     const { error } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
     if (!error) {
-      alert('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!');
+      showToast('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!', 'success');
       setShowPassModal(false);
       setMasterCode('');
       setNewPassword('');
@@ -354,10 +383,6 @@ export default function App() {
 
     return matchesGroup && matchesSearch && matchesEligibility;
   });
-
-  const totalDonorsCount = donors.length;
-  const totalDonationsCount = donors.reduce((acc, d) => acc + (d.activity_count || 0), 0);
-  const readyTodayCount = donors.filter(d => checkEligibility(d.last_donation_date, d.gender).isEligible).length;
 
   // ==================== REUSABLE RENDERING SECTIONS ====================
 
@@ -389,7 +414,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* জরুরি রক্তের লাইভ নোটিশ বোর্ড */}
+      {/* লাইভ নোটিশ বোর্ড */}
       <div id="emergency-board-section" className="bg-white p-5 rounded-2xl shadow border-t-4 border-red-500 space-y-4">
         <h2 className="text-lg font-black text-red-600 flex items-center gap-2 animate-pulse leading-relaxed">📢 জরুরি রক্তের লাইভ নোটিশ বোর্ড</h2>
         {isAdmin && (
@@ -455,7 +480,7 @@ export default function App() {
           </div>
         </div>
         <div className="bg-green-50/40 p-4 rounded-2xl border border-green-100 flex gap-3 shadow-xs">
-          <span className="text-2xl bg-green-100 text-green-600 w-10 h-10 rounded-xl flex items-center justify-center shrink-0">📅🩸</span>
+          <span className="text-2xl bg-green-100 text-green-600 w-10 h-10 rounded-xl flex items-center justify-center shrink-0">📅</span>
           <div>
             <h4 className="font-black text-sm text-slate-800 mb-0.5 leading-relaxed">কখন রক্ত দিতে পারবেন?</h4>
             <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside font-semibold leading-relaxed">
@@ -532,6 +557,7 @@ export default function App() {
                         <p className="text-sm text-slate-500 font-medium leading-normal">📍 {donor.location || donor.village || 'ঠিকানা দেওয়া হয়নি'}</p>
                       </div>
                     </div>
+                    {/* ডাইনামিক ক্যাটাগরি ব্যাজ রেন্ডারিং */}
                     <span className={`text-xs font-bold px-3 py-1 rounded-full border leading-normal transition-all ${badge.classes}`}>
                       {badge.text}
                     </span>
@@ -561,7 +587,7 @@ export default function App() {
                           📄
                         </button>
                       ) : (
-                        <button onClick={() => alert('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নাম্বার দিয়ে ডাটা আনলক করুন।')} className="p-2 bg-slate-200 text-slate-400 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                        <button onClick={() => showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-200 text-slate-400 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center cursor-not-allowed">
                           🔒
                         </button>
                       )}
@@ -571,7 +597,7 @@ export default function App() {
                           📞
                         </a>
                       ) : (
-                        <button onClick={() => alert('মোবাইল নাম্বার দেখতে ও কল করতে ভলান্টিয়ার নাম্বার দিয়ে ডাটা আনলক করুন।')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                        <button onClick={() => showToast('মোবাইল নম্বর দেখতে ও কল করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
                           🔒
                         </button>
                       )}
@@ -580,7 +606,7 @@ export default function App() {
 
                   <div className="flex justify-between items-center text-sm pt-1 border-t border-dashed leading-normal">
                     <span className="font-bold text-red-600">📊 মোট দান: {donor.activity_count || 0} বার</span>
-                    <span className="text-slate-500 font-medium">🗓️</span> সর্বশেষ দান: {donor.last_donation_date || 'কখনো দেওয়া হয়নি'}</span>
+                    <span className="text-slate-500 font-medium">📅 সর্বশেষ দান: {donor.last_donation_date || 'কখনো দেওয়া হয়নি'}</span>
                   </div>
 
                   {isAdmin && (
@@ -654,7 +680,7 @@ export default function App() {
         </div>
 
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🏡 রক্তদাতার সম্পূর্ণ ঠিকানা *</label>
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🏕️  রক্তদাতার সম্পূর্ণ ঠিকানা *</label>
           <input type="text" placeholder="নদোনা, সোনাইমুড়ী, নোয়াখালী 🇧🇩🇨🇦" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
@@ -677,7 +703,7 @@ export default function App() {
 
         <div className="flex gap-2">
           <button type="submit" className="flex-1 bg-green-600 hover:bg-green-700 text-white p-4 rounded-xl font-black text-lg shadow-md transition-colors flex items-center justify-center gap-2 leading-normal">
-            💾 {newDonor.id ? 'সংশোধন নিরাপদ করুন' : '📒 নিবন্ধন করুন'}
+            💾 {newDonor.id ? 'সংশোধন নিরাপদ করুন' : 'তথ্য ডাটাবেজে নিরাপদ করুন'}
           </button>
           {newDonor.id && (
             <button type="button" onClick={resetDonorForm} className="bg-slate-200 text-slate-700 px-4 rounded-xl font-bold text-base">বাতিল</button>
@@ -762,6 +788,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 leading-normal">
+      {/* চমৎকার ভাসমান কাস্টম নোটিফিকেশন মেসেজ বক্স */}
+      {notification.show && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-sm w-11/12 mx-auto animate-bounce">
+          <div className={`p-4 rounded-2xl shadow-2xl border text-center font-bold text-sm ${
+            notification.type === 'success' ? 'bg-green-600 text-white border-green-700' : 
+            notification.type === 'error' ? 'bg-red-600 text-white border-red-700' : 
+            'bg-slate-800 text-white border-slate-900'
+          }`}>
+            {notification.message}
+          </div>
+        </div>
+      )}
+
       {/* হেডার ডিজাইন */}
       <header className="bg-red-600 text-white text-center py-8 shadow-lg px-4 relative">
         <div className="flex flex-col items-center justify-center gap-2">
@@ -770,8 +809,7 @@ export default function App() {
             🩸 ব্লাড সেন্টার নদোনা নোয়াখালী 🩸
           </h1>
           <p className="text-xs text-red-100 font-medium flex items-center gap-1 justify-center bg-red-700/50 px-2.5 py-1 rounded-full leading-normal">
-                     🏡 স্থাপিত: ২০১৩ ইং
-            📍 নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩
+            🏡 স্থাপিত: ২০১৩ ইং 📍 নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩
           </p>
         </div>
         
@@ -804,21 +842,21 @@ export default function App() {
             className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'notice' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
           >
             <span className="text-lg">📢</span>
-            <span>জরুরি রক্তের নোটিশ</span>
+            <span>জরুরি নোটিশ</span>
           </button>
           <button 
             onClick={() => setActiveTab('search')} 
             className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'search' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
           >
             <span className="text-lg">🔍</span>
-            <span>রক্তদাতা খুঁজুন</span>
+            <span>দাতা খুঁজুন</span>
           </button>
           <button 
             onClick={() => setActiveTab('register')} 
             className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'register' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
           >
             <span className="text-lg">✍️</span>
-            <span>রক্তদাতা নিবন্ধন</span>
+            <span>নিবন্ধন</span>
           </button>
           <button 
             onClick={() => setActiveTab('volunteer')} 
