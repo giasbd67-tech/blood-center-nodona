@@ -92,7 +92,7 @@ export default function App() {
   const getDonorBadge = (count) => {
     const num = Number(count) || 0;
     if (num === 0) return { text: '🌱 New Donor', classes: 'bg-slate-100 text-slate-700 border-slate-300' };
-    if (num <= 2) return { text: '🤝 Helper', classes: 'bg-green-100 text-green-700 border-green-200' };
+    if (num <= 2) return { text: '🤝 Helping Donor, classes: 'bg-green-100 text-green-700 border-green-200' };
     if (num <= 5) return { text: '🥈 Silver Donor', classes: 'bg-gray-200 text-gray-700 border-gray-300' };
     if (num <= 10) return { text: '🥇 Gold Donor', classes: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
     return { text: '💎 Platinum Donor', classes: 'bg-blue-100 text-blue-700 border-blue-200 font-bold shadow-sm' };
@@ -287,7 +287,6 @@ export default function App() {
     }
     const infoText = `🩸 ব্লাড সেন্টার নদোনা নোয়াখালী 🩸\nরক্তদাতা: ${donor.name}\nগ্রুপ: ${donor.blood_group}\nমোবাইল: ${donor.phone}\nঠিকানা: ${donor.location || donor.village || ''}`;
     
-    // আইফ্রেম সিকিউরিটি গার্ড সহ নিরাপদ কপি মেকানিজম
     try {
       const el = document.createElement('textarea');
       el.value = infoText;
@@ -383,6 +382,10 @@ export default function App() {
 
     return matchesGroup && matchesSearch && matchesEligibility;
   });
+
+  const totalDonorsCount = donors.length;
+  const totalDonationsCount = donors.reduce((acc, d) => acc + (d.activity_count || 0), 0);
+  const readyTodayCount = donors.filter(d => checkEligibility(d.last_donation_date, d.gender).isEligible).length;
 
   // ==================== REUSABLE RENDERING SECTIONS ====================
 
@@ -484,7 +487,7 @@ export default function App() {
           <div>
             <h4 className="font-black text-sm text-slate-800 mb-0.5 leading-relaxed">কখন রক্ত দিতে পারবেন?</h4>
             <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside font-semibold leading-relaxed">
-              <li>পুরুষরা প্রতি ৩ মাস অন্তর রক্ত দিতে পারবেন।</li>
+              <li>पुरुषরা প্রতি ৩ মাস অন্তর রক্ত দিতে পারবেন।</li>
               <li>নারীরা প্রতি ৪ মাস অন্তর রক্ত দিতে পারবেন।</li>
               <li>শারীরিকভাবে সম্পূর্ণ সুস্থ ও নিরোগ শরীর থাকলে।</li>
               <li>রক্তদাতার ওজন কমপক্ষে ৪৫ কেজি বা তার বেশি হতে হবে।</li>
@@ -587,7 +590,7 @@ export default function App() {
                           📄
                         </button>
                       ) : (
-                        <button onClick={() => showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-200 text-slate-400 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                        <button type="button" onClick={() => showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-200 text-slate-400 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center cursor-not-allowed">
                           🔒
                         </button>
                       )}
@@ -597,7 +600,7 @@ export default function App() {
                           📞
                         </a>
                       ) : (
-                        <button onClick={() => showToast('মোবাইল নম্বর দেখতে ও কল করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                        <button type="button" onClick={() => showToast('মোবাইল নম্বর দেখতে ও কল করতে ভলান্টিয়ার নম্বর দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
                           🔒
                         </button>
                       )}
@@ -637,30 +640,30 @@ export default function App() {
   const renderRegisterSection = () => (
     <div id="register-section" className="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-green-500 space-y-5">
       <div className="text-center">
-        <h2 className="text-xl font-black text-green-600 flex items-center justify-center gap-1.5 leading-relaxed">🩸 রক্তদাতা নিবন্ধন ফরম</h2>
+        <h2 className="text-xl font-black text-green-600 flex items-center justify-center gap-1.5 leading-relaxed">🩸  রক্তদাতা নিবন্ধন ফরম</h2>
         <p className="text-xs text-slate-500 font-medium mt-0.5 leading-normal">{newDonor.id ? 'আপনার তথ্য সংশোধন করে ডাটাবেজ আপডেট করুন' : 'আপনার সঠিক তথ্য দিয়ে মানবসেবায় এগিয়ে আসুন'}</p>
       </div>
       
       <form onSubmit={handleRegisterDonor} className="space-y-4">
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">✍️ রক্তদাতার সম্পূর্ণ নাম *</label>
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">✍️  রক্তদাতার সম্পূর্ণ নাম *</label>
           <input type="text" placeholder="বীরশ্রেষ্ঠ শহীদ রুহুল আমিন" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">☎️ মোবাইল নাম্বার *</label>
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">☎️  মোবাইল নাম্বার *</label>
           <input type="tel" placeholder="সক্রিয় মোবাইল নাম্বার দিন" value={newDonor.phone} onChange={e => setNewDonor({...newDonor, phone: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🩸 রক্তের গ্রুপ *</label>
+            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🩸  রত্রের গ্রুপ *</label>
             <select value={newDonor.blood_group} onChange={e => setNewDonor({...newDonor, blood_group: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white focus:outline-green-500 leading-normal">
               {bloodGroups.filter(g => g !== 'All').map(g => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚧️ লিঙ্গ *</label>
+            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚧️  লিঙ্গ *</label>
             <select value={newDonor.gender} onChange={e => setNewDonor({...newDonor, gender: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white focus:outline-green-500 leading-normal">
               <option value="পুরুষ">পুরুষ</option>
               <option value="মহিলা">মহিলা</option>
@@ -670,27 +673,27 @@ export default function App() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚖️ ওজন (কেজি) *</label>
-            <input type="number" placeholder="ওজন" value={newDonor.weight} onChange={e => setNewDonor({...newDonor, weight: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">⚖️  ওজন (কেজি) *</label>
+            <input type="number" placeholder="ওজন কেজি" value={newDonor.weight} onChange={e => setNewDonor({...newDonor, weight: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
           </div>
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🎂 বয়স (বছর) *</label>
+            <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🎂  বয়স *</label>
             <input type="number" placeholder="বয়স" value={newDonor.age} onChange={e => setNewDonor({...newDonor, age: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🏕️  রক্তদাতার সম্পূর্ণ ঠিকানা *</label>
-          <input type="text" placeholder="নদোনা, সোনাইমুড়ী, নোয়াখালী 🇧🇩🇨🇦" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🏡  রক্তদাতার সম্পূর্ণ ঠিকানা *</label>
+          <input type="text" placeholder="নদোনা, সোনাইমুড়ী, নোয়াখালী 🇧🇩" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">📊 পূর্বে কতবার রক্ত দিয়েছেন? (ঐচ্ছিক)</label>
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">📊  পূর্বে কতবার রক্ত দিয়েছেন? (ঐচ্ছিক)</label>
           <input type="number" placeholder="রক্তদানের মোট সংখ্যা লিখুন" value={newDonor.activity_count} onChange={e => setNewDonor({...newDonor, activity_count: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" />
         </div>
 
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🗓️ সর্বশেষ রক্তদানের তারিখ (ঐচ্ছিক)</label>
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">📅  সর্বশেষ রক্তদানের তারিখ (ঐচ্ছিক)</label>
           <input type="date" value={newDonor.last_donation_date} onChange={e => setNewDonor({...newDonor, last_donation_date: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" />
           <p className="text-[10px] text-slate-400 mt-1 leading-normal">নোট: যদি পূর্বে কখনো রক্ত না দিয়ে থাকেন, তবে এই ঘরটি ফাঁকা রাখুন।</p>
         </div>
@@ -719,7 +722,7 @@ export default function App() {
       {/* ভলান্টিয়ার মোবাইল নম্বর ডাটা আনলক প্যানেল */}
       {!isAdmin && (
         <div className="bg-white p-4 rounded-2xl shadow border border-slate-200 space-y-3">
-          <h3 className="text-sm font-bold text-slate-700">🔒 ভলান্টিয়ার আনলক প্যানেল</h3>
+          <h3 className="text-sm font-bold text-slate-700">🔒  ভলান্টিয়ার আনলক প্যানেল</h3>
           {isUnlocked ? (
             <div className="flex justify-between items-center bg-green-50 p-3 rounded-xl border border-green-200">
               <span className="text-xs font-bold text-green-700 flex items-center gap-1.5 leading-normal">🟢 ডাটা সফলভাবে আনলক আছে ({volunteerPhone})</span>
@@ -740,7 +743,7 @@ export default function App() {
       {/* ভলান্টিয়ার কন্ট্রোল প্যানেল (অ্যাডমিন) */}
       {isAdmin && (
         <div className="bg-white p-5 rounded-2xl shadow border-t-4 border-blue-600 space-y-4">
-          <h3 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">👥 ভলান্টিয়ার কন্ট্রোল প্যানেল</h3>
+          <h3 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">👥  ভলান্টিয়ার কন্ট্রোল প্যানেল</h3>
           <form onSubmit={handleAddVolunteer} className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
             <p className="text-xs font-bold text-slate-600 flex items-center gap-1">➕ {editVolunteerId ? 'ভলান্টিয়ার তথ্য সংশোধন করুন:' : 'নতুন ভলান্টিয়ার অনুমোদন দিন:'}</p>
             <div className="grid grid-cols-1 gap-2">
@@ -763,13 +766,13 @@ export default function App() {
               <div key={v.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm leading-normal">
                 <div>
                   <p className="font-bold text-slate-800">🛡️ {v.name}</p>
-                  <p className="text-xs text-slate-500">📞 {v.phone} {v.is_active ? '' : '(🚫 ব্লকড)'}</p>
+                  <p className="text-xs text-slate-500">📞 {v.phone} {v.is_active ? '' : '(🚫  ব্লকড)'}</p>
                 </div>
                 <div className="flex gap-1 items-center">
                   <button onClick={() => handleEditVolunteer(v)} title="সংশোধন" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">🖊️</button>
                   <button onClick={() => handleDeleteVolunteer(v.id)} title="মুছে ফেলুন" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">🗑️</button>
                   <button onClick={() => toggleVolunteerStatus(v.id, v.is_active)} className={`px-2.5 py-1.5 rounded-lg font-bold text-xs text-white ${v.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}>
-                    {v.is_active ? '🚫 ব্লক' : '🔓 আনব্লক'}
+                    {v.is_active ? '🚫  ব্লক' : '🔓 আনব্লক'}
                   </button>
                 </div>
               </div>
@@ -780,7 +783,7 @@ export default function App() {
       
       {!isAdmin && !isUnlocked && (
         <p className="text-center text-xs text-slate-400 py-10 leading-normal bg-white p-4 rounded-xl border">
-          🔒 ভলান্টিয়ার বা অ্যাডমিন প্যানেল পরিচালনার জন্য উপযুক্ত কোড বা অথেনটিকেশন ব্যবহার করুন।
+          🔒  ভলান্টিয়ার বা অ্যাডমিন প্যানেল পরিচালনার জন্য উপযুক্ত কোড বা অথেনটিকেশন ব্যবহার করুন।
         </p>
       )}
     </div>
@@ -816,7 +819,7 @@ export default function App() {
         <div className="absolute top-4 right-4 flex gap-2">
           {!isAdmin ? (
             <button onClick={() => setShowAdminLogin(!showAdminLogin)} className="bg-red-700 hover:bg-red-800 text-xs font-bold px-3 py-1.5 rounded-xl text-white flex items-center gap-1 shadow">
-              ⚙️ অ্যাডমিন
+              ⚙️  অ্যাডমিন
             </button>
           ) : (
             <div className="flex gap-1.5">
@@ -891,9 +894,9 @@ export default function App() {
           </div>
         )}
 
-        {/* ডাইনামিক ট্যাব কন্টেন্ট সেকশনসমূহ */}
+        {/* ডাইনামিক কন্টেন্ট প্রদর্শন */}
         {activeTab === 'home' && (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-fadeIn">
             {renderNoticeSection()}
             {renderSearchSection()}
             {renderRegisterSection()}
@@ -911,7 +914,7 @@ export default function App() {
       {showPassModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
           <div className="bg-white p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl">
-            <h3 className="text-base font-black text-slate-800 flex items-center gap-1.5 leading-relaxed">🔑 সিকিউর পাসওয়ার্ড পরিবর্তন</h3>
+            <h3 className="text-base font-black text-slate-800 flex items-center gap-1.5 leading-relaxed">🔑  পাসওয়ার্ড পরিবর্তন</h3>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <input type="password" placeholder="মাস্টার কোড (Master Code) দিন" value={masterCode} onChange={e => setMasterCode(e.target.value)} className="w-full border-2 p-3 rounded-xl text-base leading-normal" required />
               <input type="password" placeholder="নতুন শক্তিশালী পাসওয়ার্ড লিখুন" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full border-2 p-3 rounded-xl text-base leading-normal" required />
@@ -926,7 +929,7 @@ export default function App() {
 
       {/* ফুটার ও ক্রেডিট */}
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed">
-        <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
+        <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং।</p>
         <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">🤝 সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
         <div className="flex items-center justify-center gap-2 pt-3 border-t border-slate-200 max-w-sm mx-auto whitespace-nowrap">
           <span className="text-xs font-medium text-slate-400 leading-normal">⚙️ কারিগরি সহযোগিতায়:</span>
