@@ -1,56 +1,13 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</title>
-    <style>
-        /* ফন্ট ইমপোর্ট */
-        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
 
-        /* বেসিক রিসেট */
-        body {
-            font-family: 'Hind Siliguri', sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            background-color: #f4f7f6;
-            color: #333;
-            line-height: 1.6;
-        }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-        /* হেডার ডিজাইন */
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        /* মেইন কন্টেইনার */
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 1rem;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        h1 { margin-bottom: 0.5rem; }
-        p { font-size: 1.1rem; }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</h1>
-</header>
-
-<div class="container">
-    <h2>স্বাগতম!</h2>
-    <p>এটি একটি পূর্ণাঙ্গ ওয়েব লেআউটের উদাহরণ। আপনি আপনার সিএসএস কোডটি এর ভেতরে আরও বর্ধিত করতে পারবেন।</p>
-</div>
-
-</body>
-</html>
+/* সুন্দর ডিজিটাল বাংলা ফন্ট সেটআপ */
+body {
+  font-family: 'Hind Siliguri', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
