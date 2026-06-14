@@ -151,7 +151,7 @@ export default function App() {
     await checkVolunteerAccess(volunteerPhone, volunteerPassword);
   };
 
-  // সিকিউর আলফানিউমেরিক কোড ভিত্তিক ভলান্টিয়ার অ্যাক্সেস ভেরিফিকেশন (ফিক্সড)
+  // সিকিউর আলফানিউমেরিক কোড ভিত্তিক ভলান্টিয়ার অ্যাক্সেস ভেরিফিকেশন
   const checkVolunteerAccess = async (phone, pass) => {
     const { data, error: dbError } = await supabase
       .from('volunteers')
@@ -198,11 +198,11 @@ export default function App() {
     showToast('ডাটা পুনরায় লক করা হয়েছে।', 'info');
   };
 
-  // রক্তদানের যোগ্যতা যাচাই ও কাউউন্টডাউন পার্সেন্টেজ লজিক
+  // রক্তদানের যোগ্যতা যাচাই ও কাউউন্টডাউন পার্সেন্টেজ লজিক (ডাইনামিক করা হয়েছে)
   const checkEligibility = (lastDate, gender) => {
     if (!lastDate) return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
     
-    const today = new Date('2026-06-13'); 
+    const today = new Date(); 
     const donationDate = new Date(lastDate);
 
     if (donationDate > today) {
@@ -1019,7 +1019,7 @@ export default function App() {
               <Plus className="w-4 h-4" /> {editVolunteerId ? 'ভলান্টিয়ার তথ্য ও পাসওয়ার্ড সংশোধন:' : 'নতুন ভলান্টিয়ার ও কাস্টম পাসওয়ার্ড অনুমোদন:'}
             </p>
             <div className="grid grid-cols-1 gap-2">
-              <input type="text" placeholder="ভলান্টিয়ারের নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: v => v.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
+              <input type="text" placeholder="ভলান্টিয়ারের নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
               <input type="tel" placeholder="মোবাইল নাম্বার" value={newVolunteer.phone} onChange={e => setNewVolunteer({...newVolunteer, phone: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
               <input type="text" placeholder="সিকিউরিটি কোড বা পাসওয়ার্ড (আলফানিউমেরিক যেকোনো দৈর্ঘ্য)" value={newVolunteer.password} onChange={e => setNewVolunteer({...newVolunteer, password: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
             </div>
