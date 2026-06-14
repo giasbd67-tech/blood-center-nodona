@@ -107,9 +107,9 @@ export default function App() {
     await checkVolunteerAccess(volunteerPhone, volunteerPassword);
   };
 
-  // সিকিউর আলফানিউমেরিক কোড ভিত্তিক ভলান্টিয়ার অ্যাক্সেস ভেরিফিকেশন
+  // সিকিউর আলফানিউমেরিক কোড ভিত্তিক ভলান্টিয়ার অ্যাক্সেস ভেরিফিকেশন (ফিক্সড)
   const checkVolunteerAccess = async (phone, pass) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('volunteers')
       .select('*')
       .eq('phone', phone)
@@ -130,10 +130,19 @@ export default function App() {
         setIsUnlocked(false);
       }
     } else {
-      showToast('দুঃখিত! এই মোবাইল নম্বরটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
-      setIsUnlocked(false);
-      localStorage.removeItem('v_phone');
-      localStorage.removeItem('v_pass');
+      // নেটওয়ার্ক ফেইলর এবং ইউজার নট ফাউন্ড আলাদা করা হলো যেন অটো-লগআউট না হয়
+      if (error && error.code === 'PGRST116') {
+        showToast('দুঃখিত! এই মোবাইল নম্বরটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
+        setIsUnlocked(false);
+        localStorage.removeItem('v_phone');
+        localStorage.removeItem('v_pass');
+      } else if (error) {
+        showToast('নেটওয়ার্ক সমস্যা! অনুগ্রহ করে আবার চেষ্টা করুন।', 'error');
+      } else {
+        setIsUnlocked(false);
+        localStorage.removeItem('v_phone');
+        localStorage.removeItem('v_pass');
+      }
     }
   };
 
@@ -146,13 +155,19 @@ export default function App() {
     showToast('ডাটা পুনরায় লক করা হয়েছে।', 'info');
   };
 
-  // রক্তদানের যোগ্যতা যাচাইয়ের মেডিকেল লজিক (পুরুষ ১২০ দিন বা ৪ মাস, মহিলা ১৮০ দিন বা ৬ মাস)
+  // রক্তদানের যোগ্যতা যাচাইয়ের মেডিকেল লজিক (ফিক্সড)
   const checkEligibility = (lastDate, gender) => {
     if (!lastDate) return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)' };
     
     const today = new Date('2026-06-13'); 
     const donationDate = new Date(lastDate);
-    const diffTime = Math.abs(today - donationDate);
+
+    // ভবিষ্যতের ভুল তারিখ হ্যান্ডলিং
+    if (donationDate > today) {
+      return { isEligible: false, statusText: 'সাময়িক অযোগ্য (ভবিষ্যতের তারিখ দেওয়া হয়েছে)' };
+    }
+    
+    const diffTime = today - donationDate; 
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     const requiredDays = gender === 'মহিলা' ? 180 : 120;
@@ -170,7 +185,6 @@ export default function App() {
     e.preventDefault();
     if (!newDonor.name || !newDonor.phone || !newDonor.address) return showToast('অনুগ্রহ করে সব তথ্য সঠিকভাবে দিন', 'error');
     
-    // ফর্ম সাবমিশনের সময় বয়স ও ওজন লজিক্যাল ফিল্টার
     if (newDonor.age && (Number(newDonor.age) < 18 || Number(newDonor.age) > 65)) {
       return showToast('দুঃখিত, রক্তদাতার বয়স অবশ্যই ১৮ থেকে ৬৫ বছরের মধ্যে হতে হবে।', 'error');
     }
@@ -193,7 +207,7 @@ export default function App() {
     if (newDonor.id) {
       const { error } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
       if (error) {
-        showToast('তথ্য সংশোধন করার সময় সমস্যা হয়েছে: ' + error.message, 'error');
+        showToast('정보 সংশোধন করার সময় সমস্যা হয়েছে: ' + error.message, 'error');
       } else {
         showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
         resetDonorForm();
@@ -233,6 +247,8 @@ export default function App() {
         setNewRequest({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
         setEditRequestId(null);
         fetchRequests();
+      } else {
+        showToast('নোটিশ সংশোধন করতে ব্যর্থ: ' + error.message, 'error');
       }
     } else {
       const { error } = await supabase.from('emergency_requests').insert([newRequest]);
@@ -240,6 +256,8 @@ export default function App() {
         showToast('জরুরি রক্তের নোটিশ বোর্ড আপডেট হয়েছে!', 'success');
         setNewRequest({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
         fetchRequests();
+      } else {
+        showToast('নোটিশ পোস্ট করতে ব্যর্থ: ' + error.message, 'error');
       }
     }
   };
@@ -262,6 +280,8 @@ export default function App() {
       if (!error) {
         showToast('নোটিশটি সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchRequests();
+      } else {
+        showToast('নোটিশ ডিলিট করতে ব্যর্থ: ' + error.message, 'error');
       }
     }
   };
@@ -272,6 +292,8 @@ export default function App() {
     if (!error) {
       showToast('রক্তদানের সংখ্যা বৃদ্ধি করা হয়েছে!', 'success');
       fetchDonors();
+    } else {
+      showToast('আপডেট ব্যর্থ হয়েছে: ' + error.message, 'error');
     }
   };
 
@@ -302,6 +324,8 @@ export default function App() {
       if (!error) {
         showToast('রক্তদাতার তথ্য সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchDonors();
+      } else {
+        showToast('ডিলিট ব্যর্থ হয়েছে: ' + error.message, 'error');
       }
     }
   };
@@ -326,14 +350,13 @@ export default function App() {
     }
   };
 
-  // কাস্টম আলফানিউমেরিক পাসওয়ার্ড সহ ভলান্টিয়ার অনুমোদন লজিক
   const handleAddVolunteer = async (e) => {
     e.preventDefault();
     const volunteerPayload = { 
       name: newVolunteer.name, 
       phone: newVolunteer.phone, 
       password: newVolunteer.password,
-      code: newVolunteer.password // ব্যাকওয়ার্ড কমপ্যাটিবিলিটির জন্য উভয় কলাম ম্যাপিং
+      code: newVolunteer.password 
     };
 
     if (editVolunteerId) {
@@ -343,6 +366,8 @@ export default function App() {
         setNewVolunteer({ name: '', phone: '', password: '' });
         setEditVolunteerId(null);
         fetchVolunteers();
+      } else {
+        showToast('সংশোধন ব্যর্থ: ' + error.message, 'error');
       }
     } else {
       const { error } = await supabase.from('volunteers').insert([volunteerPayload]);
@@ -367,19 +392,25 @@ export default function App() {
       if (!error) {
         showToast('ভলান্টিয়ার সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchVolunteers();
+      } else {
+        showToast('মুছে ফেলতে ব্যর্থ: ' + error.message, 'error');
       }
     }
   };
 
   const toggleVolunteerStatus = async (id, currentStatus) => {
-    await supabase.from('volunteers').update({ is_active: !currentStatus }).eq('id', id);
-    showToast('ভলান্টিয়ারের অবস্থা সফলভাবে পরিবর্তন করা হয়েছে।', 'info');
-    fetchVolunteers();
+    const { error } = await supabase.from('volunteers').update({ is_active: !currentStatus }).eq('id', id);
+    if (!error) {
+      showToast('ভলান্টিয়ারের অবস্থা সফলভাবে পরিবর্তন করা হয়েছে।', 'info');
+      fetchVolunteers();
+    } else {
+      showToast('অবস্থা পরিবর্তন ব্যর্থ: ' + error.message, 'error');
+    }
   };
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    const { data } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
+    const { data, error } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
     if (data) {
       setIsAdmin(true);
       setShowAdminLogin(false);
@@ -400,13 +431,18 @@ export default function App() {
       setShowPassModal(false);
       setMasterCode('');
       setNewPassword('');
+    } else {
+      showToast('পাসওয়ার্ড পরিবর্তন ব্যর্থ: ' + error.message, 'error');
     }
   };
 
+  // ফিল্টারিং প্যানেল (ফিক্সড - Optional Chaining যুক্ত করা হয়েছে যেন ক্র্যাশ না করে)
   const filteredDonors = donors.filter(donor => {
     const matchesGroup = selectedGroup === 'All' || donor.blood_group === selectedGroup;
     const locationString = `${donor.location || donor.village || ''}`.toLowerCase();
-    const matchesSearch = donor.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    
+    // donor.name নাল বা আনডিফাইনড হলেও অ্যাপ ক্র্যাশ করবে না
+    const matchesSearch = (donor.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                           locationString.includes(searchTerm.toLowerCase());
     
     const eligibility = checkEligibility(donor.last_donation_date, donor.gender);
@@ -423,11 +459,8 @@ export default function App() {
 
   // ==================== REUSABLE RENDERING SECTIONS ====================
 
-  // ১. নোটিশ, অর্জন ও উদ্যোক্তা সেকশন
   const renderNoticeSection = () => (
     <div className="space-y-6">
-      
-      {/* (ক) জরুরি রক্তের লাইভ নোটিশ বোর্ড */}
       <div id="emergency-board-section" className="bg-white p-5 rounded-2xl shadow border-t-4 border-red-500 space-y-4">
         <h2 className="text-lg font-black text-red-600 flex items-center gap-2 animate-pulse leading-relaxed">📢 জরুরি রক্তের লাইভ নোটিশ বোর্ড</h2>
         {isAdmin && (
@@ -477,7 +510,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* (খ) আমাদের ডাইনামিক অর্জন বোর্ড */}
       <div className="bg-white p-6 rounded-2xl shadow border border-slate-100 space-y-4">
         <div className="text-center">
           <h3 className="text-xl font-black text-slate-800 tracking-wide border-b-2 border-red-500 inline-block pb-1">📊 আমাদের ডাইনামিক অর্জন</h3>
@@ -502,7 +534,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* (গ) সুফল ও শর্তাবলীর ইনফো কার্ডসমূহ */}
       <div className="space-y-4">
         <div className="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 flex gap-3 shadow-xs">
           <span className="text-2xl bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center shrink-0">🎗️</span>
@@ -531,7 +562,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* (ঘ) নতুন উদ্যোক্তা ও প্রতিষ্ঠা বোর্ড কার্ড */}
         <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200 flex gap-3 shadow-sm">
           <span className="text-2xl bg-white text-slate-700 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs">🏛️</span>
           <div className="space-y-2 w-full">
@@ -555,12 +585,10 @@ export default function App() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
 
-  // ২. সার্চ ও ডিরেক্টরি সেকশন
   const renderSearchSection = () => (
     <div className="space-y-4">
       <div className="space-y-3">
@@ -611,8 +639,6 @@ export default function App() {
               
               return (
                 <div key={donor.id} className="bg-white p-5 rounded-2xl shadow-md border border-slate-100 space-y-4 relative">
-                  
-                  {/* CARD HEADER */}
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                       <span className="w-12 h-12 rounded-full bg-red-100 text-red-600 font-black text-lg flex items-center justify-center shadow-inner">{donor.blood_group}</span>
@@ -676,7 +702,6 @@ export default function App() {
                       ➕ রক্তদানের সংখ্যা ১ বার বৃদ্ধি করুন (+1)
                     </button>
                   )}
-
                 </div>
               );
             })}
@@ -695,7 +720,6 @@ export default function App() {
     </div>
   );
 
-  // ৩. নিবন্ধন ফরম সেকশন
   const renderRegisterSection = () => (
     <div id="register-section" className="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-green-500 space-y-5">
       <div className="text-center">
@@ -706,12 +730,12 @@ export default function App() {
       <form onSubmit={handleRegisterDonor} className="space-y-4">
         <div>
           <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">✍️ রক্তদাতার সম্পূর্ণ নাম *</label>
-          <input type="text" placeholder="রক্তদাতার নাম লিখুন" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+          <input type="text" placeholder="বীরশ্রেষ্ঠ মোহাম্মদ রুহুল আমিন" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div>
           <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">☎️ মোবাইল নাম্বার *</label>
-          <input type="tel" placeholder="সক্রিয় মোবাইল নাম্বার দিন" value={newDonor.phone} onChange={e => setNewDonor({...newDonor, phone: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+          <input type="tel" placeholder="কান্ট্রি কোড সহ মোবাইল নাম্বার দিন" value={newDonor.phone} onChange={e => setNewDonor({...newDonor, phone: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -741,23 +765,20 @@ export default function App() {
           </div>
         </div>
 
-        {/* স্বাস্থ্য লজিক ইন্ডিকেটর */}
         {(newDonor.weight || newDonor.age) && (
           <div className="p-4 rounded-xl border space-y-2 bg-slate-50 border-slate-200 text-xs shadow-xs">
             <h5 className="font-bold text-slate-700 border-b pb-1 flex items-center gap-1">🩺 স্বাস্থ্যগত যোগ্যতা পর্যালোচনা:</h5>
-            
             {newDonor.weight && (
               <div className="flex items-center gap-1.5 font-semibold">
                 {Number(newDonor.weight) >= 50 ? (
                   <span className="text-green-600">✅ ওজন: {newDonor.weight} কেজি (রক্তদানের জন্য সম্পূর্ণ উপযুক্ত)।</span>
                 ) : Number(newDonor.weight) >= 45 ? (
-                  <span className="text-amber-600">⚠️ ওজন: {newDonor.weight} কেজি (ন্যূনতম ৪৫ কেজি অনুযায়ী বিশেষ ক্ষেত্রে রক্তদান সম্ভব, তবে ৫০ কেজি আদর্শ)।</span>
+                  <span className="text-amber-600">⚠️ ওজন: {newDonor.weight} কেজি (ন্যূনতম ৪৫ কেজি অনুযায়ী বিশেষ ক্ষেত্রে রক্তদান সম্ভব, তবে ৫০ কেজি আদেশ)।</span>
                 ) : (
                   <span className="text-red-600">❌ ওজন: {newDonor.weight} কেজি (রক্তদানের জন্য ন্যূনতম ৪৫-৫০ কেজি ওজন আবশ্যক)।</span>
                 )}
               </div>
             )}
-
             {newDonor.age && (
               <div className="flex items-center gap-1.5 font-semibold">
                 {Number(newDonor.age) >= 18 && Number(newDonor.age) <= 65 ? (
@@ -767,7 +788,6 @@ export default function App() {
                 )}
               </div>
             )}
-            
             <p className="text-[10px] text-slate-400 font-medium pt-1">
               💡 শারীরিক ও মানসিকভাবে সুস্থ পুরুষরা ৪ মাস পর পর এবং মহিলারা সাধারণত ৪ থেকে ৬ মাস পর পর নিরাপদভাবে রক্তদান করতে পারেন।
             </p>
@@ -776,7 +796,7 @@ export default function App() {
 
         <div>
           <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🏡 রক্তদাতার সম্পূর্ণ ঠিকানা *</label>
-          <input type="text" placeholder="গ্রাম, ইউনিয়ন, সোনাইমুড়ী, নোয়াখালী" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+          <input type="text" placeholder="বাঘপাঁচড়া, সোনাইমুড়ী, নোয়াখালী 🇧🇩🇨🇦" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div>
@@ -802,11 +822,8 @@ export default function App() {
     </div>
   );
 
-  // ৪. ভলান্টিয়ার সেকশন
   const renderVolunteerSection = () => (
     <div className="space-y-6">
-      
-      {/* ভলান্টিয়ার মোবাইল নম্বর ও কাস্টম পাসওয়ার্ড ডাটা আনলক প্যানেল */}
       {!isAdmin && (
         <div className="bg-white p-5 rounded-2xl shadow border border-slate-200 space-y-3">
           <h3 className="text-sm font-black text-slate-700 flex items-center gap-1">🔒 ভলান্টিয়ার আনলক প্যানেল</h3>
@@ -833,7 +850,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ভলান্টিয়ার কন্ট্রোল প্যানেল (অ্যাডমিন) */}
       {isAdmin && (
         <div className="bg-white p-5 rounded-2xl shadow border-t-4 border-blue-600 space-y-4">
           <h3 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">👥 ভলান্টিয়ার কন্ট্রোল প্যানেল</h3>
@@ -865,7 +881,7 @@ export default function App() {
                   <button onClick={() => handleEditVolunteer(v)} title="সংশোধন" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">🖊️</button>
                   <button onClick={() => handleDeleteVolunteer(v.id)} title="মুছে ফেলুন" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">🗑️</button>
                   <button onClick={() => toggleVolunteerStatus(v.id, v.is_active)} className={`px-2.5 py-1.5 rounded-lg font-bold text-xs text-white ${v.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}>
-                    {v.is_active ? '🚫 ব্লক' : '🔓 আনব্লক'}
+                    {v.is_active ? '🚫। ব্লক' : '🔓 আনব্লক'}
                   </button>
                 </div>
               </div>
@@ -884,7 +900,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 leading-normal">
-      {/* ভাসমান কাস্টম নোটিফিকেশন মেসেজ BOX */}
       {notification.show && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-sm w-11/12 mx-auto animate-bounce">
           <div className={`p-4 rounded-2xl shadow-2xl border text-center font-bold text-sm ${
@@ -897,15 +912,12 @@ export default function App() {
         </div>
       )}
 
-      {/* হেডার ডিজাইন */}
       <header className="bg-red-600 text-white text-center py-8 shadow-lg px-4 relative">
         <div className="flex flex-col items-center justify-center gap-2">
           <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain rounded-full bg-white p-1 shadow-md" />
-          
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-center text-white tracking-wide drop-shadow-md leading-tight">
-            🩸 ব্লাড সেন্টার নদোনা নোয়াখালী 🩸
+            🩸ব্লাড সেন্টার নদোনা নোয়াখালী🩸
           </h1>
-          
           <div className="text-xs text-red-100 font-bold flex flex-col items-center gap-1 mt-1">
             <span className="bg-red-700/50 px-3 py-0.5 rounded-full">🏡 স্থাপিত: ২০১৩ ইং</span>
             <span className="bg-red-700/50 px-3 py-0.5 rounded-full mt-1">📍 নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩</span>
@@ -926,7 +938,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* টপ কন্টাক্ট ম্যানুবার */}
       <div className="bg-amber-500 text-white font-black text-xs sm:text-sm py-2.5 px-4 text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2 shadow-inner sticky top-0 z-40">
         <span>🚨 জরুরি রক্ত প্রয়োজনে সরাসরি যোগাযোগ করুন:</span>
         <a href="tel:+8801813132013" className="bg-white text-red-600 px-3 py-0.5 rounded-full font-black shadow-xs hover:bg-slate-100 transition-all flex items-center gap-0.5">
@@ -934,50 +945,27 @@ export default function App() {
         </a>
       </div>
 
-      {/* ৫টি টগল ট্যাব সহ প্রিমিয়াম নেভিগেশন প্যানেল */}
       <nav className="bg-white border-b sticky top-[38px] z-30 shadow-xs">
         <div className="max-w-md mx-auto grid grid-cols-5 text-center font-bold text-[10px] sm:text-xs">
-          <button 
-            onClick={() => setActiveTab('home')} 
-            className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'home' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
-          >
-            <span className="text-base sm:text-lg">🏠</span>
-            <span>হোম</span>
+          <button onClick={() => setActiveTab('home')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'home' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+            <span className="text-base sm:text-lg">🏠</span><span>হোম</span>
           </button>
-          <button 
-            onClick={() => setActiveTab('notice')} 
-            className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'notice' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
-          >
-            <span className="text-base sm:text-lg">📢</span>
-            <span>জরুরি নোটিশ</span>
+          <button onClick={() => setActiveTab('notice')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'notice' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+            <span className="text-base sm:text-lg">📢</span><span>জরুরি নোটিশ</span>
           </button>
-          <button 
-            onClick={() => setActiveTab('search')} 
-            className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'search' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
-          >
-            <span className="text-base sm:text-lg">🔍</span>
-            <span>খুঁজুন</span>
+          <button onClick={() => setActiveTab('search')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'search' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+            <span className="text-base sm:text-lg">🔍</span><span>খুঁজুন</span>
           </button>
-          <button 
-            onClick={() => setActiveTab('register')} 
-            className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'register' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
-          >
-            <span className="text-base sm:text-lg">✍️</span>
-            <span>নিবন্ধন</span>
+          <button onClick={() => setActiveTab('register')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'register' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+            <span className="text-base sm:text-lg">✍️</span><span>নিবন্ধন</span>
           </button>
-          <button 
-            onClick={() => setActiveTab('volunteer')} 
-            className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'volunteer' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}
-          >
-            <span className="text-base sm:text-lg">👥</span>
-            <span>ভলান্টিয়ার</span>
+          <button onClick={() => setActiveTab('volunteer')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'volunteer' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+            <span className="text-base sm:text-lg">👥</span><span>ভলান্টিয়ার</span>
           </button>
         </div>
       </nav>
 
       <main className="max-w-md mx-auto px-4 mt-6 space-y-6">
-
-        {/* অ্যাডমিন লগইন ফর্ম */}
         {showAdminLogin && (
           <div className="bg-white p-6 rounded-2xl shadow-xl border border-red-100">
             <h3 className="text-xl font-bold text-red-600 mb-4 text-center flex items-center justify-center gap-2 leading-relaxed">🔐 অ্যাডমিন লগইন ভেরিফিকেশন</h3>
@@ -998,12 +986,11 @@ export default function App() {
           </div>
         )}
 
-        {/* ডাইনামিক কন্টেন্ট প্রদর্শন */}
         {activeTab === 'home' && (
           <div className="space-y-8 animate-fadeIn">
-            {renderNoticeSection()}   {/* ১. জরুরি নোটিশ ও অর্জন বোর্ড */}
-            {renderRegisterSection()} {/* ২. রক্তদাতা নিবন্ধন ফরম */}
-            {renderSearchSection()}   {/* ৩. অনুসন্ধান প্যানেল */}
+            {renderNoticeSection()}
+            {renderRegisterSection()}
+            {renderSearchSection()}
           </div>
         )}
 
@@ -1011,10 +998,8 @@ export default function App() {
         {activeTab === 'search' && renderSearchSection()}
         {activeTab === 'register' && renderRegisterSection()}
         {activeTab === 'volunteer' && renderVolunteerSection()}
-
       </main>
 
-      {/* সিকিউর পাসওয়ার্ড পরিবর্তন পপআপ */}
       {showPassModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
           <div className="bg-white p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl">
@@ -1031,7 +1016,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ফুটার ও ক্রেডিট */}
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed">
         <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
         <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">🤝 সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
