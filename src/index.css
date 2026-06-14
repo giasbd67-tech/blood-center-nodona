@@ -1,10 +1,12 @@
+/* ১. সুন্দর ডিজিটাল বাংলা ফন্ট ইম্পোর্ট (এটি অবশ্যই সবার উপরে ১ নম্বর লাইনে থাকবে) */
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
+
+/* ২. টেইলউইন্ড ডিরেক্টিভস (ফন্ট ইম্পোর্টের নিচে থাকবে) */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* সুন্দর ডিজিটাল বাংলা ফন্ট ইম্পোর্ট */
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
-
+/* ৩. গ্লোবাল বডি স্টাইল */
 body {
   font-family: 'Hind Siliguri', sans-serif;
   margin: 0;
