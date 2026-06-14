@@ -357,7 +357,7 @@ export default function App() {
     }
   };
 
-  // ফিচার ২: সোশ্যাল মিডিয়া শেয়ারিং টেমপ্লেট কার্ড মেথড
+  // ফিচার ২: সোশ্যাল মিডিয়া শেয়ারিং টেমপ্লেটカード মেথড
   const handleShareRequest = (req) => {
     const shareText = `🚨 জরুরি রক্তের প্রয়োজন 🚨\n\n🩸 রক্তের গ্রুপ: ${req.blood_group}\n👤 রোগী: ${req.patient_name}\n🏥 স্থান: ${req.hospital}\n⏰ কখন লাগবে: ${req.needed_time}\n📞 যোগাযোগের নম্বর: ${req.phone}\n\n🙏 অনুগ্রহ করে নোটিশটি সবাই শেয়ার করে রক্তদাতার সন্ধান দিতে সাহায্য করুন।\n📌 সৌজন্যে: ব্লাড সেন্টার নদোনা নোয়াখালী`;
     try {
@@ -446,7 +446,7 @@ export default function App() {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (masterCode !== 'BCNN2013') {
-      return showToast('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
+      return showToast('ভুলマスター কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
     }
     const { error: authError } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
     if (!authError) {
@@ -595,7 +595,7 @@ export default function App() {
             <h4 className="font-black text-sm text-slate-800 mb-0.5 leading-relaxed">কখন রক্ত দিতে পারবেন?</h4>
             <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside font-semibold leading-relaxed">
               <li>সুস্থ পুরুষরা প্রতি ৪ মাস অন্তর (বছরে ৩ বার) রক্ত দিতে পারবেন।</li>
-              <li>সুস্থ নারীরা প্রতি ৪ থেকে ২৬ মাস অন্তর রক্ত দিতে পারবেন (৬ মাস বেশি নিরাপদ)।</li>
+              <li>সুস্থ নারীরা প্রতি ৪ থেকে ৬ মাস অন্তর রক্ত দিতে পারবেন (৬ মাস বেশি নিরাপদ)।</li>
               <li>রক্তদানের জন্য ন্যূনতম ওজন অবশ্যই ৫০ কেজি (বিশেষ ক্ষেত্রে ৪৫ কেজি) হতে হবে।</li>
               <li>রক্তদাতার বয়স অবশ্যই ১৮ থেকে ৬০ বা ৬৫ বছরের মধ্যে হতে হবে।</li>
               <li>রক্তচাপ, শরীরের তাপমাত্রা এবং হিমোগ্লোবিনের মাত্রা সঠিক থাকা আবশ্যক।</li>
@@ -611,10 +611,10 @@ export default function App() {
               <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">প্রতিষ্ঠা: ২০১৩ ইং</span>
             </h4>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে **২৭ মার্চ ২০১৩ ইং** তারিখে ب্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
+              মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে **২৭ মার্চ ২০১৩ ইং** তারিখে ব্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
             </p>
             <div className="pt-1">
-              <p className="text-xs font-bold text-slate-700 mb-1.5">🌟 দূরदर्शी ৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
+              <p className="text-xs font-bold text-slate-700 mb-1.5">🌟 দূরদর্শী ৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-600">
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1">👤 প্রতিষ্ঠাতা সদস্য ১</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1">👤 প্রতিষ্ঠাতা সদস্য ২</div>
@@ -698,18 +698,18 @@ export default function App() {
                     </span>
                   </div>
 
-                  {/* ফিচার ৩: রক্তদানের যোগ্যতার ডাইনামিক স্ট্যাটাস ও ভিজ্যুয়াল কাউন্টডাউন প্রোগ্রেস বার */}
-                  <div className={`text-xs font-bold px-3 py-1.5 rounded-lg border leading-relaxed ${elg.isEligible ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>
+                  {/* ফিচার ৩: রক্তদানের যোগ্যতার ডাইনামিক স্ট্যাটাস ও ভিজ্যুয়াল কাউন্টডাউন প্রোগ্রেস বার (সাধারণ নিউট্রাল কালার আপডেট) */}
+                  <div className={`text-xs font-bold px-3 py-1.5 rounded-lg border leading-relaxed ${elg.isEligible ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
                     <div>⚖️ স্ট্যাটাস: {elg.statusText}</div>
                     
                     {!elg.isEligible && elg.remainingDays > 0 && (
                       <div className="mt-2 space-y-1">
-                        <div className="flex justify-between text-[10px] text-amber-700 font-bold">
+                        <div className="flex justify-between text-[10px] text-slate-600 font-bold">
                           <span>রক্তদানের প্রস্তুতি অগ্রগতি</span>
                           <span>{elg.percent}% সম্পন্ন</span>
                         </div>
-                        <div className="w-full bg-amber-200/50 rounded-full h-2 overflow-hidden border border-amber-200">
-                          <div className="bg-amber-500 h-full rounded-full transition-all duration-500" style={{ width: `${elg.percent}%` }}></div>
+                        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden border border-slate-300">
+                          <div className="bg-slate-500 h-full rounded-full transition-all duration-500" style={{ width: `${elg.percent}%` }}></div>
                         </div>
                       </div>
                     )}
@@ -745,7 +745,7 @@ export default function App() {
                           <a href={`tel:${donor.phone}`} title="সরাসরি কল করুন" className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
                             📞
                           </a>
-                          <a href={waDonorUrl} target="_blank" rel="noopener noreferrer" title="হয়াটসঅ্যাপ মেসেজ দিন" className="p-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
+                          <a href={waDonorUrl} target="_blank" rel="noopener noreferrer" title="হোয়াটসঅ্যাপ মেসেজ দিন" className="p-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
                             💬
                           </a>
                         </>
