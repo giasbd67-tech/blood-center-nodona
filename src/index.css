@@ -1,14 +1,14 @@
-/* ১. সুন্দর ডিজিটাল বাংলা ফন্ট ইম্পোর্ট (এটি অবশ্যই সবার উপরে ১ নম্বর লাইনে থাকবে) */
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
+/* ১. স্পষ্ট ও সুন্দর ডিজিটাল বাংলা ফন্ট ইম্পোর্ট (সবার উপরে ১ নম্বর লাইনে) */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
 
-/* ২. টেইলউইন্ড ডিরেক্টিভস (ফন্ট ইম্পোর্টের নিচে থাকবে) */
+/* ২. টেইলউইন্ড ডিরেক্টিভস */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ৩. গ্লোবাল বডি স্টাইল */
+/* ৩. গ্লোবাল বডি স্টাইল (এতে আপনার '১' সংখ্যা একদম পারফেক্ট দেখাবে) */
 body {
-  font-family: 'Hind Siliguri', sans-serif;
+  font-family: 'Noto Sans Bengali', sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
