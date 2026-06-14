@@ -14,8 +14,11 @@ export default function App() {
   
   // কাস্টম নোটিফিকেশন স্টেট
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
+  
+  // নতুন মোডাল এরর স্টেট (যা আপনার দেওয়া কোড ব্লককে নিয়ন্ত্রণ করবে)
+  const [error, setError] = useState(null);
 
-  // ফর্ম স্টেটসমূহ
+  // Form স্টেটসমূহ
   const [newDonor, setNewDonor] = useState({ 
     id: null,
     name: '', 
@@ -109,7 +112,7 @@ export default function App() {
 
   // সিকিউর আলফানিউমেরিক কোড ভিত্তিক ভলান্টিয়ার অ্যাক্সেস ভেরিফিকেশন (ফিক্সড)
   const checkVolunteerAccess = async (phone, pass) => {
-    const { data, error } = await supabase
+    const { data, error: dbError } = await supabase
       .from('volunteers')
       .select('*')
       .eq('phone', phone)
@@ -130,13 +133,12 @@ export default function App() {
         setIsUnlocked(false);
       }
     } else {
-      // নেটওয়ার্ক ফেইলর এবং ইউজার নট ফাউন্ড আলাদা করা হলো যেন অটো-লগআউট না হয়
-      if (error && error.code === 'PGRST116') {
+      if (dbError && dbError.code === 'PGRST116') {
         showToast('দুঃখিত! এই মোবাইল নম্বরটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
         setIsUnlocked(false);
         localStorage.removeItem('v_phone');
         localStorage.removeItem('v_pass');
-      } else if (error) {
+      } else if (dbError) {
         showToast('নেটওয়ার্ক সমস্যা! অনুগ্রহ করে আবার চেষ্টা করুন।', 'error');
       } else {
         setIsUnlocked(false);
@@ -162,7 +164,6 @@ export default function App() {
     const today = new Date('2026-06-13'); 
     const donationDate = new Date(lastDate);
 
-    // ভবিষ্যতের ভুল তারিখ হ্যান্ডলিং
     if (donationDate > today) {
       return { isEligible: false, statusText: 'সাময়িক অযোগ্য (ভবিষ্যতের তারিখ দেওয়া হয়েছে)' };
     }
@@ -205,9 +206,9 @@ export default function App() {
     };
 
     if (newDonor.id) {
-      const { error } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
-      if (error) {
-        showToast('정보 সংশোধন করার সময় সমস্যা হয়েছে: ' + error.message, 'error');
+      const { error: submitError } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
+      if (submitError) {
+        showToast('তথ্য সংশোধন করার সময় সমস্যা হয়েছে: ' + submitError.message, 'error');
       } else {
         showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
         resetDonorForm();
@@ -215,12 +216,12 @@ export default function App() {
         setActiveTab('search'); 
       }
     } else {
-      const { error } = await supabase.from('donors').insert([donorPayload]);
-      if (error) {
-        if (error.code === '23505') {
+      const { error: submitError } = await supabase.from('donors').insert([donorPayload]);
+      if (submitError) {
+        if (submitError.code === '23505') {
           showToast('এই নম্বরটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!', 'error');
         } else {
-          showToast('নিবন্ধন ব্যর্থ হয়েছে: ' + error.message, 'error');
+          showToast('নিবন্ধন ব্যর্থ হয়েছে: ' + submitError.message, 'error');
         }
       } else {
         showToast('রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!', 'success');
@@ -241,23 +242,23 @@ export default function App() {
   const handleAddRequest = async (e) => {
     e.preventDefault();
     if (editRequestId) {
-      const { error } = await supabase.from('emergency_requests').update(newRequest).eq('id', editRequestId);
-      if (!error) {
+      const { error: reqError } = await supabase.from('emergency_requests').update(newRequest).eq('id', editRequestId);
+      if (!reqError) {
         showToast('জরুরি রক্তের নোটিশ সফলভাবে সংশোধন হয়েছে!', 'success');
         setNewRequest({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
         setEditRequestId(null);
         fetchRequests();
       } else {
-        showToast('নোটিশ সংশোধন করতে ব্যর্থ: ' + error.message, 'error');
+        showToast('নোটিশ সংশোধন করতে ব্যর্থ: ' + reqError.message, 'error');
       }
     } else {
-      const { error } = await supabase.from('emergency_requests').insert([newRequest]);
-      if (!error) {
+      const { error: reqError } = await supabase.from('emergency_requests').insert([newRequest]);
+      if (!reqError) {
         showToast('জরুরি রক্তের নোটিশ বোর্ড আপডেট হয়েছে!', 'success');
         setNewRequest({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
         fetchRequests();
       } else {
-        showToast('নোটিশ পোস্ট করতে ব্যর্থ: ' + error.message, 'error');
+        showToast('নোটিশ পোস্ট করতে ব্যর্থ: ' + reqError.message, 'error');
       }
     }
   };
@@ -276,24 +277,24 @@ export default function App() {
 
   const handleDeleteRequest = async (id) => {
     if (confirm('আপনি কি নিশ্চিতভাবে এই জরুরি নোটিশটি মুছে ফেলতে চান?')) {
-      const { error } = await supabase.from('emergency_requests').delete().eq('id', id);
-      if (!error) {
+      const { error: reqError } = await supabase.from('emergency_requests').delete().eq('id', id);
+      if (!reqError) {
         showToast('নোটিশটি সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchRequests();
       } else {
-        showToast('নোটিশ ডিলিট করতে ব্যর্থ: ' + error.message, 'error');
+        showToast('নোটিশ ডিলিট করতে ব্যর্থ: ' + reqError.message, 'error');
       }
     }
   };
 
   const handleIncrementActivity = async (id, currentCount) => {
     if (!isAdmin) return;
-    const { error } = await supabase.from('donors').update({ activity_count: currentCount + 1 }).eq('id', id);
-    if (!error) {
+    const { error: actError } = await supabase.from('donors').update({ activity_count: currentCount + 1 }).eq('id', id);
+    if (!actError) {
       showToast('রক্তদানের সংখ্যা বৃদ্ধি করা হয়েছে!', 'success');
       fetchDonors();
     } else {
-      showToast('আপডেট ব্যর্থ হয়েছে: ' + error.message, 'error');
+      showToast('আপডেট ব্যর্থ হয়েছে: ' + actError.message, 'error');
     }
   };
 
@@ -320,12 +321,12 @@ export default function App() {
   const handleDeleteDonor = async (id) => {
     if (!isAdmin) return showToast('শুধুমাত্র মূল অ্যাডমিন প্যানেল থেকে তথ্য ডিলিট করা সম্ভব।', 'error');
     if (confirm('আপনি কি নিশ্চিতভাবে এই রক্তদাতার সম্পূর্ণ রেকর্ড ডিলিট করতে চান?')) {
-      const { error } = await supabase.from('donors').delete().eq('id', id);
-      if (!error) {
+      const { error: delError } = await supabase.from('donors').delete().eq('id', id);
+      if (!delError) {
         showToast('রক্তদাতার তথ্য সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchDonors();
       } else {
-        showToast('ডিলিট ব্যর্থ হয়েছে: ' + error.message, 'error');
+        showToast('ডিলিট ব্যর্থ হয়েছে: ' + delError.message, 'error');
       }
     }
   };
@@ -360,18 +361,18 @@ export default function App() {
     };
 
     if (editVolunteerId) {
-      const { error } = await supabase.from('volunteers').update(volunteerPayload).eq('id', editVolunteerId);
-      if (!error) {
+      const { error: volError } = await supabase.from('volunteers').update(volunteerPayload).eq('id', editVolunteerId);
+      if (!volError) {
         showToast('ভলান্টিয়ারের তথ্য ও সিকিউরিটি পাসওয়ার্ড সফলভাবে সংশোধন করা হয়েছে!', 'success');
         setNewVolunteer({ name: '', phone: '', password: '' });
         setEditVolunteerId(null);
         fetchVolunteers();
       } else {
-        showToast('সংশোধন ব্যর্থ: ' + error.message, 'error');
+        showToast('সংশোধন ব্যর্থ: ' + volError.message, 'error');
       }
     } else {
-      const { error } = await supabase.from('volunteers').insert([volunteerPayload]);
-      if (error) {
+      const { error: volError } = await supabase.from('volunteers').insert([volunteerPayload]);
+      if (volError) {
         showToast('এই ভলান্টিয়ার নম্বরটি অলরেডি অনুমোদিত আছে অথবা সমস্যা হয়েছে!', 'error');
       } else {
         showToast('নতুন ভলান্টিয়ার কাস্টম সিকিউরিটি পাসওয়ার্ড সহ অনুমোদিত হয়েছে!', 'success');
@@ -388,29 +389,29 @@ export default function App() {
 
   const handleDeleteVolunteer = async (id) => {
     if (confirm('আপনি কি নিশ্চিতভাবে এই ভলান্টিয়ারকে ডিলিট করতে চান?')) {
-      const { error } = await supabase.from('volunteers').delete().eq('id', id);
-      if (!error) {
+      const { error: volError } = await supabase.from('volunteers').delete().eq('id', id);
+      if (!volError) {
         showToast('ভলান্টিয়ার সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchVolunteers();
       } else {
-        showToast('মুছে ফেলতে ব্যর্থ: ' + error.message, 'error');
+        showToast('মুছে ফেলতে ব্যর্থ: ' + volError.message, 'error');
       }
     }
   };
 
   const toggleVolunteerStatus = async (id, currentStatus) => {
-    const { error } = await supabase.from('volunteers').update({ is_active: !currentStatus }).eq('id', id);
-    if (!error) {
+    const { error: volError } = await supabase.from('volunteers').update({ is_active: !currentStatus }).eq('id', id);
+    if (!volError) {
       showToast('ভলান্টিয়ারের অবস্থা সফলভাবে পরিবর্তন করা হয়েছে।', 'info');
       fetchVolunteers();
     } else {
-      showToast('অবস্থা পরিবর্তন ব্যর্থ: ' + error.message, 'error');
+      showToast('অবস্থা পরিবর্তন ব্যর্থ: ' + volError.message, 'error');
     }
   };
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    const { data, error } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
+    const { data, error: authError } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
     if (data) {
       setIsAdmin(true);
       setShowAdminLogin(false);
@@ -425,23 +426,22 @@ export default function App() {
     if (masterCode !== 'BCNN2013') {
       return showToast('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
     }
-    const { error } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
-    if (!error) {
+    const { error: authError } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
+    if (!authError) {
       showToast('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!', 'success');
       setShowPassModal(false);
       setMasterCode('');
       setNewPassword('');
     } else {
-      showToast('পাসওয়ার্ড পরিবর্তন ব্যর্থ: ' + error.message, 'error');
+      showToast('পাসওয়ার্ড পরিবর্তন ব্যর্থ: ' + authError.message, 'error');
     }
   };
 
-  // ফিল্টারিং প্যানেল (ফিক্সড - Optional Chaining যুক্ত করা হয়েছে যেন ক্র্যাশ না করে)
+  // ফিল্টারিং প্যানেল
   const filteredDonors = donors.filter(donor => {
     const matchesGroup = selectedGroup === 'All' || donor.blood_group === selectedGroup;
     const locationString = `${donor.location || donor.village || ''}`.toLowerCase();
     
-    // donor.name নাল বা আনডিফাইনড হলেও অ্যাপ ক্র্যাশ করবে না
     const matchesSearch = (donor.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                           locationString.includes(searchTerm.toLowerCase());
     
@@ -912,6 +912,43 @@ export default function App() {
         </div>
       )}
 
+      {/* এখানে আপনার এরর স্টেট (যেমন error বা errorMessage) থাকলে তা চেক হবে */}
+      {error && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black/40 backdrop-blur-sm">
+          {/* - fixed inset-0: পুরো স্ক্রিন দখল করবে 
+            - flex items-center justify-center: ভেতরের বক্সটিকে স্ক্রিনের একদম মাঝখানে (Centered) নিয়ে আসবে
+            - bg-black/40 backdrop-blur-sm: পেছনের ব্যাকগ্রাউন্ড হালকা কালো ও ঘোলা করবে যাতে নোটিফিকেশনটি ফুটে ওঠে
+          */}
+          
+          <div className="bg-red-600 text-white p-6 rounded-2xl shadow-2xl w-full max-w-md border border-red-500 transform transition-all duration-300 scale-100 flex flex-col items-center text-center space-y-4">
+            
+            {/* এরর আইকন */}
+            <div className="bg-white/20 p-3 rounded-full animate-bounce">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            {/* মেসেজ কন্টেইনার (আপনার সুন্দর বাংলা ফন্ট সহ) */}
+            <div className="font-bengali text-lg md:text-xl font-medium whitespace-normal break-words leading-relaxed w-full">
+              {/* whitespace-normal break-words থাকার কারণে লেখা স্ক্রিনের বাইরে না গিয়ে নিচে ভেঙে আসবে */}
+              {error}
+            </div>
+
+            {/* বাটন */}
+            <div className="w-full pt-2">
+              <button 
+                onClick={() => setError(null)} // এখানে আপনার এরর স্টেট ক্লিয়ার করার ফাংশনটি বসবে
+                className="font-bengali bg-white text-red-700 font-bold px-8 py-2.5 rounded-xl hover:bg-red-50 transition-colors duration-200 shadow-md text-sm w-full md:w-auto"
+              >
+                ঠিক আছে
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       <header className="bg-red-600 text-white text-center py-8 shadow-lg px-4 relative">
         <div className="flex flex-col items-center justify-center gap-2">
           <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain rounded-full bg-white p-1 shadow-md" />
@@ -1018,7 +1055,7 @@ export default function App() {
 
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed">
         <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
-        <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">🤝 সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
+        <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">🤝 সার্বিক সহযোগিতায়: মরহুম হাজী তфসির আহমেদ ট্রাস্ট</p>
         <div className="flex items-center justify-center gap-2 pt-3 border-t border-slate-200 max-w-sm mx-auto whitespace-nowrap">
           <span className="text-xs font-medium text-slate-400 leading-normal">⚙️ কারিগরি সহযোগিতায়:</span>
           <img src="/gias.png" alt="Developer" className="w-6 h-6 rounded-full object-cover border shadow-xs" />
