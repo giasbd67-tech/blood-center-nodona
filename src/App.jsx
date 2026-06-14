@@ -157,28 +157,34 @@ export default function App() {
     showToast('ডাটা পুনরায় লক করা হয়েছে।', 'info');
   };
 
-  // রক্তদানের যোগ্যতা যাচাইয়ের মেডিকেল লজিক (ফিক্সড)
+  // রক্তদানের যোগ্যতা যাচাই ও কাউন্টডাউন পার্সেন্টেজ লজিক (আপডেটেড)
   const checkEligibility = (lastDate, gender) => {
-    if (!lastDate) return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)' };
+    if (!lastDate) return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
     
     const today = new Date('2026-06-13'); 
     const donationDate = new Date(lastDate);
 
     if (donationDate > today) {
-      return { isEligible: false, statusText: 'সাময়িক অযোগ্য (ভবিষ্যতের তারিখ দেওয়া হয়েছে)' };
+      return { isEligible: false, statusText: 'সাময়িক অযোগ্য (ভবিষ্যতের তারিখ দেওয়া হয়েছে)', percent: 0, remainingDays: 0 };
     }
     
     const diffTime = today - donationDate; 
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     const requiredDays = gender === 'মহিলা' ? 180 : 120;
     
     if (diffDays >= requiredDays) {
-      return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)' };
+      return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
     } else {
       const remainingDays = requiredDays - diffDays;
       const remainingMonths = Math.ceil(remainingDays / 30);
-      return { isEligible: false, statusText: `সাময়িক অযোগ্য (${remainingDays} দিন বা প্রায় ${remainingMonths} মাস পর দিতে পারবেন)` };
+      const percent = Math.min(100, Math.max(0, Math.round((diffDays / requiredDays) * 100)));
+      return { 
+        isEligible: false, 
+        statusText: `সাময়িক অযোগ্য (${remainingDays} দিন বা প্রায় ${remainingMonths} মাস পর দিতে পারবেন)`,
+        percent,
+        remainingDays
+      };
     }
   };
 
@@ -299,7 +305,7 @@ export default function App() {
   };
 
   const handleEditDonor = (donor) => {
-    if (!isAdmin && !isUnlocked) return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড বা নাম্বার দিয়ে ডাটা আনলক করুন', 'error');
+    if (!isAdmin && !isUnlocked) return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড বা নম্বর দিয়ে ডাটা আনলক করুন', 'error');
     setNewDonor({
       id: donor.id,
       name: donor.name,
@@ -348,6 +354,22 @@ export default function App() {
       showToast('রক্তদাতার সমস্ত তথ্য ক্লিপবোর্ডে কপি করা হয়েছে!', 'success');
     } catch (e) {
       showToast('কপি করতে ব্যর্থ হয়েছে, অনুগ্রহ করে ম্যানুয়ালি কপি করুন।', 'error');
+    }
+  };
+
+  // ফিচার ২: সোশ্যাল মিডিয়া শেয়ারিং টেমপ্লেট কার্ড মেথড
+  const handleShareRequest = (req) => {
+    const shareText = `🚨 জরুরি রক্তের প্রয়োজন 🚨\n\n🩸 রক্তের গ্রুপ: ${req.blood_group}\n👤 রোগী: ${req.patient_name}\n🏥 স্থান: ${req.hospital}\n⏰ কখন লাগবে: ${req.needed_time}\n📞 যোগাযোগের নম্বর: ${req.phone}\n\n🙏 অনুগ্রহ করে নোটিশটি সবাই শেয়ার করে রক্তদাতার সন্ধান দিতে সাহায্য করুন।\n📌 সৌজন্যে: ব্লাড সেন্টার নদোনা নোয়াখালী`;
+    try {
+      const el = document.createElement('textarea');
+      el.value = shareText;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast('শেয়ারিং টেক্সট কপি হয়েছে! এখন ফেসবুক বা মেসেঞ্জারে পোস্ট করুন।', 'success');
+    } catch (e) {
+      showToast('কপি করতে ব্যর্থ হয়েছে।', 'error');
     }
   };
 
@@ -490,22 +512,41 @@ export default function App() {
           {emergencyRequests.length === 0 ? (
             <p className="text-center text-xs text-slate-400 py-6 leading-normal">ℹ️ বর্তমানে কোনো জরুরি রক্তের অনুরোধ নেই।</p>
           ) : (
-            emergencyRequests.map(req => (
-              <div key={req.id} className="border-2 border-red-100 bg-red-50/20 p-4 rounded-xl relative shadow-xs space-y-1">
-                <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-black px-2 py-0.5 rounded-full">🩸 {req.blood_group}</span>
-                <h4 className="font-bold text-sm text-slate-800 leading-normal">👤 রোগী: {req.patient_name}</h4>
-                <p className="text-xs text-slate-600 leading-normal">🏥 স্থান: {req.hospital}</p>
-                <p className="text-xs text-red-600 font-bold leading-normal">⏰ সময়: {req.needed_time}</p>
-                
-                {isAdmin && (
-                  <div className="mt-2.5 flex gap-1.5 border-t pt-2 border-dashed border-red-200">
-                    <button onClick={() => handleEditRequest(req)} className="flex-1 bg-blue-50 text-blue-600 font-bold text-[11px] py-1 rounded-lg border border-blue-200">🖊️ সংশোধন</button>
-                    <button onClick={() => handleDeleteRequest(req.id)} className="flex-1 bg-red-50 text-red-600 font-bold text-[11px] py-1 rounded-lg border border-red-200">🗑️ ডিলিট</button>
+            emergencyRequests.map(req => {
+              // ফিচার ১: লাইভ নোটিশ বোর্ডের জন্য স্বয়ংক্রিয় হোয়াটসঅ্যাপ বার্তা ফরম্যাট
+              const formattedPhone = req.phone.replace(/[^0-9]/g, '');
+              const waNoticeText = encodeURIComponent(`আসসালামু আলাইকুম, ব্লাড সেন্টার নদোনা নোয়াখালী থেকে আপনার জরুরি রক্তের নোটিশটির (গ্রুপ: ${req.blood_group}) পরিপ্রেক্ষিতে যোগাযোগ করছি।`);
+              const waNoticeUrl = `https://wa.me/${formattedPhone}?text=${waNoticeText}`;
+
+              return (
+                <div key={req.id} className="border-2 border-red-100 bg-red-50/20 p-4 rounded-xl relative shadow-xs space-y-1">
+                  <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-black px-2 py-0.5 rounded-full">🩸 {req.blood_group}</span>
+                  <h4 className="font-bold text-sm text-slate-800 leading-normal">👤 রোগী: {req.patient_name}</h4>
+                  <p className="text-xs text-slate-600 leading-normal">🏥 স্থান: {req.hospital}</p>
+                  <p className="text-xs text-red-600 font-bold leading-normal">⏰ সময়: {req.needed_time}</p>
+                  
+                  {isAdmin && (
+                    <div className="mt-2.5 flex gap-1.5 border-t pt-2 border-dashed border-red-200">
+                      <button onClick={() => handleEditRequest(req)} className="flex-1 bg-blue-50 text-blue-600 font-bold text-[11px] py-1 rounded-lg border border-blue-200">🖊️ সংশোধন</button>
+                      <button onClick={() => handleDeleteRequest(req.id)} className="flex-1 bg-red-50 text-red-600 font-bold text-[11px] py-1 rounded-lg border border-red-200">🗑️ ডিলিট</button>
+                    </div>
+                  )}
+
+                  {/* ফিচার ১ ও ২ সংযুক্তি: বাটন গ্রিড লেআউট */}
+                  <div className="grid grid-cols-2 gap-2 mt-2.5">
+                    <a href={`tel:${req.phone}`} className="text-xs text-center bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold shadow-xs flex items-center justify-center gap-1">
+                      📞 কল দিন
+                    </a>
+                    <a href={waNoticeUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-center bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-lg font-bold shadow-xs flex items-center justify-center gap-1">
+                      💬 হোয়াটসঅ্যাপ
+                    </a>
                   </div>
-                )}
-                <a href={`tel:${req.phone}`} className="mt-2 text-xs block w-full text-center bg-red-600 hover:bg-red-700 text-white py-1.5 rounded-lg font-bold leading-normal shadow-xs">📞 সরাসরি কল দিন</a>
-              </div>
-            ))
+                  <button onClick={() => handleShareRequest(req)} className="w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-bold shadow-xs flex items-center justify-center gap-1 mt-1.5">
+                    📢 সোশ্যাল মিডিয়ায় শেয়ার নোটিশ (কপি)
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
@@ -554,7 +595,7 @@ export default function App() {
             <h4 className="font-black text-sm text-slate-800 mb-0.5 leading-relaxed">কখন রক্ত দিতে পারবেন?</h4>
             <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside font-semibold leading-relaxed">
               <li>সুস্থ পুরুষরা প্রতি ৪ মাস অন্তর (বছরে ৩ বার) রক্ত দিতে পারবেন।</li>
-              <li>সুস্থ নারীরা প্রতি ৪ থেকে ৬ মাস অন্তর রক্ত দিতে পারবেন (৬ মাস বেশি নিরাপদ)।</li>
+              <li>সুস্থ নারীরা প্রতি ৪ থেকে ২৬ মাস অন্তর রক্ত দিতে পারবেন (৬ মাস বেশি নিরাপদ)।</li>
               <li>রক্তদানের জন্য ন্যূনতম ওজন অবশ্যই ৫০ কেজি (বিশেষ ক্ষেত্রে ৪৫ কেজি) হতে হবে।</li>
               <li>রক্তদাতার বয়স অবশ্যই ১৮ থেকে ৬০ বা ৬৫ বছরের মধ্যে হতে হবে।</li>
               <li>রক্তচাপ, শরীরের তাপমাত্রা এবং হিমোগ্লোবিনের মাত্রা সঠিক থাকা আবশ্যক।</li>
@@ -570,7 +611,7 @@ export default function App() {
               <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">প্রতিষ্ঠা: ২০১৩ ইং</span>
             </h4>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে **২৭ মার্চ ২০১৩ ইং** তারিখে ব্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
+              মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে **২৭ মার্চ ২০১৩ ইং** তারিখে ب্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
             </p>
             <div className="pt-1">
               <p className="text-xs font-bold text-slate-700 mb-1.5">🌟 দূরदर्शी ৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
@@ -637,6 +678,11 @@ export default function App() {
               const elg = checkEligibility(donor.last_donation_date, donor.gender);
               const badge = getDonorBadge(donor.activity_count || 0);
               
+              // ফিচার ১: রক্তদাতার জন্য স্বয়ংক্রিয় হোয়াটসঅ্যাপ বার্তা ফরম্যাট
+              const cleanedDonorPhone = donor.phone ? donor.phone.replace(/[^0-9]/g, '') : '';
+              const waDonorText = encodeURIComponent(`আসসালামু আলাইকুম, ব্লাড সেন্টার নদোনা নোয়াখালী থেকে যোগাযোগ করছি। আমাদের জরুরি একটি ${donor.blood_group} রক্তের প্রয়োজন। আপনি কি এই মুহূর্তে রক্তদানে আগ্রহী আছেন?`);
+              const waDonorUrl = `https://wa.me/${cleanedDonorPhone}?text=${waDonorText}`;
+
               return (
                 <div key={donor.id} className="bg-white p-5 rounded-2xl shadow-md border border-slate-100 space-y-4 relative">
                   <div className="flex justify-between items-start">
@@ -652,8 +698,21 @@ export default function App() {
                     </span>
                   </div>
 
+                  {/* ফিচার ৩: রক্তদানের যোগ্যতার ডাইনামিক স্ট্যাটাস ও ভিজ্যুয়াল কাউন্টডাউন প্রোগ্রেস বার */}
                   <div className={`text-xs font-bold px-3 py-1.5 rounded-lg border leading-relaxed ${elg.isEligible ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>
-                    ⚖️ স্ট্যাটাস: {elg.statusText}
+                    <div>⚖️ স্ট্যাটাস: {elg.statusText}</div>
+                    
+                    {!elg.isEligible && elg.remainingDays > 0 && (
+                      <div className="mt-2 space-y-1">
+                        <div className="flex justify-between text-[10px] text-amber-700 font-bold">
+                          <span>রক্তদানের প্রস্তুতি অগ্রগতি</span>
+                          <span>{elg.percent}% সম্পন্ন</span>
+                        </div>
+                        <div className="w-full bg-amber-200/50 rounded-full h-2 overflow-hidden border border-amber-200">
+                          <div className="bg-amber-500 h-full rounded-full transition-all duration-500" style={{ width: `${elg.percent}%` }}></div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="bg-slate-100 p-3 rounded-xl flex flex-wrap items-center justify-between gap-2">
@@ -680,14 +739,25 @@ export default function App() {
                         </button>
                       )}
 
+                      {/* ফিচার ১ সংযুক্তি: রক্তদাতার জন্য ডাইনামিক হোয়াটসঅ্যাপ ও কল বাটন অ্যাকশন */}
                       {(isUnlocked || isAdmin) ? (
-                        <a href={`tel:${donor.phone}`} title="সরাসরি কল করুন" className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
-                          📞
-                        </a>
+                        <>
+                          <a href={`tel:${donor.phone}`} title="সরাসরি কল করুন" className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
+                            📞
+                          </a>
+                          <a href={waDonorUrl} target="_blank" rel="noopener noreferrer" title="হয়াটসঅ্যাপ মেসেজ দিন" className="p-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
+                            💬
+                          </a>
+                        </>
                       ) : (
-                        <button type="button" onClick={() => showToast('মোবাইল নাম্বার দেখতে ও কল করতে ভলান্টিয়ার কোড বা মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
-                          🔒
-                        </button>
+                        <>
+                          <button type="button" onClick={() => showToast('মোবাইল নম্বর দেখতে ও কল করতে ভলান্টিয়ার কোড বা মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                            🔒
+                          </button>
+                          <button type="button" onClick={() => showToast('হোয়াটসঅ্যাপে মেসেজ দিতে ভলান্টিয়ার কোড বা মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                            🔒
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -901,16 +971,14 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 leading-normal">
       
-      {/* ফিক্সড নোটিফিকেশন UI: এখন এটি পুরো মোবাইল স্ক্রিনের একদম মাঝ বরাবর সেন্টারে থাকবে */}
+      {/* ফিক্সড নোটিফিকেশন UI */}
       {notification.show && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
-          {/* pointer-events-none ব্যবহারের ফলে এর পেছনের কনটেন্টে কোনো ক্লিক ব্লক হবে না */}
           <div className={`p-5 rounded-2xl shadow-2xl border text-center font-black text-sm sm:text-base max-w-sm w-11/12 pointer-events-auto transform transition-all duration-300 scale-100 break-words whitespace-normal shadow-xl ${
             notification.type === 'success' ? 'bg-green-600 text-white border-green-700' : 
             notification.type === 'error' ? 'bg-red-600 text-white border-red-700' : 
             'bg-slate-800 text-white border-slate-900'
           }`}>
-            {/* break-words whitespace-normal এর কারণে সুপাবেসের যেকোনো বড় এরর টেক্সট স্ক্রিন কাটার সুযোগ নেই, সম্পূর্ণ অটো-র‍্যাপ হবে */}
             {notification.message}
           </div>
         </div>
