@@ -15,7 +15,7 @@ export default function App() {
   // কাস্টম নোটিফিকেশন স্টেট
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
   
-  // নতুন মোডাল এরর স্টেট (যা আপনার দেওয়া কোড ব্লককে নিয়ন্ত্রণ করবে)
+  // নতুন মোডাল এরর স্টেট
   const [error, setError] = useState(null);
 
   // Form স্টেটসমূহ
@@ -208,7 +208,7 @@ export default function App() {
     if (newDonor.id) {
       const { error: submitError } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
       if (submitError) {
-        showToast('তথ্য সংশোধন করার সময় সমস্যা হয়েছে: ' + submitError.message, 'error');
+        showToast('정보 সংশোধন করার সময় সমস্যা হয়েছে: ' + submitError.message, 'error');
       } else {
         showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
         resetDonorForm();
@@ -796,7 +796,7 @@ export default function App() {
 
         <div>
           <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">🏡 রক্তদাতার সম্পূর্ণ ঠিকানা *</label>
-          <input type="text" placeholder="বাঘপাঁচড়া, সোনাইমুড়ী, নোয়াখালী 🇧🇩🇨🇦" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+          <input type="text" placeholder="বাঘপাঁচড়া, সোনাইমুড়ী, নোয়াখালী" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div>
@@ -881,7 +881,7 @@ export default function App() {
                   <button onClick={() => handleEditVolunteer(v)} title="সংশোধন" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">🖊️</button>
                   <button onClick={() => handleDeleteVolunteer(v.id)} title="মুছে ফেলুন" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">🗑️</button>
                   <button onClick={() => toggleVolunteerStatus(v.id, v.is_active)} className={`px-2.5 py-1.5 rounded-lg font-bold text-xs text-white ${v.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}>
-                    {v.is_active ? '🚫। ব্লক' : '🔓 আনব্লক'}
+                    {v.is_active ? '🚫 ব্লক' : '🔓 আনব্লক'}
                   </button>
                 </div>
               </div>
@@ -900,51 +900,41 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 leading-normal">
+      
+      {/* ফিক্সড নোটিফিকেশন UI: এখন এটি পুরো মোবাইল স্ক্রিনের একদম মাঝ বরাবর সেন্টারে থাকবে */}
       {notification.show && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-sm w-11/12 mx-auto animate-bounce">
-          <div className={`p-4 rounded-2xl shadow-2xl border text-center font-bold text-sm ${
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
+          {/* pointer-events-none ব্যবহারের ফলে এর পেছনের কনটেন্টে কোনো ক্লিক ব্লক হবে না */}
+          <div className={`p-5 rounded-2xl shadow-2xl border text-center font-black text-sm sm:text-base max-w-sm w-11/12 pointer-events-auto transform transition-all duration-300 scale-100 break-words whitespace-normal shadow-xl ${
             notification.type === 'success' ? 'bg-green-600 text-white border-green-700' : 
             notification.type === 'error' ? 'bg-red-600 text-white border-red-700' : 
             'bg-slate-800 text-white border-slate-900'
           }`}>
+            {/* break-words whitespace-normal এর কারণে সুপাবেসের যেকোনো বড় এরর টেক্সট স্ক্রিন কাটার সুযোগ নেই, সম্পূর্ণ অটো-র‍্যাপ হবে */}
             {notification.message}
           </div>
         </div>
       )}
 
-      {/* এখানে আপনার এরর স্টেট (যেমন error বা errorMessage) থাকলে তা চেক হবে */}
       {error && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black/40 backdrop-blur-sm">
-          {/* - fixed inset-0: পুরো স্ক্রিন দখল করবে 
-            - flex items-center justify-center: ভেতরের বক্সটিকে স্ক্রিনের একদম মাঝখানে (Centered) নিয়ে আসবে
-            - bg-black/40 backdrop-blur-sm: পেছনের ব্যাকগ্রাউন্ড হালকা কালো ও ঘোলা করবে যাতে নোটিফিকেশনটি ফুটে ওঠে
-          */}
-          
           <div className="bg-red-600 text-white p-6 rounded-2xl shadow-2xl w-full max-w-md border border-red-500 transform transition-all duration-300 scale-100 flex flex-col items-center text-center space-y-4">
-            
-            {/* এরর আইকন */}
             <div className="bg-white/20 p-3 rounded-full animate-bounce">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-
-            {/* মেসেজ কন্টেইনার (আপনার সুন্দর বাংলা ফন্ট সহ) */}
             <div className="font-bengali text-lg md:text-xl font-medium whitespace-normal break-words leading-relaxed w-full">
-              {/* whitespace-normal break-words থাকার কারণে লেখা স্ক্রিনের বাইরে না গিয়ে নিচে ভেঙে আসবে */}
               {error}
             </div>
-
-            {/* বাটন */}
             <div className="w-full pt-2">
               <button 
-                onClick={() => setError(null)} // এখানে আপনার এরর স্টেট ক্লিয়ার করার ফাংশনটি বসবে
+                onClick={() => setError(null)} 
                 className="font-bengali bg-white text-red-700 font-bold px-8 py-2.5 rounded-xl hover:bg-red-50 transition-colors duration-200 shadow-md text-sm w-full md:w-auto"
               >
                 ঠিক আছে
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -953,7 +943,7 @@ export default function App() {
         <div className="flex flex-col items-center justify-center gap-2">
           <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain rounded-full bg-white p-1 shadow-md" />
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-center text-white tracking-wide drop-shadow-md leading-tight">
-            🩸ব্লাড সেন্টার নদোনা নোয়াখালী🩸
+              ব্লাড সেন্টার নদোনা নোয়াখালী
           </h1>
           <div className="text-xs text-red-100 font-bold flex flex-col items-center gap-1 mt-1">
             <span className="bg-red-700/50 px-3 py-0.5 rounded-full">🏡 স্থাপিত: ২০১৩ ইং</span>
@@ -1055,7 +1045,7 @@ export default function App() {
 
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed">
         <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
-        <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">🤝 সার্বিক সহযোগিতায়: মরহুম হাজী তфসির আহমেদ ট্রাস্ট</p>
+        <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">🤝 সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
         <div className="flex items-center justify-center gap-2 pt-3 border-t border-slate-200 max-w-sm mx-auto whitespace-nowrap">
           <span className="text-xs font-medium text-slate-400 leading-normal">⚙️ কারিগরি সহযোগিতায়:</span>
           <img src="/gias.png" alt="Developer" className="w-6 h-6 rounded-full object-cover border shadow-xs" />
