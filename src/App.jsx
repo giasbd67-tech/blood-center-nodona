@@ -100,6 +100,7 @@ export default function App() {
   const [selectedDonorForCard, setSelectedDonorForCard] = useState(null);
   const [selectedVolunteerForCard, setSelectedVolunteerForCard] = useState(null);
   const [donorLogs, setDonorLogs] = useState([]);
+  const [allLogs, setAllLogs] = useState([]); // গ্লোবাল দাতার রক্তদানের ইতিহাস স্টেট
   const [showLogModal, setShowLogModal] = useState(false);
   const [activeLogDonor, setActiveLogDonor] = useState(null);
   const [newLog, setNewLog] = useState({ patient_name: '', hospital: '', date: '' });
@@ -118,6 +119,7 @@ export default function App() {
   useEffect(() => {
     fetchDonors();
     fetchRequests();
+    fetchAllLogs();
     // অফলাইন ক্যাশ সাপোর্ট লোড
     const cachedDonors = localStorage.getItem('cached_donors');
     const cachedRequests = localStorage.getItem('cached_requests');
@@ -162,6 +164,16 @@ export default function App() {
   const fetchVolunteers = async () => {
     const { data } = await supabase.from('volunteers').select('*').order('points', { ascending: false });
     if (data) setVolunteers(data);
+  };
+
+  // সামগ্রিক রক্তদানের ইতিহাস নিয়ে আসার ফাংশন
+  const fetchAllLogs = async () => {
+    try {
+      const { data } = await supabase.from('donation_logs').select('*').order('date', { ascending: false });
+      if (data) setAllLogs(data);
+    } catch (e) {
+      console.log("Error fetching all donation logs.");
+    }
   };
 
   // আপডেট করা ডাইনামিক ৬-স্তর বিশিষ্ট ডোনার ব্যাজ নির্ধারণকারী লজিক
@@ -677,7 +689,7 @@ export default function App() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, 600, 350);
     ctx.lineWidth = 10;
-    ctx.strokeStyle = '#2563eb'; // নীল থিম ফর ভলান্টিয়ার্স
+    ctx.strokeStyle = '#2563eb'; // নীল থিম ফর ভলান্টিয়ারส์
     ctx.strokeRect(0, 0, 600, 350);
 
     ctx.fillStyle = '#2563eb';
@@ -752,6 +764,7 @@ export default function App() {
       // পুনরায় রিফ্রেশ লিস্ট
       const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
       if (data) setDonorLogs(data);
+      fetchAllLogs(); // গ্লোবাল হিস্ট্রি রিফ্রেশ
     } else {
       showToast('লগ করতে সমস্যা হয়েছে: ' + logErr.message, 'error');
     }
@@ -760,8 +773,11 @@ export default function App() {
   const handleDeleteLog = async (logId) => {
     if (confirm('আপনি কি এই ডোনেশন রেকর্ড হিস্ট্রিটি মুছে ফেলতে চান?')) {
       await supabase.from('donation_logs').delete().eq('id', logId);
-      const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
-      if (data) setDonorLogs(data);
+      if (activeLogDonor) {
+        const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
+        if (data) setDonorLogs(data);
+      }
+      fetchAllLogs(); // গ্লোবাল হিস্ট্রি রিফ্রেশ
       showToast('হিস্ট্রি রিমুভ করা হয়েছে।', 'success');
     }
   };
@@ -901,40 +917,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* নতুন ভলান্টিয়ার লিডারবোর্ড মডিউল (হোম ট্যাব ও নোটিশ বোর্ডে দৃশ্যমান) */}
-      <div className="bg-white p-5 rounded-2xl shadow border border-blue-100 space-y-3">
-        <h3 className="text-base font-black text-blue-600 flex items-center gap-1.5">
-          <Award className="w-5 h-5 text-amber-500 fill-amber-500" /> ভলান্টিয়ার লিডারবোর্ড (সক্রিয়তা তালিকা)
-        </h3>
-        <p className="text-[11px] text-slate-400 font-semibold leading-none">ডোনার রেজিস্ট্রেশন ও ম্যানেজ করার উপর ভিত্তি করে তৈরি রিয়েলটাইম র‍্যাংকিং।</p>
-        <div className="space-y-2 max-h-48 overflow-y-auto pt-1">
-          {volunteers.slice(0, 5).map((v, idx) => {
-            const vBadge = getVolunteerBadge(v.points);
-            return (
-              <div key={v.id} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-150">
-                <div className="flex items-center gap-2">
-                  <span className={`w-6 h-6 rounded-full text-xs font-black flex items-center justify-center ${idx === 0 ? 'bg-yellow-400 text-white' : idx === 1 ? 'bg-slate-300 text-slate-800' : 'bg-slate-200 text-slate-600'}`}>
-                    {idx + 1}
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-slate-800">{v.name}</p>
-                    <span className={`text-[9px] px-2 py-0.5 rounded font-bold ${vBadge.classes}`}>{vBadge.text}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">{v.points || 0} পয়েন্ট</span>
-                  {(isAdmin || isUnlocked) && (
-                    <button onClick={() => downloadVolunteerCard(v)} title="কার্ড ডাউনলোড" className="p-1.5 bg-white border rounded-lg text-slate-500 hover:bg-slate-100 shadow-2xs">
-                      <Download className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       <div className="space-y-4">
         <div className="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 flex gap-3 shadow-xs">
           <span className="bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
@@ -946,7 +928,7 @@ export default function App() {
               <li>হৃদরোগ ও স্ট্রোকের ঝুঁকি কমাতে সাহায্য করে।</li>
               <li>শরীরে সম্পূর্ণ নতুন রক্তকণিকা তৈরি বৃদ্ধি পায়।</li>
               <li>বিনামূল্যে মৌলিক স্বাস্থ্য পরীক্ষার সুযোগ হয়।</li>
-              <li>মানसिक প্রশান্তি ও পরম তৃপ্তি লাভ করা যায়।</li>
+              <li>মানসিক প্রশান্তি ও পরম তৃপ্তি লাভ করা যায়।</li>
             </ul>
           </div>
         </div>
@@ -962,7 +944,7 @@ export default function App() {
               <li>সুস্থ নারীরা প্রতি ৪ থেকে ৬ মাস অন্তর রক্ত দিতে পারবেন (৬ মাস বেশি নিরাপদ)।</li>
               <li>রক্তদানের জন্য ন্যূনতম ওজন অবশ্যই ৫০ কেজি (বিশেষ ক্ষেত্রে ৪৫ কেজি) হতে হবে।</li>
               <li>রক্তদাতার বয়স অবশ্যই ১৮ থেকে ৬০ বা ৬৫ বছরের মধ্যে হতে হবে।</li>
-              <li>রक्तচাপ, শরীরের তাপমাত্রা এবং হিমোগ্লোবিনের মাত্রা সঠিক থাকা আবশ্যক।</li>
+              <li>রক্তচাপ, শরীরের তাপমাত্রা এবং হিমোগ্লোবিনের মাত্রা সঠিক থাকা আবশ্যক।</li>
             </ul>
           </div>
         </div>
@@ -980,7 +962,7 @@ export default function App() {
               মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে **২৭ মার্চ ২০১৩ ইং** তারিখে ব্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
             </p>
             <div className="pt-1">
-              <p className="text-xs font-bold text-slate-700 mb-1.5"> দূরदर्शी ৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
+              <p className="text-xs font-bold text-slate-700 mb-1.5"> দূরদর্শী ৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-600">
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ১</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ২</div>
@@ -1100,7 +1082,7 @@ export default function App() {
                     </button>
                     {(isAdmin || isUnlocked) && (
                       <button onClick={() => openLogModal(donor)} className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border border-blue-200">
-                        <History className="w-3 h-3" /> স্মার্ট হিস্ট্রি
+                        <History className="w-3 h-3" /> スマート হিস্ট্রি
                       </button>
                     )}
                   </div>
@@ -1120,7 +1102,7 @@ export default function App() {
                       )}
                       
                       {(isUnlocked || isAdmin) ? (
-                        <button onClick={() => handleCopyDonorInfo(donor)} title="তথ্য কপি" className="p-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
+                        <button onClick={() => handleCopyDonorInfo(donor)} title="정보 복사" className="p-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
                           <Copy className="w-4 h-4" />
                         </button>
                       ) : (
@@ -1162,7 +1144,7 @@ export default function App() {
 
                   {isAdmin && (
                     <button onClick={() => handleIncrementActivity(donor.id, donor.activity_count || 0)} className="w-full bg-slate-800 hover:bg-slate-900 text-white py-1.5 rounded-xl font-bold text-xs shadow mt-2 leading-normal flex items-center justify-center gap-1">
-                      <Plus className="w-4 h-4" /> রক্তদানের সংখ্যা ১ বার বৃদ্ধি করুন (+1)
+                      <Plus className="w-4 h-4" />রক্তদানের সংখ্যা ১ বার বৃদ্ধি করুন (+1)
                     </button>
                   )}
                 </div>
@@ -1325,6 +1307,76 @@ export default function App() {
         </div>
       )}
 
+      {/* স্থানান্তরকৃত ভলান্টিয়ার লিডারবোর্ড মডিউল (ভলান্টিয়ার আনলক প্যানেল এর নিচে) */}
+      <div className="bg-white p-5 rounded-2xl shadow border border-blue-100 space-y-3">
+        <h3 className="text-base font-black text-blue-600 flex items-center gap-1.5">
+          <Award className="w-5 h-5 text-amber-500 fill-amber-500" /> ভলান্টিয়ার লিডারবোর্ড (সক্রিয়তা তালিকা)
+        </h3>
+        <p className="text-[11px] text-slate-400 font-semibold leading-none">ডোনার রেজিস্ট্রেশন ও ম্যানেজ করার উপর ভিত্তি করে তৈরি রিয়েলটাইম র‍্যাংকিং।</p>
+        <div className="space-y-2 max-h-48 overflow-y-auto pt-1">
+          {volunteers.map((v, idx) => {
+            const vBadge = getVolunteerBadge(v.points);
+            return (
+              <div key={v.id} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-150">
+                <div className="flex items-center gap-2">
+                  <span className={`w-6 h-6 rounded-full text-xs font-black flex items-center justify-center ${idx === 0 ? 'bg-yellow-400 text-white' : idx === 1 ? 'bg-slate-300 text-slate-800' : 'bg-slate-200 text-slate-600'}`}>
+                    {idx + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">{v.name}</p>
+                    <span className={`text-[9px] px-2 py-0.5 rounded font-bold ${vBadge.classes}`}>{vBadge.text}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">{v.points || 0} পয়েন্ট</span>
+                  {(isAdmin || isUnlocked) && (
+                    <button onClick={() => downloadVolunteerCard(v)} title="কার্ড ডাউনলোড" className="p-1.5 bg-white border rounded-lg text-slate-500 hover:bg-slate-100 shadow-2xs">
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* নতুন গ্লোবাল ফিচার: দাতার রক্তদানের ইতিহাস ট্র্যাকিং সেকশন */}
+      <div className="bg-white p-5 rounded-2xl shadow border border-red-100 space-y-3">
+        <h3 className="text-base font-black text-red-600 flex items-center gap-1.5">
+          <History className="w-5 h-5 text-red-500" /> দাতার রক্তদানের ইতিহাস
+        </h3>
+        <p className="text-[11px] text-slate-400 font-semibold leading-none">কোনো ডোনার আগে কাকে, কোন হাসপাতালে এবং কত তারিখে রক্ত দিয়েছেন তার সংক্ষিপ্ত ইতিহাস রেকর্ড।</p>
+        <div className="space-y-2 max-h-60 overflow-y-auto pt-1">
+          {allLogs.length === 0 ? (
+            <p className="text-xs text-slate-400 text-center py-6 flex items-center justify-center gap-1">
+              <Info className="w-4 h-4" /> কোনো রক্তদানের ইতিহাস রেকর্ড খুঁজে পাওয়া যায়নি।
+            </p>
+          ) : (
+            allLogs.map(log => {
+              const matchedDonor = donors.find(d => d.id === log.donor_id);
+              return (
+                <div key={log.id} className="p-3 bg-slate-50 rounded-xl border border-slate-150 text-xs space-y-1">
+                  <div className="flex justify-between items-center font-bold text-slate-800">
+                    <span className="text-red-600">🩸 রক্তদাতা: {matchedDonor ? matchedDonor.name : 'অজানা দাতা'} ({matchedDonor ? matchedDonor.blood_group : ''})</span>
+                    <span className="text-slate-500 text-[10px] bg-slate-200 px-2 py-0.5 rounded-full">{log.date}</span>
+                  </div>
+                  <p className="text-slate-600 font-medium"> Hospital: <span className="text-slate-800">{log.hospital}</span></p>
+                  <p className="text-slate-600 font-medium">👤 রোগী: <span className="text-slate-800">{log.patient_name}</span></p>
+                  {isAdmin && (
+                    <div className="text-right pt-1">
+                      <button onClick={() => handleDeleteLog(log.id)} className="text-red-500 font-bold text-[10px] bg-red-50 hover:bg-red-100 px-2 py-1 rounded border border-red-200 inline-flex items-center gap-0.5">
+                        <Trash2 className="w-3 h-3" /> রেকর্ড মুছুন
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
       {isAdmin && (
         <div className="bg-white p-5 rounded-2xl shadow border-t-4 border-blue-600 space-y-4">
           <h3 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">
@@ -1342,7 +1394,7 @@ export default function App() {
             </div>
             <div className="flex gap-1.5">
               <button type="submit" className="flex-1 bg-blue-600 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1">
-                <Save className="w-3.5 h-3.5" /> {editVolunteerId ? 'তথ্য আপডেট' : 'ভলান্টিয়ার অনুমোদন'}
+                <Save className="w-3.5 h-3.5" /> {editVolunteerId ? '정보 업데이트' : 'ভলান্টিয়ার অনুমোদন'}
               </button>
               {editVolunteerId && (
                 <button type="button" onClick={() => { setEditVolunteerId(null); setNewVolunteer({ name: '', phone: '', password: '', points: 0 }); }} className="bg-slate-200 text-slate-700 px-3 rounded-xl font-bold text-xs">বাতিল</button>
