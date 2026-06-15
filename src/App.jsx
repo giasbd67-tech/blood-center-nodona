@@ -39,7 +39,9 @@ import {
   Check, 
   AlertTriangle, 
   X,
-  Info
+  Info,
+  Download,
+  History
 } from 'lucide-react';
 
 export default function App() {
@@ -76,7 +78,7 @@ export default function App() {
   const [editRequestId, setEditRequestId] = useState(null);
   
   // নতুন পাসওয়ার্ড ফিল্ড সহ ভলান্টিয়ার স্টেট
-  const [newVolunteer, setNewVolunteer] = useState({ name: '', phone: '', password: '' });
+  const [newVolunteer, setNewVolunteer] = useState({ name: '', phone: '', password: '', points: 0 });
   const [editVolunteerId, setEditVolunteerId] = useState(null);
 
   // সিকিউরিটি ও অথেনটিকেশন স্টেট
@@ -94,6 +96,14 @@ export default function App() {
   const [masterCode, setMasterCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
+  // নতুন অ্যাডভান্সড ফিচারের স্টেটসমূহ
+  const [selectedDonorForCard, setSelectedDonorForCard] = useState(null);
+  const [selectedVolunteerForCard, setSelectedVolunteerForCard] = useState(null);
+  const [donorLogs, setDonorLogs] = useState([]);
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [activeLogDonor, setActiveLogDonor] = useState(null);
+  const [newLog, setNewLog] = useState({ patient_name: '', hospital: '', date: '' });
+
   const bloodGroups = ['All', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
   // কাস্টম নোটিফিকেশন প্রদর্শনকারী হেল্পার
@@ -108,6 +118,12 @@ export default function App() {
   useEffect(() => {
     fetchDonors();
     fetchRequests();
+    // অফলাইন ক্যাশ সাপোর্ট লোড
+    const cachedDonors = localStorage.getItem('cached_donors');
+    const cachedRequests = localStorage.getItem('cached_requests');
+    if (cachedDonors) setDonors(JSON.parse(cachedDonors));
+    if (cachedRequests) setEmergencyRequests(JSON.parse(cachedRequests));
+
     const savedPhone = localStorage.getItem('v_phone');
     const savedPass = localStorage.getItem('v_pass');
     if (savedPhone && savedPass) {
@@ -116,34 +132,55 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (isAdmin) {
-      fetchVolunteers();
-    }
+    fetchVolunteers(); // লিডারবোর্ডের জন্য ভলান্টিয়ার ডাটা সবসময় রিড করা প্রয়োজন
   }, [isAdmin]);
 
   const fetchDonors = async () => {
-    const { data } = await supabase.from('donors').select('*').order('activity_count', { ascending: false });
-    if (data) setDonors(data);
+    try {
+      const { data } = await supabase.from('donors').select('*').order('activity_count', { ascending: false });
+      if (data) {
+        setDonors(data);
+        localStorage.setItem('cached_donors', JSON.stringify(data)); // অফলাইন ক্যাশিং
+      }
+    } catch (e) {
+      console.log("Offline mode donor loaded from cache.");
+    }
   };
 
   const fetchRequests = async () => {
-    const { data } = await supabase.from('emergency_requests').select('*').order('id', { ascending: false });
-    if (data) setEmergencyRequests(data);
+    try {
+      const { data } = await supabase.from('emergency_requests').select('*').order('id', { ascending: false });
+      if (data) {
+        setEmergencyRequests(data);
+        localStorage.setItem('cached_requests', JSON.stringify(data)); // অফলাইন নোটিশ ক্যাশিং
+      }
+    } catch (e) {
+      console.log("Offline mode requests loaded from cache.");
+    }
   };
 
   const fetchVolunteers = async () => {
-    const { data } = await supabase.from('volunteers').select('*').order('id', { ascending: false });
+    const { data } = await supabase.from('volunteers').select('*').order('points', { ascending: false });
     if (data) setVolunteers(data);
   };
 
-  // রক্তদানের সংখ্যা অনুযায়ী মেডেল নির্ধারণকারী ফাংশন
+  // আপডেট করা ডাইনামিক ৬-স্তর বিশিষ্ট ডোনার ব্যাজ নির্ধারণকারী লজিক
   const getDonorBadge = (count) => {
     const num = Number(count) || 0;
     if (num === 0) return { text: 'নতুন রক্তদাতা', classes: 'bg-slate-100 text-slate-700 border-slate-300' };
-    if (num <= 2) return { text: 'সহযোগী রক্তদাতা', classes: 'bg-green-100 text-green-700 border-green-200' };
-    if (num <= 5) return { text: 'সিলভার ডোনার', classes: 'bg-gray-200 text-gray-700 border-gray-300' };
-    if (num <= 10) return { text: 'গোল্ড ডোনার', classes: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
-    return { text: 'প্লাতিনাম ডোনার', classes: 'bg-blue-100 text-blue-700 border-blue-200 font-bold shadow-sm' };
+    if (num <= 2) return { text: 'উদীয়মান দাতা', classes: 'bg-amber-100 text-amber-700 border-amber-200' };
+    if (num <= 5) return { text: 'নিয়মিত দাতা', classes: 'bg-blue-100 text-blue-700 border-blue-200' };
+    if (num <= 9) return { text: 'স্টার দাতা', classes: 'bg-green-100 text-green-700 border-green-200' };
+    if (num <= 14) return { text: 'সুপার হিরো', classes: 'bg-yellow-100 text-yellow-700 border-yellow-300 font-black animate-pulse shadow-xs' };
+    return { text: 'লাইভ সেভার লিজেন্ড', classes: 'bg-purple-100 text-purple-700 border-purple-300 font-black tracking-wide shadow animate-bounce' };
+  };
+
+  // ভলান্টিয়ারদের সফল কাজের ওপর ভিত্তি করে রিয়েলটাইম মেডেল নির্ধারণ
+  const getVolunteerBadge = (points) => {
+    const pts = Number(points) || 0;
+    if (pts >= 15) return { text: 'প্লাটিনাম লিডার', classes: 'bg-purple-600 text-white' };
+    if (pts >= 8) return { text: 'গোল্ডেন স্টার', classes: 'bg-yellow-500 text-white' };
+    return { text: 'সক্রিয় সদস্য', classes: 'bg-blue-500 text-white' };
   };
 
   const handleVolunteerUnlock = async (e) => {
@@ -151,7 +188,6 @@ export default function App() {
     await checkVolunteerAccess(volunteerPhone, volunteerPassword);
   };
 
-  // সিকিউর আলফানিউমেরিক কোড ভিত্তিক ভলান্টিয়ার অ্যাক্সেস ভেরিফিকেশন
   const checkVolunteerAccess = async (phone, pass) => {
     const { data, error: dbError } = await supabase
       .from('volunteers')
@@ -198,7 +234,6 @@ export default function App() {
     showToast('ডাটা পুনরায় লক করা হয়েছে।', 'info');
   };
 
-  // রক্তদানের যোগ্যতা যাচাই ও কাউউন্টডাউন পার্সেন্টেজ লজিক (ডাইনামিক করা হয়েছে)
   const checkEligibility = (lastDate, gender) => {
     if (!lastDate) return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
     
@@ -255,8 +290,13 @@ export default function App() {
     if (newDonor.id) {
       const { error: submitError } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
       if (submitError) {
-        showToast('তথ্য সংশোধন করার সময় সমস্যা হয়েছে: ' + submitError.message, 'error');
+        showToast('정보 수정 실패: ' + submitError.message, 'error');
       } else {
+        // ভলান্টিয়ার বা অ্যাডমিন ডাটা এডিটের মাধ্যমে ডাটাবেজ মডিফাই করলে লিডারবোর্ড অ্যাক্টিভিটি বৃদ্ধি করা
+        if (isUnlocked && !isAdmin) {
+          await supabase.rpc('increment_volunteer_points', { v_phone: volunteerPhone });
+          fetchVolunteers();
+        }
         showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
         resetDonorForm();
         fetchDonors();
@@ -271,6 +311,10 @@ export default function App() {
           showToast('নিবন্ধন ব্যর্থ হয়েছে: ' + submitError.message, 'error');
         }
       } else {
+        if (isUnlocked && !isAdmin) {
+          await supabase.rpc('increment_volunteer_points', { v_phone: volunteerPhone });
+          fetchVolunteers();
+        }
         showToast('রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!', 'success');
         resetDonorForm();
         fetchDonors();
@@ -296,7 +340,7 @@ export default function App() {
         setEditRequestId(null);
         fetchRequests();
       } else {
-        showToast('নোটিশ সংশোধন করতে ব্যর্থ: ' + reqError.message, 'error');
+        showToast('노টিশ সংশোধন করতে ব্যর্থ: ' + reqError.message, 'error');
       }
     } else {
       const { error: reqError } = await supabase.from('emergency_requests').insert([newRequest]);
@@ -419,14 +463,15 @@ export default function App() {
       name: newVolunteer.name, 
       phone: newVolunteer.phone, 
       password: newVolunteer.password,
-      code: newVolunteer.password 
+      code: newVolunteer.password,
+      points: Number(newVolunteer.points) || 0
     };
 
     if (editVolunteerId) {
       const { error: volError } = await supabase.from('volunteers').update(volunteerPayload).eq('id', editVolunteerId);
       if (!volError) {
         showToast('ভলান্টিয়ারের তথ্য ও সিকিউরিটি পাসওয়ার্ড সফলভাবে সংশোধন করা হয়েছে!', 'success');
-        setNewVolunteer({ name: '', phone: '', password: '' });
+        setNewVolunteer({ name: '', phone: '', password: '', points: 0 });
         setEditVolunteerId(null);
         fetchVolunteers();
       } else {
@@ -438,14 +483,14 @@ export default function App() {
         showToast('এই ভলান্টিয়ার নম্বরটি অলরেডি অনুমোদিত আছে অথবা সমস্যা হয়েছে!', 'error');
       } else {
         showToast('নতুন ভলান্টিয়ার কাস্টম সিকিউরিটি পাসওয়ার্ড সহ অনুমোদিত হয়েছে!', 'success');
-        setNewVolunteer({ name: '', phone: '', password: '' });
+        setNewVolunteer({ name: '', phone: '', password: '', points: 0 });
         fetchVolunteers();
       }
     }
   };
 
   const handleEditVolunteer = (v) => {
-    setNewVolunteer({ name: v.name, phone: v.phone, password: v.password || v.code || '' });
+    setNewVolunteer({ name: v.name, phone: v.phone, password: v.password || v.code || '', points: v.points || 0 });
     setEditVolunteerId(v.id);
   };
 
@@ -473,7 +518,7 @@ export default function App() {
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    const { data, error: authError } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
+    const { data } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
     if (data) {
       setIsAdmin(true);
       setShowAdminLogin(false);
@@ -486,7 +531,7 @@ export default function App() {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (masterCode !== 'BCNN2013') {
-      return showToast('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
+      return showToast('ভুলマスター কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
     }
     const { error: authError } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
     if (!authError) {
@@ -496,6 +541,228 @@ export default function App() {
       setNewPassword('');
     } else {
       showToast('পাসওয়ার্ড পরিবর্তন ব্যর্থ: ' + authError.message, 'error');
+    }
+  };
+
+  // ==================== ক্যানভাস ভিত্তিক ডিজিটাল কার্ড এবং সার্টিফিকেট জেনারেটর ====================
+  const downloadDonorCard = (donor) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 600;
+    canvas.height = 350;
+    const ctx = canvas.getContext('2d');
+
+    // ব্যাকগ্রাউন্ড ডিজাইন ও বর্ডার গ্রাডিয়েন্ট
+    const grad = ctx.createLinearGradient(0, 0, 600, 350);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(1, '#fff5f5');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 600, 350);
+    
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = '#dc2626';
+    ctx.strokeRect(0, 0, 600, 350);
+
+    // হেডার পার্ট
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(5, 5, 590, 75);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 26px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 300, 40);
+    ctx.font = '14px sans-serif';
+    ctx.fillText('মানবতার সেবায় রক্তদানের মহান ব্রত', 300, 65);
+
+    // মেম্বারশিপ বডি টেক্সট
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText(`রক্তদাতা কার্ড`, 40, 125);
+    
+    ctx.font = '16px sans-serif';
+    ctx.fillText(`নাম: ${donor.name}`, 45, 170);
+    ctx.fillText(`ঠিকানা: ${donor.location || donor.village || 'নদোনা'}`, 45, 205);
+    ctx.fillText(`সর্বশেষ রক্তদান: ${donor.last_donation_date || 'কখনো না'}`, 45, 240);
+    ctx.fillText(`মোট রক্তদান: ${donor.activity_count || 0} বার`, 45, 275);
+
+    // রক্তের বড় আইকন ব্যাজ ডানপাশে
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(480, 180, 55, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(donor.blood_group, 480, 193);
+
+    ctx.fillStyle = '#7f1d1d';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(getDonorBadge(donor.activity_count).text, 480, 260);
+
+    // ফুটার
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। স্থাপিত - ২৭ মার্চ ২০১৩ ইং', 300, 330);
+
+    triggerDownload(canvas, `Donor_Card_${donor.name}.png`);
+  };
+
+  const downloadDonorCertificate = (donor) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 550;
+    const ctx = canvas.getContext('2d');
+
+    // সার্টিফিকেট বর্ডার ফ্রেম
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 800, 550);
+    ctx.lineWidth = 15;
+    ctx.strokeStyle = '#991b1b';
+    ctx.strokeRect(0, 0, 800, 550);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#f59e0b';
+    ctx.strokeRect(20, 20, 760, 510);
+
+    // জলছাপ লোগো এফেক্ট
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.04)';
+    ctx.beginPath();
+    ctx.arc(400, 275, 150, 0, Math.PI * 2);
+    ctx.fill();
+
+    // হেডার ও ট্রাস্ট পার্ট
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#991b1b';
+    ctx.font = 'bold 38px sans-serif';
+    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 400, 90);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText('★ সম্মাননা ও স্বীকৃতি স্মারক সার্টিফিকেট ★', 400, 130);
+
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '18px sans-serif';
+    ctx.fillText('এই মর্মে অত্যন্ত আনন্দের সাথে কৃতজ্ঞতা জ্ঞাপন করা যাচ্ছে যে,', 400, 200);
+    
+    ctx.fillStyle = '#dc2626';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillText(donor.name, 400, 255);
+
+    ctx.fillStyle = '#334155';
+    ctx.font = '16px sans-serif';
+    ctx.fillText(`যিনি ব্লাড সেন্টার নদোনা নোয়াখালী এর একজন নিয়মিত মানবতার সেবক। উনার রক্তের গ্রুপ হলো [ ${donor.blood_group} ]।`, 400, 310);
+    ctx.fillText(`তিনি এই পর্যন্ত সমাজের মুমূর্ষু মানুষের জীবন বাঁচাতে স্বেচ্ছায় মোট ${donor.activity_count || 0} বার সফলভাবে রক্তদান করেছেন।`, 400, 345);
+    ctx.fillText(`উনার এই মহান ও নিঃস্বার্থ অবদানকে সম্মান জানিয়ে এই গৌরবপত্র প্রদান করা হলো।`, 400, 380);
+
+    ctx.fillStyle = '#059669';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText(`অর্জিত পদমর্যাদা: ${getDonorBadge(donor.activity_count).text}`, 400, 430);
+
+    // স্বাক্ষর পার্ট
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.beginPath(); ctx.moveTo(150, 490); ctx.lineTo(300, 490); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(500, 490); ctx.lineTo(650, 490); ctx.stroke();
+    ctx.fillStyle = '#475569';
+    ctx.font = '13px sans-serif';
+    ctx.fillText('পরিচালক স্বাক্ষর', 225, 510);
+    ctx.fillText('সংগঠন মডারেটর', 575, 510);
+
+    triggerDownload(canvas, `Certificate_${donor.name}.png`);
+  };
+
+  const downloadVolunteerCard = (v) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 600;
+    canvas.height = 350;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 600, 350);
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = '#2563eb'; // নীল থিম ফর ভলান্টিয়ার্স
+    ctx.strokeRect(0, 0, 600, 350);
+
+    ctx.fillStyle = '#2563eb';
+    ctx.fillRect(5, 5, 590, 75);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 300, 40);
+    ctx.font = '13px sans-serif';
+    ctx.fillText('অফিসিয়াল ভলান্টিয়ার পরিচয়পত্র কার্ড', 300, 65);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText(`অফিসিয়াল টিম মেম্বার`, 45, 130);
+    
+    ctx.font = '16px sans-serif';
+    ctx.fillText(`ভলান্টিয়ার নাম: ${v.name}`, 45, 180);
+    ctx.fillText(`মোবাইল: ${v.phone}`, 45, 220);
+    ctx.fillText(`অ্যাক্টিভিটি স্কোর: ${v.points || 0} পয়েন্ট`, 45, 260);
+
+    ctx.fillStyle = '#eff6ff';
+    ctx.fillRect(400, 130, 150, 140);
+    ctx.strokeStyle = '#bfdbfe';
+    ctx.strokeRect(400, 130, 150, 140);
+    ctx.fillStyle = '#1e40af';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(getVolunteerBadge(v.points).text, 475, 205);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সার্বিক সহযোগিতায়: মরহুম হাজী তфসির আহমেদ ট্রাস্ট', 300, 330);
+
+    triggerDownload(canvas, `Volunteer_Card_${v.name}.png`);
+  };
+
+  const triggerDownload = (canvas, filename) => {
+    const dataUrl = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('ডাউনলোড সফলভাবে সম্পন্ন হয়েছে!', 'success');
+  };
+
+  // ==================== স্মার্ট ডোনার লগ ও হিস্ট্রি ট্র্যাকিং লজিক ====================
+  const openLogModal = async (donor) => {
+    setActiveLogDonor(donor);
+    setShowLogModal(true);
+    const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', donor.id).order('date', { ascending: false });
+    if (data) setDonorLogs(data);
+  };
+
+  const handleAddLog = async (e) => {
+    e.preventDefault();
+    if (!newLog.patient_name || !newLog.hospital || !newLog.date) return showToast('সব তথ্য পূরণ করুন', 'error');
+    
+    const payload = {
+      donor_id: activeLogDonor.id,
+      patient_name: newLog.patient_name,
+      hospital: newLog.hospital,
+      date: newLog.date
+    };
+
+    const { error: logErr } = await supabase.from('donation_logs').insert([payload]);
+    if (!logErr) {
+      showToast('রক্তদানের স্মার্ট রেকর্ড লগ করা হয়েছে!', 'success');
+      setNewLog({ patient_name: '', hospital: '', date: '' });
+      // পুনরায় রিফ্রেশ লিস্ট
+      const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
+      if (data) setDonorLogs(data);
+    } else {
+      showToast('লগ করতে সমস্যা হয়েছে: ' + logErr.message, 'error');
+    }
+  };
+
+  const handleDeleteLog = async (logId) => {
+    if (confirm('আপনি কি এই ডোনেশন রেকর্ড হিস্ট্রিটি মুছে ফেলতে চান?')) {
+      await supabase.from('donation_logs').delete().eq('id', logId);
+      const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
+      if (data) setDonorLogs(data);
+      showToast('হিস্ট্রি রিমুভ করা হয়েছে।', 'success');
     }
   };
 
@@ -634,6 +901,40 @@ export default function App() {
         </div>
       </div>
 
+      {/* নতুন ভলান্টিয়ার লিডারবোর্ড মডিউল (হোম ট্যাব ও নোটিশ বোর্ডে দৃশ্যমান) */}
+      <div className="bg-white p-5 rounded-2xl shadow border border-blue-100 space-y-3">
+        <h3 className="text-base font-black text-blue-600 flex items-center gap-1.5">
+          <Award className="w-5 h-5 text-amber-500 fill-amber-500" /> ভলান্টিয়ার লিডারবোর্ড (সক্রিয়তা তালিকা)
+        </h3>
+        <p className="text-[11px] text-slate-400 font-semibold leading-none">ডোনার রেজিস্ট্রেশন ও ম্যানেজ করার উপর ভিত্তি করে তৈরি রিয়েলটাইম র‍্যাংকিং।</p>
+        <div className="space-y-2 max-h-48 overflow-y-auto pt-1">
+          {volunteers.slice(0, 5).map((v, idx) => {
+            const vBadge = getVolunteerBadge(v.points);
+            return (
+              <div key={v.id} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-150">
+                <div className="flex items-center gap-2">
+                  <span className={`w-6 h-6 rounded-full text-xs font-black flex items-center justify-center ${idx === 0 ? 'bg-yellow-400 text-white' : idx === 1 ? 'bg-slate-300 text-slate-800' : 'bg-slate-200 text-slate-600'}`}>
+                    {idx + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">{v.name}</p>
+                    <span className={`text-[9px] px-2 py-0.5 rounded font-bold ${vBadge.classes}`}>{vBadge.text}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">{v.points || 0} পয়েন্ট</span>
+                  {(isAdmin || isUnlocked) && (
+                    <button onClick={() => downloadVolunteerCard(v)} title="কার্ড ডাউনলোড" className="p-1.5 bg-white border rounded-lg text-slate-500 hover:bg-slate-100 shadow-2xs">
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="space-y-4">
         <div className="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 flex gap-3 shadow-xs">
           <span className="bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
@@ -645,7 +946,7 @@ export default function App() {
               <li>হৃদরোগ ও স্ট্রোকের ঝুঁকি কমাতে সাহায্য করে।</li>
               <li>শরীরে সম্পূর্ণ নতুন রক্তকণিকা তৈরি বৃদ্ধি পায়।</li>
               <li>বিনামূল্যে মৌলিক স্বাস্থ্য পরীক্ষার সুযোগ হয়।</li>
-              <li>মানসিক প্রশান্তি ও পরম তৃপ্তি লাভ করা যায়।</li>
+              <li>মানसिक প্রশান্তি ও পরম তৃপ্তি লাভ করা যায়।</li>
             </ul>
           </div>
         </div>
@@ -661,7 +962,7 @@ export default function App() {
               <li>সুস্থ নারীরা প্রতি ৪ থেকে ৬ মাস অন্তর রক্ত দিতে পারবেন (৬ মাস বেশি নিরাপদ)।</li>
               <li>রক্তদানের জন্য ন্যূনতম ওজন অবশ্যই ৫০ কেজি (বিশেষ ক্ষেত্রে ৪৫ কেজি) হতে হবে।</li>
               <li>রক্তদাতার বয়স অবশ্যই ১৮ থেকে ৬০ বা ৬৫ বছরের মধ্যে হতে হবে।</li>
-              <li>রক্তচাপ, শরীরের তাপমাত্রা এবং হিমোগ্লোবিনের মাত্রা সঠিক থাকা আবশ্যক।</li>
+              <li>রक्तচাপ, শরীরের তাপমাত্রা এবং হিমোগ্লোবিনের মাত্রা সঠিক থাকা আবশ্যক।</li>
             </ul>
           </div>
         </div>
@@ -786,6 +1087,21 @@ export default function App() {
                           <div className="bg-slate-500 h-full rounded-full transition-all duration-500" style={{ width: `${elg.percent}%` }}></div>
                         </div>
                       </div>
+                    )}
+                  </div>
+
+                  {/* নতুন সংযোজিত পার্ট: ডিজিটাল কার্ড, সার্টিফিকেট ও হিস্ট্রি লগ বাটনপ্যাক */}
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 border-t pt-2 border-dashed border-slate-200">
+                    <button onClick={() => downloadDonorCard(donor)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border">
+                      <Download className="w-3 h-3 text-red-500" /> ডিজিটাল কার্ড
+                    </button>
+                    <button onClick={() => downloadDonorCertificate(donor)} className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border border-amber-200">
+                      <Award className="w-3 h-3 text-amber-600" /> সম্মাননা স্মারক
+                    </button>
+                    {(isAdmin || isUnlocked) && (
+                      <button onClick={() => openLogModal(donor)} className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border border-blue-200">
+                        <History className="w-3 h-3" /> স্মার্ট হিস্ট্রি
+                      </button>
                     )}
                   </div>
 
@@ -1022,13 +1338,14 @@ export default function App() {
               <input type="text" placeholder="ভলান্টিয়ারের নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
               <input type="tel" placeholder="মোবাইল নাম্বার" value={newVolunteer.phone} onChange={e => setNewVolunteer({...newVolunteer, phone: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
               <input type="text" placeholder="সিকিউরিটি কোড বা পাসওয়ার্ড (আলফানিউমেরিক যেকোনো দৈর্ঘ্য)" value={newVolunteer.password} onChange={e => setNewVolunteer({...newVolunteer, password: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
+              <input type="number" placeholder="অ্যাক্টিভিটি স্কোর পয়েন্ট সেট করুন" value={newVolunteer.points} onChange={e => setNewVolunteer({...newVolunteer, points: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" />
             </div>
             <div className="flex gap-1.5">
               <button type="submit" className="flex-1 bg-blue-600 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1">
                 <Save className="w-3.5 h-3.5" /> {editVolunteerId ? 'তথ্য আপডেট' : 'ভলান্টিয়ার অনুমোদন'}
               </button>
               {editVolunteerId && (
-                <button type="button" onClick={() => { setEditVolunteerId(null); setNewVolunteer({ name: '', phone: '', password: '' }); }} className="bg-slate-200 text-slate-700 px-3 rounded-xl font-bold text-xs">বাতিল</button>
+                <button type="button" onClick={() => { setEditVolunteerId(null); setNewVolunteer({ name: '', phone: '', password: '', points: 0 }); }} className="bg-slate-200 text-slate-700 px-3 rounded-xl font-bold text-xs">বাতিল</button>
               )}
             </div>
           </form>
@@ -1041,7 +1358,7 @@ export default function App() {
                     <Shield className="w-4 h-4 text-slate-500" /> {v.name}
                   </p>
                   <p className="text-xs text-slate-500">
-                    মোবাইল: {v.phone} | কোড: <span className="font-bold text-blue-600 bg-blue-50 px-1 rounded">{v.password || v.code || 'ডিফল্ট'}</span> {v.is_active ? '' : '(ব্লকড)'}
+                    মোবাইল: {v.phone} | কোড: <span className="font-bold text-blue-600 bg-blue-50 px-1 rounded">{v.password || v.code || 'ডিফল্ট'}</span> | স্কোর: <span className="text-amber-600 font-bold">{v.points || 0}pt</span> {v.is_active ? '' : '(ব্লকড)'}
                   </p>
                 </div>
                 <div className="flex gap-1 items-center">
@@ -1199,6 +1516,49 @@ export default function App() {
         {activeTab === 'volunteer' && renderVolunteerSection()}
       </main>
 
+      {/* স্মার্ট ডোনার লগ ও ডোনেশন হিস্ট্রি ট্র্যাকিং মোডাল UI */}
+      {showLogModal && activeLogDonor && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
+          <div className="bg-white p-5 rounded-2xl max-w-md w-full space-y-4 shadow-2xl relative">
+            <button onClick={() => setShowLogModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-base font-black text-slate-800 flex items-center gap-1.5 border-b pb-2">
+              <History className="w-5 h-5 text-blue-600" /> {activeLogDonor.name} - রক্তদানের স্মার্ট হিস্ট্রি লগ
+            </h3>
+            
+            <form onSubmit={handleAddLog} className="bg-slate-50 p-3 rounded-xl border space-y-2.5">
+              <p className="text-xs font-black text-slate-600">جدুন নতুন ডোনেশন রেকর্ড:</p>
+              <input type="text" placeholder="রোগীর নাম বা কেস (যেমন: থ্যালাসেমিয়া রোগী)" value={newLog.patient_name} onChange={e => setNewLog({...newLog, patient_name: e.target.value})} className="w-full border-2 p-2 rounded-xl text-xs bg-white" required />
+              <input type="text" placeholder="হাসপাতাল / স্থান (যেমন: নোয়াখালী সদর হাসপাতাল)" value={newLog.hospital} onChange={e => setNewLog({...newLog, hospital: e.target.value})} className="w-full border-2 p-2 rounded-xl text-xs bg-white" required />
+              <input type="date" value={newLog.date} onChange={e => setNewLog({...newLog, date: e.target.value})} className="w-full border-2 p-2 rounded-xl text-xs bg-white" required />
+              <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm">
+                <Plus className="w-3.5 h-3.5" /> রেকর্ড সেভ করুন
+              </button>
+            </form>
+
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <p className="text-xs font-black text-slate-500">পূর্বের রক্তদানের রেকর্ডসমূহ:</p>
+              {donorLogs.length === 0 ? (
+                <p className="text-[11px] text-slate-400 text-center py-4">কোনো পূর্ববর্তী বিস্তারিত ডোনেশন হিস্ট্রি লগ পাওয়া যায়নি।</p>
+              ) : (
+                donorLogs.map(log => (
+                  <div key={log.id} className="p-2 bg-slate-50/50 rounded-xl border text-xs flex justify-between items-center">
+                    <div>
+                      <p className="font-bold text-slate-700">🏥 {log.hospital}</p>
+                      <p className="text-[11px] text-slate-500">রোগী: {log.patient_name} | তারিখ: {log.date}</p>
+                    </div>
+                    <button onClick={() => handleDeleteLog(log.id)} className="text-red-500 p-1 hover:bg-red-50 rounded-lg">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {showPassModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
           <div className="bg-white p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl">
@@ -1210,7 +1570,7 @@ export default function App() {
               <input type="password" placeholder="নতুন শক্তিশালী পাসওয়ার্ড লিখুন" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full border-2 p-3 rounded-xl text-base leading-normal" required />
               <div className="flex gap-2 pt-2">
                 <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold text-sm shadow leading-normal flex items-center justify-center gap-1">
-                  <RefreshCw className="w-4 h-4" /> আপডেট করুন
+                  <RefreshCw className="w-4 h-4" /> 업데이트 করুন
                 </button>
                 <button type="button" onClick={() => { setShowPassModal(false); setMasterCode(''); }} className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm border flex items-center justify-center gap-1">
                   <X className="w-4 h-4" /> বাতিল
