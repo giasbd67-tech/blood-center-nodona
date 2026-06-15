@@ -302,9 +302,8 @@ export default function App() {
     if (newDonor.id) {
       const { error: submitError } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
       if (submitError) {
-        showToast('정보 수정 실패: ' + submitError.message, 'error');
+        showToast('তথ্য সংশোধন ব্যর্থ: ' + submitError.message, 'error');
       } else {
-        // ভলান্টিয়ার বা অ্যাডমিন ডাটা এডিটের মাধ্যমে ডাটাবেজ মডিফাই করলে লিডারবোর্ড অ্যাক্টিভিটি বৃদ্ধি করা
         if (isUnlocked && !isAdmin) {
           await supabase.rpc('increment_volunteer_points', { v_phone: volunteerPhone });
           fetchVolunteers();
@@ -352,7 +351,7 @@ export default function App() {
         setEditRequestId(null);
         fetchRequests();
       } else {
-        showToast('노টিশ সংশোধন করতে ব্যর্থ: ' + reqError.message, 'error');
+        showToast('নোটিশ সংশোধন করতে ব্যর্থ: ' + reqError.message, 'error');
       }
     } else {
       const { error: reqError } = await supabase.from('emergency_requests').insert([newRequest]);
@@ -543,7 +542,7 @@ export default function App() {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (masterCode !== 'BCNN2013') {
-      return showToast('ভুলマスター কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
+      return showToast('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
     }
     const { error: authError } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
     if (!authError) {
@@ -556,175 +555,333 @@ export default function App() {
     }
   };
 
-  // ==================== ক্যানভাস ভিত্তিক ডিজিটাল কার্ড এবং সার্টিফিকেট জেনারেটর ====================
+  // ==================== ক্যানভাস ভিত্তিক ডিজিটাল প্রিমিয়াম কার্ড এবং সার্টিফিকেট জেনারেটর ====================
   const downloadDonorCard = (donor) => {
     const canvas = document.createElement('canvas');
-    canvas.width = 600;
-    canvas.height = 350;
+    canvas.width = 638;
+    canvas.height = 400;
     const ctx = canvas.getContext('2d');
 
-    // ব্যাকগ্রাউন্ড ডিজাইন ও বর্ডার গ্রাডিয়েন্ট
-    const grad = ctx.createLinearGradient(0, 0, 600, 350);
-    grad.addColorStop(0, '#ffffff');
-    grad.addColorStop(1, '#fff5f5');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 600, 350);
-    
-    ctx.lineWidth = 10;
-    ctx.strokeStyle = '#dc2626';
-    ctx.strokeRect(0, 0, 600, 350);
+    // ব্যাকগ্রাউন্ড লাক্সারি গ্রেডিয়েন্ট এবং জ্যামিতিক টেক্সচার
+    const mainGrad = ctx.createLinearGradient(0, 0, 638, 400);
+    mainGrad.addColorStop(0, '#ffffff');
+    mainGrad.addColorStop(0.7, '#fffafb');
+    mainGrad.addColorStop(1, '#ffebee');
+    ctx.fillStyle = mainGrad;
+    ctx.fillRect(0, 0, 638, 400);
 
-    // হেডার পার্ট
-    ctx.fillStyle = '#dc2626';
-    ctx.fillRect(5, 5, 590, 75);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 26px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 300, 40);
-    ctx.font = '14px sans-serif';
-    ctx.fillText('মানবতার সেবায় রক্তদানের মহান ব্রত', 300, 65);
-
-    // মেম্বারশিপ বডি টেক্সট
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillText(`রক্তদাতা কার্ড`, 40, 125);
-    
-    ctx.font = '16px sans-serif';
-    ctx.fillText(`নাম: ${donor.name}`, 45, 170);
-    ctx.fillText(`ঠিকানা: ${donor.location || donor.village || 'নদোনা'}`, 45, 205);
-    ctx.fillText(`সর্বশেষ রক্তদান: ${donor.last_donation_date || 'কখনো না'}`, 45, 240);
-    ctx.fillText(`মোট রক্তদান: ${donor.activity_count || 0} বার`, 45, 275);
-
-    // রক্তের বড় আইকন ব্যাজ ডানপাশে
-    ctx.fillStyle = '#ef4444';
+    // আধুনিক জ্যামিতিক রাউন্ডেড শেপ মাস্কিং (ডান পাশে লাল অ্যাবস্ট্রাক্ট শেপ)
+    ctx.fillStyle = '#b91c1c';
     ctx.beginPath();
-    ctx.arc(480, 180, 55, 0, Math.PI * 2);
+    ctx.moveTo(420, 0);
+    ctx.lineTo(638, 0);
+    ctx.lineTo(638, 400);
+    ctx.lineTo(490, 400);
+    ctx.bezierCurveTo(460, 280, 400, 150, 420, 0);
     ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 36px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(donor.blood_group, 480, 193);
 
+    // এক্সট্রা শেপ লেয়ার গভীরতার জন্য
+    ctx.fillStyle = '#991b1b';
+    ctx.beginPath();
+    ctx.moveTo(510, 0);
+    ctx.lineTo(638, 0);
+    ctx.lineTo(638, 160);
+    ctx.fill();
+
+    // প্রিমিয়াম গোল্ডেন ফ্রেম ডাবল বর্ডার
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = '#991b1b';
+    ctx.strokeRect(4, 4, 630, 392);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#d4af37'; // Gold
+    ctx.strokeRect(12, 12, 614, 376);
+
+    // হেডার ব্র্যান্ডিং
+    ctx.fillStyle = '#991b1b';
+    ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 32, 50);
+    
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.fillText('★ মানবতা ও সামাজিক রক্তসেবা প্রতিষ্ঠান ★', 34, 70);
+
+    // মেম্বারশিপ মেটা ডাটা ফ্রেম
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 18px system-ui, sans-serif';
+    ctx.fillText('অফিসিয়াল রক্তদাতা পরিচয়পত্র', 32, 115);
+
+    // কন্টেন্ট মডিউল গ্রিড (বাম পাশে তথ্য)
+    const renderMetaRow = (label, value, yPos) => {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '600 13px system-ui, sans-serif';
+      ctx.fillText(label, 32, yPos);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 14px system-ui, sans-serif';
+      ctx.fillText(value, 150, yPos);
+      
+      // ডটেড সেপারেটর লাইন
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(32, yPos + 8); ctx.lineTo(380, yPos + 8); ctx.stroke();
+    };
+
+    renderMetaRow('রক্তদাতার নাম:', donor.name, 155);
+    renderMetaRow('ঠিকানা এলাকা:', donor.location || donor.village || 'নদোনা', 190);
+    renderMetaRow('সর্বশেষ দান:', donor.last_donation_date || 'কখনো না', 225);
+    renderMetaRow('মোট রক্তদান:', `${donor.activity_count || 0} বার`, 260);
+
+    // মেডেল অর্জন স্ট্যাটাস
     ctx.fillStyle = '#7f1d1d';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillText(getDonorBadge(donor.activity_count).text, 480, 260);
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillText(`স্থায়ী র্যাংক: ${getDonorBadge(donor.activity_count).text}`, 32, 305);
+
+    // ডানপাশের প্রিমিয়াম ব্লাড ড্রপ রাউন্ড সিল
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(540, 175, 55, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0; // Reset Shadow
+
+    // গোল্ডেন রিং সিল বর্ডার
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#d4af37';
+    ctx.beginPath();
+    ctx.arc(540, 175, 49, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // রক্তের গ্রুপ টেক্সট সিলের ভেতর
+    ctx.fillStyle = '#dc2626';
+    ctx.font = 'bold 36px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(donor.blood_group, 540, 188);
+
+    // সিলের নিচে গোল্ডেন মেডেল রিবন ক্যাপশন
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 12px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('BLOOD GROUP', 540, 255);
 
     // ফুটার
-    ctx.fillStyle = '#64748b';
-    ctx.font = '11px sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। স্থাপিত - ২৭ মার্চ ২০১৩ ইং', 300, 330);
+    ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
 
-    triggerDownload(canvas, `Donor_Card_${donor.name}.png`);
+    triggerDownload(canvas, `Premium_ID_Card_${donor.name}.png`);
   };
 
   const downloadDonorCertificate = (donor) => {
     const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 550;
+    canvas.width = 1120;
+    canvas.height = 792; // Standard High Res A4 ratio
     const ctx = canvas.getContext('2d');
 
-    // সার্টিফিকেট বর্ডার ফ্রেম
+    // লাক্সারি ব্যাকগ্রাউন্ড রেন্ডারিং (আইভরি/রয়্যাল অফ-হোয়াইট থিম)
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 800, 550);
-    ctx.lineWidth = 15;
-    ctx.strokeStyle = '#991b1b';
-    ctx.strokeRect(0, 0, 800, 550);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#f59e0b';
-    ctx.strokeRect(20, 20, 760, 510);
+    ctx.fillRect(0, 0, 1120, 792);
+    
+    // সফট উইন্ডো ব্যাকগ্রাউন্ড গ্রাডিয়েন্ট
+    const bgGrad = ctx.createRadialGradient(560, 396, 100, 560, 396, 600);
+    bgGrad.addColorStop(0, '#fffdfa');
+    bgGrad.addColorStop(1, '#fbf7f0');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1120, 792);
 
-    // জলছাপ লোগো এফেক্ট
-    ctx.fillStyle = 'rgba(239, 68, 68, 0.04)';
+    // ৪ কোনায় ১০ মিনিট স্কুলের মত প্রিমিয়াম কাস্টম কর্নার শেপ ও ফ্রেম
+    const drawPremiumBorder = () => {
+      ctx.lineWidth = 16;
+      ctx.strokeStyle = '#7f1d1d'; // Deep Burgundy
+      ctx.strokeRect(16, 16, 1088, 760);
+      
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#d4af37'; // Premium Gold
+      ctx.strokeRect(32, 32, 1056, 728);
+
+      // ৪ কোণার অলঙ্করণ এলিমেন্ট
+      const corners = [[32, 32], [1088, 32], [32, 760], [1088, 760]];
+      ctx.fillStyle = '#d4af37';
+      corners.forEach(([cx, cy]) => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    };
+    drawPremiumBorder();
+
+    // ব্যাকগ্রাউন্ড ওয়াটারমার্ক সিল (সেন্টার জায়ান্ট ড্রপলেট এফেক্ট)
+    ctx.fillStyle = 'rgba(185, 28, 28, 0.025)';
     ctx.beginPath();
-    ctx.arc(400, 275, 150, 0, Math.PI * 2);
+    ctx.arc(560, 420, 160, 0, Math.PI * 2);
     ctx.fill();
 
-    // হেডার ও ট্রাস্ট পার্ট
+    // হেডার টেক্সট টাইপোগ্রাফি
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#991b1b';
-    ctx.font = 'bold 38px sans-serif';
-    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 400, 90);
-    ctx.fillStyle = '#f59e0b';
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText('★ সম্মাননা ও স্বীকৃতি স্মারক সার্টিফিকেট ★', 400, 130);
-
-    ctx.fillStyle = '#1e293b';
-    ctx.font = '18px sans-serif';
-    ctx.fillText('এই মর্মে অত্যন্ত আনন্দের সাথে কৃতজ্ঞতা জ্ঞাপন করা যাচ্ছে যে,', 400, 200);
+    ctx.fillStyle = '#7f1d1d';
+    ctx.font = 'bold 44px system-ui, -apple-system, sans-serif';
+    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 560, 110);
     
-    ctx.fillStyle = '#dc2626';
-    ctx.font = 'bold 28px sans-serif';
-    ctx.fillText(donor.name, 400, 255);
+    ctx.fillStyle = '#d4af37';
+    ctx.font = 'bold 16px system-ui, sans-serif';
+    ctx.fillText('★ ESTD: 2013 | মানবতার সেবায় উৎসর্গীকৃত একটি সামাজিক প্রতিষ্ঠান ★', 560, 145);
+
+    // সার্টিফিকেট নাম ও উদ্দেশ্য
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 28px system-ui, sans-serif';
+    ctx.fillText('সম্মাননা ও স্বীকৃতি স্মারক গৌরবপত্র', 560, 225);
+
+    // আন্ডারলাইন অলংকার লাইন
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(420, 245); ctx.lineTo(700, 245); ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '600 18px system-ui, sans-serif';
+    ctx.fillText('এই গৌরবপত্র অত্যন্ত আনন্দের সাথে কৃতজ্ঞচিত্তে প্রদান করা যাচ্ছে যে,', 560, 310);
+
+    // রক্তদাতার নাম (বিশাল ও আকর্ষণীয় ফন্ট)
+    ctx.fillStyle = '#b91c1c';
+    ctx.font = 'bold 38px system-ui, sans-serif';
+    ctx.fillText(donor.name, 560, 375);
+
+    // প্রশংসাপত্র মূল বিবরণী টেক্সটবডি (১০ মিনিট স্কুল ডিজাইন স্পেসিং)
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '500 17px system-ui, sans-serif';
+    
+    const line1 = `যিনি ব্লাড সেন্টার নদোনা নোয়াখালী এর একজন নিয়মিত মানবতার সেবক। উনার রক্তের গ্রুপ হলো [ ${donor.blood_group} ]।`;
+    const line2 = `তিনি এই পর্যন্ত সমাজের মুমূর্ষু রোগীদের জীবন বাঁচাতে স্বেচ্ছায় ও নিঃস্বার্থভাবে মোট ${donor.activity_count || 0} বার সফলভাবে রক্তদান করেছেন।`;
+    const line3 = `উনার এই মহান ও মানবিক অবদান সমাজকে এক নতুন আলোর দিশা দেখিয়েছে। আমরা উনার সুস্বাস্থ্য ও দীর্ঘায়ু কামনা করি।`;
+
+    ctx.fillText(line1, 560, 435);
+    ctx.fillText(line2, 560, 475);
+    ctx.fillText(line3, 560, 515);
+
+    // মিডল-বটম প্রিমিয়াম র্যাংক মেডেল ব্যাজ ক্যাপশন
+    ctx.fillStyle = '#065f46';
+    ctx.font = 'bold 16px system-ui, sans-serif';
+    ctx.fillText(`অর্জিত র্যাংক মর্যাদা: ${getDonorBadge(donor.activity_count).text}`, 560, 580);
+
+    // ডাবল ডাইনামিক অফিশিয়াল সিগনেচার এলাইনমেন্ট
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(200, 680); ctx.lineTo(380, 680); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(740, 680); ctx.lineTo(920, 680); ctx.stroke();
 
     ctx.fillStyle = '#334155';
-    ctx.font = '16px sans-serif';
-    ctx.fillText(`যিনি ব্লাড সেন্টার নদোনা নোয়াখালী এর একজন নিয়মিত মানবতার সেবক। উনার রক্তের গ্রুপ হলো [ ${donor.blood_group} ]।`, 400, 310);
-    ctx.fillText(`তিনি এই পর্যন্ত সমাজের মুমূর্ষু মানুষের জীবন বাঁচাতে স্বেচ্ছায় মোট ${donor.activity_count || 0} বার সফলভাবে রক্তদান করেছেন।`, 400, 345);
-    ctx.fillText(`উনার এই মহান ও নিঃস্বার্থ অবদানকে সম্মান জানিয়ে এই গৌরবপত্র প্রদান করা হলো।`, 400, 380);
+    ctx.font = 'bold 14px system-ui, sans-serif';
+    ctx.fillText('পরিচালক স্বাক্ষর', 290, 705);
+    ctx.fillText('সংগঠন মডারেটর', 830, 705);
 
-    ctx.fillStyle = '#059669';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText(`অর্জিত পদমর্যাদা: ${getDonorBadge(donor.activity_count).text}`, 400, 430);
+    // গোল্ডেন সিল রেপ্লিকা ভেক্টর (নিচের ঠিক মাঝখানে)
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(560, 680, 32, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 10px system-ui, sans-serif';
+    ctx.fillText('APPROVED', 560, 684);
 
-    // স্বাক্ষর পার্ট
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.beginPath(); ctx.moveTo(150, 490); ctx.lineTo(300, 490); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(500, 490); ctx.lineTo(650, 490); ctx.stroke();
-    ctx.fillStyle = '#475569';
-    ctx.font = '13px sans-serif';
-    ctx.fillText('পরিচালক স্বাক্ষর', 225, 510);
-    ctx.fillText('সংগঠন মডারেটর', 575, 510);
-
-    triggerDownload(canvas, `Certificate_${donor.name}.png`);
+    triggerDownload(canvas, `Official_Certificate_${donor.name}.png`);
   };
 
   const downloadVolunteerCard = (v) => {
     const canvas = document.createElement('canvas');
-    canvas.width = 600;
-    canvas.height = 350;
+    canvas.width = 638;
+    canvas.height = 400;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 600, 350);
-    ctx.lineWidth = 10;
-    ctx.strokeStyle = '#2563eb'; // নীল থিম ফর ভলান্টিয়ারส์
-    ctx.strokeRect(0, 0, 600, 350);
+    // লাক্সারি রয়্যাল ব্লু থিম জ্যামিতিক গ্রাডিয়েন্ট
+    const mainGrad = ctx.createLinearGradient(0, 0, 638, 400);
+    mainGrad.addColorStop(0, '#ffffff');
+    mainGrad.addColorStop(0.7, '#f8fafc');
+    mainGrad.addColorStop(1, '#eff6ff');
+    ctx.fillStyle = mainGrad;
+    ctx.fillRect(0, 0, 638, 400);
 
-    ctx.fillStyle = '#2563eb';
-    ctx.fillRect(5, 5, 590, 75);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 24px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 300, 40);
-    ctx.font = '13px sans-serif';
-    ctx.fillText('অফিসিয়াল ভলান্টিয়ার পরিচয়পত্র কার্ড', 300, 65);
+    // ডার্ক ব্লু স্টাইলিস্ট সাইড কার্ভ শেপ
+    ctx.fillStyle = '#1e3a8a';
+    ctx.beginPath();
+    ctx.moveTo(440, 0);
+    ctx.lineTo(638, 0);
+    ctx.lineTo(638, 400);
+    ctx.lineTo(510, 400);
+    ctx.bezierCurveTo(480, 270, 420, 130, 440, 0);
+    ctx.fill();
 
+    // ফ্রেম ডাবল বর্ডার
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.strokeRect(4, 4, 630, 392);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#3b82f6';
+    ctx.strokeRect(12, 12, 614, 376);
+
+    // হেডার ব্র্যান্ডিং
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText(`অফিসিয়াল টিম মেম্বার`, 45, 130);
+    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 32, 50);
     
-    ctx.font = '16px sans-serif';
-    ctx.fillText(`ভলান্টিয়ার নাম: ${v.name}`, 45, 180);
-    ctx.fillText(`মোবাইল: ${v.phone}`, 45, 220);
-    ctx.fillText(`অ্যাক্টিভিটি স্কোর: ${v.points || 0} পয়েন্ট`, 45, 260);
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.fillText('★ অফিশিয়াল ভলান্টিয়ার টিম মেম্বার কার্ড ★', 34, 70);
 
-    ctx.fillStyle = '#eff6ff';
-    ctx.fillRect(400, 130, 150, 140);
-    ctx.strokeStyle = '#bfdbfe';
-    ctx.strokeRect(400, 130, 150, 140);
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 18px system-ui, sans-serif';
+    ctx.fillText('ভলান্টিয়ার পরিচয়পত্র', 32, 120);
+
+    const renderVolRow = (label, value, yPos) => {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '600 13px system-ui, sans-serif';
+      ctx.fillText(label, 32, yPos);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 14px system-ui, sans-serif';
+      ctx.fillText(value, 150, yPos);
+      
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(32, yPos + 8); ctx.lineTo(390, yPos + 8); ctx.stroke();
+    };
+
+    renderVolRow('সদস্যের নাম:', v.name, 170);
+    renderVolRow('মোবাইল নম্বর:', v.phone, 210);
+    renderVolRow('অ্যাক্টিভিটি স্কোর:', `${v.points || 0} পয়েন্ট`, 250);
+
     ctx.fillStyle = '#1e40af';
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillText(`মেডেল স্ট্যাটাস: ${getVolunteerBadge(v.points).text}`, 32, 300);
+
+    // ডানপাশের প্রিমিয়াম সিল কন্টেইনার
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(545, 180, 50, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#3b82f6';
+    ctx.beginPath();
+    ctx.arc(545, 180, 45, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 13px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillText(getVolunteerBadge(v.points).text, 475, 205);
+    ctx.fillText('TEAM', 545, 175);
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = '900 13px system-ui, sans-serif';
+    ctx.fillText('MEMBER', 545, 195);
 
-    ctx.fillStyle = '#64748b';
-    ctx.font = '11px sans-serif';
-    ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সার্বিক সহযোগিতায়: মরহুম হাজী তфসির আহমেদ ট্রাস্ট', 300, 330);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '500 10px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
 
-    triggerDownload(canvas, `Volunteer_Card_${v.name}.png`);
+    triggerDownload(canvas, `Volunteer_ID_Card_${v.name}.png`);
   };
 
   const triggerDownload = (canvas, filename) => {
@@ -962,7 +1119,7 @@ export default function App() {
               মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে **২৭ মার্চ ২০১৩ ইং** তারিখে ব্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
             </p>
             <div className="pt-1">
-              <p className="text-xs font-bold text-slate-700 mb-1.5"> দূরদর্শী ৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
+              <p className="text-xs font-bold text-slate-700 mb-1.5"> দূরदर्शी ৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-600">
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ১</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ২</div>
@@ -1082,7 +1239,7 @@ export default function App() {
                     </button>
                     {(isAdmin || isUnlocked) && (
                       <button onClick={() => openLogModal(donor)} className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border border-blue-200">
-                        <History className="w-3 h-3" /> スマート হিস্ট্রি
+                        <History className="w-3 h-3" /> ஸ்மார্ট হিস্ট্রি
                       </button>
                     )}
                   </div>
@@ -1178,7 +1335,7 @@ export default function App() {
       
       <form onSubmit={handleRegisterDonor} className="space-y-4">
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">রক্তদাতার সম্পূর্ণ নাম *</label>
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">রক্তదাতার সম্পূর্ণ নাম *</label>
           <input type="text" placeholder="বীরশ্রেষ্ঠ মোহাম্মদ রুহুল আমিন" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
@@ -1394,7 +1551,7 @@ export default function App() {
             </div>
             <div className="flex gap-1.5">
               <button type="submit" className="flex-1 bg-blue-600 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1">
-                <Save className="w-3.5 h-3.5" /> {editVolunteerId ? '정보 업데이트' : 'ভলান্টিয়ার অনুমোদন'}
+                <Save className="w-3.5 h-3.5" /> {editVolunteerId ? 'তথ্য আপডেট' : 'ভলান্টিয়ার অনুমোদন'}
               </button>
               {editVolunteerId && (
                 <button type="button" onClick={() => { setEditVolunteerId(null); setNewVolunteer({ name: '', phone: '', password: '', points: 0 }); }} className="bg-slate-200 text-slate-700 px-3 rounded-xl font-bold text-xs">বাতিল</button>
@@ -1580,7 +1737,7 @@ export default function App() {
             </h3>
             
             <form onSubmit={handleAddLog} className="bg-slate-50 p-3 rounded-xl border space-y-2.5">
-              <p className="text-xs font-black text-slate-600">جدুন নতুন ডোনেশন রেকর্ড:</p>
+              <p className="text-xs font-black text-slate-600">নতুন ডোনেশন রেকর্ড যোগ করুন:</p>
               <input type="text" placeholder="রোগীর নাম বা কেস (যেমন: থ্যালাসেমিয়া রোগী)" value={newLog.patient_name} onChange={e => setNewLog({...newLog, patient_name: e.target.value})} className="w-full border-2 p-2 rounded-xl text-xs bg-white" required />
               <input type="text" placeholder="হাসপাতাল / স্থান (যেমন: নোয়াখালী সদর হাসপাতাল)" value={newLog.hospital} onChange={e => setNewLog({...newLog, hospital: e.target.value})} className="w-full border-2 p-2 rounded-xl text-xs bg-white" required />
               <input type="date" value={newLog.date} onChange={e => setNewLog({...newLog, date: e.target.value})} className="w-full border-2 p-2 rounded-xl text-xs bg-white" required />
@@ -1622,7 +1779,7 @@ export default function App() {
               <input type="password" placeholder="নতুন শক্তিশালী পাসওয়ার্ড লিখুন" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full border-2 p-3 rounded-xl text-base leading-normal" required />
               <div className="flex gap-2 pt-2">
                 <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold text-sm shadow leading-normal flex items-center justify-center gap-1">
-                  <RefreshCw className="w-4 h-4" /> 업데이트 করুন
+                  <RefreshCw className="w-4 h-4" /> আপডেট করুন
                 </button>
                 <button type="button" onClick={() => { setShowPassModal(false); setMasterCode(''); }} className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm border flex items-center justify-center gap-1">
                   <X className="w-4 h-4" /> বাতিল
