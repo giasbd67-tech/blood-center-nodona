@@ -149,8 +149,6 @@ export default function App() {
     }
   };
 
-  const '../../supabaseClient' = () => {};
-
   const fetchRequests = async () => {
     try {
       const { data } = await supabase.from('emergency_requests').select('*').order('id', { ascending: false });
@@ -743,7 +741,7 @@ export default function App() {
     ctx.font = '600 18px system-ui, sans-serif';
     ctx.fillText('এই গৌরবপত্র অত্যন্ত আনন্দের সাথে কৃতজ্ঞচিত্তে প্রদান করা যাচ্ছে যে,', 560, 310);
 
-    // রক্তদাতার নাম (বিশাল ও আকর্ষণীয় ফন্ট)
+    // রক্তদাতার নাম (বিшал ও আকর্ষণীয় ফন্ট)
     ctx.fillStyle = '#b91c1c';
     ctx.font = 'bold 38px system-ui, sans-serif';
     ctx.fillText(donor.name, 560, 375);
@@ -985,7 +983,7 @@ export default function App() {
             <input type="text" placeholder="কখন রক্ত লাগবে" value={newRequest.needed_time} onChange={e => setNewRequest({...newRequest, needed_time: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             <div className="flex gap-1.5">
               <button type="submit" className="flex-1 bg-red-600 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1">
-                {editRequestId ? <Save className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
+                {editRequestId ? <Save className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5"}
                 {editRequestId ? 'নোটিশ আপডেট' : 'নোটিশ পোস্ট'}
               </button>
               {editRequestId && (
@@ -1126,7 +1124,7 @@ export default function App() {
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ১</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ২</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৩</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৪</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য４</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৫</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৬</div>
               </div>
@@ -1537,7 +1535,7 @@ export default function App() {
       </div>
 
       {isAdmin && (
-        <div className="bg-white p-5 rounded-2xl shadow border-t-4 border-blue-600 space-y-4">
+        <div className="bg-white p-5 rounded-2xl shadow-t-4 border-blue-600 space-y-4">
           <h3 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">
             <Users className="w-5 h-5" /> ভলান্টিয়ার কন্ট্রোল প্যানেল
           </h3>
