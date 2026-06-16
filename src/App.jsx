@@ -77,8 +77,8 @@ export default function App() {
   const [newRequest, setNewRequest] = useState({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
   const [editRequestId, setEditRequestId] = useState(null);
   
-  // নতুন পাসওয়ার্ড ফিল্ড সহ ভলান্টিয়ার স্টেট
-  const [newVolunteer, setNewVolunteer] = useState({ name: '', phone: '', password: '', points: 0 });
+  // নতুন পাসওয়ার্ড ফিল্ড সহ ভলান্টিয়ার স্টেট (শুরুর মান 0 না দিয়ে খালি স্ট্রিং "" ব্যবহার করা হয়েছে)
+  const [newVolunteer, setNewVolunteer] = useState({ name: '', phone: '', password: '', points: '' });
   const [editVolunteerId, setEditVolunteerId] = useState(null);
 
   // সিকিউরিটি ও অথেনটিকেশন স্টেট
@@ -148,6 +148,8 @@ export default function App() {
       console.log("Offline mode donor loaded from cache.");
     }
   };
+
+  const '../../supabaseClient' = () => {};
 
   const fetchRequests = async () => {
     try {
@@ -482,7 +484,7 @@ export default function App() {
       const { error: volError } = await supabase.from('volunteers').update(volunteerPayload).eq('id', editVolunteerId);
       if (!volError) {
         showToast('ভলান্টিয়ারের তথ্য ও সিকিউরিটি পাসওয়ার্ড সফলভাবে সংশোধন করা হয়েছে!', 'success');
-        setNewVolunteer({ name: '', phone: '', password: '', points: 0 });
+        setNewVolunteer({ name: '', phone: '', password: '', points: '' });
         setEditVolunteerId(null);
         fetchVolunteers();
       } else {
@@ -494,14 +496,14 @@ export default function App() {
         showToast('এই ভলান্টিয়ার নম্বরটি অলরেডি অনুমোদিত আছে অথবা সমস্যা হয়েছে!', 'error');
       } else {
         showToast('নতুন ভলান্টিয়ার কাস্টম সিকিউরিটি পাসওয়ার্ড সহ অনুমোদিত হয়েছে!', 'success');
-        setNewVolunteer({ name: '', phone: '', password: '', points: 0 });
+        setNewVolunteer({ name: '', phone: '', password: '', points: '' });
         fetchVolunteers();
       }
     }
   };
 
   const handleEditVolunteer = (v) => {
-    setNewVolunteer({ name: v.name, phone: v.phone, password: v.password || v.code || '', points: v.points || 0 });
+    setNewVolunteer({ name: v.name, phone: v.phone, password: v.password || v.code || '', points: v.points === 0 ? '0' : String(v.points || '') });
     setEditVolunteerId(v.id);
   };
 
@@ -1335,7 +1337,7 @@ export default function App() {
       
       <form onSubmit={handleRegisterDonor} className="space-y-4">
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">রক্তదাতার সম্পূর্ণ নাম *</label>
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">রক্তদাতার সম্পূর্ণ নাম *</label>
           <input type="text" placeholder="বীরশ্রেষ্ঠ মোহাম্মদ রুহুল আমিন" value={newDonor.name} onChange={e => setNewDonor({...newDonor, name: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
@@ -1554,7 +1556,7 @@ export default function App() {
                 <Save className="w-3.5 h-3.5" /> {editVolunteerId ? 'তথ্য আপডেট' : 'ভলান্টিয়ার অনুমোদন'}
               </button>
               {editVolunteerId && (
-                <button type="button" onClick={() => { setEditVolunteerId(null); setNewVolunteer({ name: '', phone: '', password: '', points: 0 }); }} className="bg-slate-200 text-slate-700 px-3 rounded-xl font-bold text-xs">বাতিল</button>
+                <button type="button" onClick={() => { setEditVolunteerId(null); setNewVolunteer({ name: '', phone: '', password: '', points: '' }); }} className="bg-slate-200 text-slate-700 px-3 rounded-xl font-bold text-xs">বাতিল</button>
               )}
             </div>
           </form>
@@ -1725,7 +1727,7 @@ export default function App() {
         {activeTab === 'volunteer' && renderVolunteerSection()}
       </main>
 
-      {/* স্মার্ট ডোনার লগ ও ডোনেশন হিস্ট্রি ট্র্যাকিং মোডাল UI */}
+      {/* スマート ডোনার লগ ও ডোনেশন হিস্ট্রি ট্র্যাকিং মোডাল UI */}
       {showLogModal && activeLogDonor && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
           <div className="bg-white p-5 rounded-2xl max-w-md w-full space-y-4 shadow-2xl relative">
@@ -1733,7 +1735,7 @@ export default function App() {
               <X className="w-5 h-5" />
             </button>
             <h3 className="text-base font-black text-slate-800 flex items-center gap-1.5 border-b pb-2">
-              <History className="w-5 h-5 text-blue-600" /> {activeLogDonor.name} - রক্তদানের স্মার্ট হিস্ট্রি লগ
+              <History className="w-5 h-5 text-blue-600" /> {activeLogDonor.name} - রক্তদানের SMART হিস্ট্রি লগ
             </h3>
             
             <form onSubmit={handleAddLog} className="bg-slate-50 p-3 rounded-xl border space-y-2.5">
