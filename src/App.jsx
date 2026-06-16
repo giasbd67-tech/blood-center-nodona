@@ -741,7 +741,7 @@ export default function App() {
     ctx.font = '600 18px system-ui, sans-serif';
     ctx.fillText('এই গৌরবপত্র অত্যন্ত আনন্দের সাথে কৃতজ্ঞচিত্তে প্রদান করা যাচ্ছে যে,', 560, 310);
 
-    // রক্তদাতার নাম (বিшал ও আকর্ষণীয় ফন্ট)
+    // রক্তদাতার নাম (বিশাল ও আকর্ষণীয় ফন্ট)
     ctx.fillStyle = '#b91c1c';
     ctx.font = 'bold 38px system-ui, sans-serif';
     ctx.fillText(donor.name, 560, 375);
@@ -758,7 +758,7 @@ export default function App() {
     ctx.fillText(line2, 560, 475);
     ctx.fillText(line3, 560, 515);
 
-    // মিডল-বটম প্রিমিয়াম র্যাংক মেডেল ব্যাজ ক্যাপশন
+    //  মিডল-বটম প্রিমিয়াম র্যাংক মেডেল ব্যাজ ক্যাপশন
     ctx.fillStyle = '#065f46';
     ctx.font = 'bold 16px system-ui, sans-serif';
     ctx.fillText(`অর্জিত র্যাংক মর্যাদা: ${getDonorBadge(donor.activity_count).text}`, 560, 580);
@@ -876,6 +876,7 @@ export default function App() {
     ctx.font = '900 13px system-ui, sans-serif';
     ctx.fillText('MEMBER', 545, 195);
 
+    // ফুটার
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
@@ -983,7 +984,7 @@ export default function App() {
             <input type="text" placeholder="কখন রক্ত লাগবে" value={newRequest.needed_time} onChange={e => setNewRequest({...newRequest, needed_time: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             <div className="flex gap-1.5">
               <button type="submit" className="flex-1 bg-red-600 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1">
-                {editRequestId ? <Save className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5"}
+                {editRequestId ? <Save className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
                 {editRequestId ? 'নোটিশ আপডেট' : 'নোটিশ পোস্ট'}
               </button>
               {editRequestId && (
@@ -1124,7 +1125,7 @@ export default function App() {
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ১</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ২</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৩</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য４</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৪</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৫</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৬</div>
               </div>
@@ -1239,7 +1240,7 @@ export default function App() {
                     </button>
                     {(isAdmin || isUnlocked) && (
                       <button onClick={() => openLogModal(donor)} className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border border-blue-200">
-                        <History className="w-3 h-3" /> ஸ்மார্ট হিস্ট্রি
+                        <History className="w-3 h-3" /> স্মার্ট হিস্ট্রি
                       </button>
                     )}
                   </div>
@@ -1249,17 +1250,17 @@ export default function App() {
                       <Phone className="w-4 h-4 text-slate-400" /> {isUnlocked || isAdmin ? donor.phone : 'XXXXXXXXXXX'}
                     </div>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => handleEditDonor(donor)} title="정보 수정" className="p-2 bg-white hover:bg-blue-50 text-blue-600 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
+                      <button onClick={() => handleEditDonor(donor)} title="সংশোধন করুন" className="p-2 bg-white hover:bg-blue-50 text-blue-600 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
                         <Pencil className="w-4 h-4" />
                       </button>
                       {isAdmin && (
-                        <button onClick={() => handleDeleteDonor(donor.id)} title="정보 삭제" className="p-2 bg-white hover:bg-red-50 text-red-600 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
+                        <button onClick={() => handleDeleteDonor(donor.id)} title="মুছে ফেলুন" className="p-2 bg-white hover:bg-red-50 text-red-600 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
                       
                       {(isUnlocked || isAdmin) ? (
-                        <button onClick={() => handleCopyDonorInfo(donor)} title="정보 복사" className="p-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
+                        <button onClick={() => handleCopyDonorInfo(donor)} title="কপি করুন" className="p-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg shadow-xs font-bold text-sm flex items-center justify-center">
                           <Copy className="w-4 h-4" />
                         </button>
                       ) : (
@@ -1571,10 +1572,10 @@ export default function App() {
                   </p>
                 </div>
                 <div className="flex gap-1 items-center">
-                  <button onClick={() => handleEditVolunteer(v)} title="수정" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">
+                  <button onClick={() => handleEditVolunteer(v)} title="সংশোধন" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => handleDeleteVolunteer(v.id)} title="삭제" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">
+                  <button onClick={() => handleDeleteVolunteer(v.id)} title="ডিলিট" className="p-1.5 bg-white border rounded text-xs hover:bg-slate-100">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => toggleVolunteerStatus(v.id, v.is_active)} className={`px-2.5 py-1.5 rounded-lg font-bold text-xs text-white flex items-center gap-0.5 ${v.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}>
