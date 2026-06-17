@@ -109,6 +109,7 @@ export default function App() {
 
   // কাস্টম নোটিফিকেশন প্রদর্শনকারী হেল্পার
   const showToast = (message, type = 'info') => {
+    console.log(`Toast Notification [${type}]: ${message}`);
     setNotification({ show: true, message, type });
     setTimeout(() => {
       setNotification({ show: false, message: '', type: 'info' });
@@ -117,62 +118,92 @@ export default function App() {
 
   // অ্যাপ লোড হওয়ার সাথে সাথে ডাটাবেজ থেকে ডাটা আনা
   useEffect(() => {
+    console.log("Application initialized. Fetching core data configurations...");
     fetchDonors();
     fetchRequests();
     fetchAllLogs();
+    
     // অফলাইন ক্যাশ সাপোর্ট লোড
     const cachedDonors = localStorage.getItem('cached_donors');
     const cachedRequests = localStorage.getItem('cached_requests');
-    if (cachedDonors) setDonors(JSON.parse(cachedDonors));
-    if (cachedRequests) setEmergencyRequests(JSON.parse(cachedRequests));
+    if (cachedDonors) {
+      console.log("Loaded donors data layer from localStorage cache.");
+      setDonors(JSON.parse(cachedDonors));
+    }
+    if (cachedRequests) {
+      console.log("Loaded emergency requests layout from localStorage cache.");
+      setEmergencyRequests(JSON.parse(cachedRequests));
+    }
 
     const savedPhone = localStorage.getItem('v_phone');
     const savedPass = localStorage.getItem('v_pass');
     if (savedPhone && savedPass) {
+      console.log("Found existing volunteer session in cache storage. Attempting auto-login...");
       checkVolunteerAccess(savedPhone, savedPass);
     }
   }, []);
 
   useEffect(() => {
+    console.log(`Admin status changed to: ${isAdmin}. Refreshing volunteer list leaderboard.`);
     fetchVolunteers(); // লিডারবোর্ডের জন্য ভলান্টিয়ার ডাটা সবসময় রিড করা প্রয়োজন
   }, [isAdmin]);
 
   const fetchDonors = async () => {
+    console.log("Invoking fetchDonors from Supabase...");
     try {
-      const { data } = await supabase.from('donors').select('*').order('activity_count', { ascending: false });
+      const { data, error: fetchErr } = await supabase.from('donors').select('*').order('activity_count', { ascending: false });
+      if (fetchErr) throw fetchErr;
       if (data) {
+        console.log(`Successfully loaded ${data.length} donors records.`);
         setDonors(data);
         localStorage.setItem('cached_donors', JSON.stringify(data)); // অফলাইন ক্যাশিং
       }
     } catch (e) {
-      console.log("Offline mode donor loaded from cache.");
+      console.error("Offline mode or error tracking donor loading sequence. Falling back to cache.", e);
     }
   };
 
   const fetchRequests = async () => {
+    console.log("Invoking fetchRequests from Supabase notice-board layers...");
     try {
-      const { data } = await supabase.from('emergency_requests').select('*').order('id', { ascending: false });
+      const { data, error: fetchErr } = await supabase.from('emergency_requests').select('*').order('id', { ascending: false });
+      if (fetchErr) throw fetchErr;
       if (data) {
+        console.log(`Successfully loaded ${data.length} emergency notices.`);
         setEmergencyRequests(data);
         localStorage.setItem('cached_requests', JSON.stringify(data)); // অফলাইন নোটিশ ক্যাশিং
       }
     } catch (e) {
-      console.log("Offline mode requests loaded from cache.");
+      console.error("Offline mode requests tracking loading sequence failed. Using cache.", e);
     }
   };
 
   const fetchVolunteers = async () => {
-    const { data } = await supabase.from('volunteers').select('*').order('points', { ascending: false });
-    if (data) setVolunteers(data);
+    console.log("Invoking fetchVolunteers data payload for leaderboard systems...");
+    try {
+      const { data, error: fetchErr } = await supabase.from('volunteers').select('*').order('points', { ascending: false });
+      if (fetchErr) throw fetchErr;
+      if (data) {
+        console.log(`Successfully sync completed for ${data.length} volunteer records.`);
+        setVolunteers(data);
+      }
+    } catch (e) {
+      console.error("Error executing volunteer records indexing pipelines:", e);
+    }
   };
 
   // সামগ্রিক রক্তদানের ইতিহাস নিয়ে আসার ফাংশন
   const fetchAllLogs = async () => {
+    console.log("Invoking global sync for fetchAllLogs historical tracker...");
     try {
-      const { data } = await supabase.from('donation_logs').select('*').order('date', { ascending: false });
-      if (data) setAllLogs(data);
+      const { data, error: fetchErr } = await supabase.from('donation_logs').select('*').order('date', { ascending: false });
+      if (fetchErr) throw fetchErr;
+      if (data) {
+        console.log(`Global sync trace matched: ${data.length} donation records tracked dynamically.`);
+        setAllLogs(data);
+      }
     } catch (e) {
-      console.log("Error fetching all donation logs.");
+      console.error("Error capturing system wide global donation history tracking logs:", e);
     }
   };
 
@@ -197,10 +228,12 @@ export default function App() {
 
   const handleVolunteerUnlock = async (e) => {
     e.preventDefault();
+    console.log(`Form trigger: Processing volunteer verification request via client layer. Phone: ${volunteerPhone}`);
     await checkVolunteerAccess(volunteerPhone, volunteerPassword);
   };
 
   const checkVolunteerAccess = async (phone, pass) => {
+    console.log(`Executing checkVolunteerAccess verification sequence targeting phone identifier: ${phone}`);
     const { data, error: dbError } = await supabase
       .from('volunteers')
       .select('*')
@@ -211,6 +244,7 @@ export default function App() {
     if (data) {
       const dbPass = data.password || data.code || '';
       if (dbPass === pass || !dbPass) {
+        console.log("Volunteer authentication parameters validated successfully.");
         setIsUnlocked(true);
         localStorage.setItem('v_phone', phone);
         localStorage.setItem('v_pass', pass);
@@ -218,16 +252,19 @@ export default function App() {
         setVolunteerPassword(pass);
         showToast('ডাটা সফলভাবে আনলক হয়েছে!', 'success');
       } else {
+        console.warn("Credential mismatch captured during volunteer security authorization.");
         showToast('দুঃখিত! ভলান্টিয়ার সিকিউরিটি কোড বা পাসওয়ার্ডটি সঠিক নয়।', 'error');
         setIsUnlocked(false);
       }
     } else {
       if (dbError && dbError.code === 'PGRST116') {
+        console.warn(`Target phone identity record status is inactive or does not exist inside directory parameters: ${phone}`);
         showToast('দুঃখিত! এই মোবাইল নম্বরটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
         setIsUnlocked(false);
         localStorage.removeItem('v_phone');
         localStorage.removeItem('v_pass');
       } else if (dbError) {
+        console.error("Database querying pipelines failure during auth checking procedures:", dbError);
         showToast('নেটওয়ার্ক সমস্যা! অনুগ্রহ করে আবার চেষ্টা করুন।', 'error');
       } else {
         setIsUnlocked(false);
@@ -238,6 +275,7 @@ export default function App() {
   };
 
   const handleLockData = () => {
+    console.log("Revoking application authorization level. Locking modules data components...");
     setIsUnlocked(false);
     localStorage.removeItem('v_phone');
     localStorage.removeItem('v_pass');
@@ -278,12 +316,18 @@ export default function App() {
 
   const handleRegisterDonor = async (e) => {
     e.preventDefault();
-    if (!newDonor.name || !newDonor.phone || !newDonor.address) return showToast('অনুগ্রহ করে সব তথ্য সঠিকভাবে দিন', 'error');
+    console.log("Initiating handleRegisterDonor event payload submission process...", newDonor);
+    if (!newDonor.name || !newDonor.phone || !newDonor.address) {
+      console.warn("Validation intercept: Missing required registration properties.");
+      return showToast('অনুগ্রহ করে সব তথ্য সঠিকভাবে দিন', 'error');
+    }
     
     if (newDonor.age && (Number(newDonor.age) < 18 || Number(newDonor.age) > 65)) {
+      console.warn(`Age boundaries validation failure detected for registry candidate: ${newDonor.age}`);
       return showToast('দুঃখিত, রক্তদাতার বয়স অবশ্যই ১৮ থেকে ৬৫ বছরের মধ্যে হতে হবে।', 'error');
     }
     if (newDonor.weight && Number(newDonor.weight) < 45) {
+      console.warn(`Weight specifications requirement validation failure: ${newDonor.weight}`);
       return showToast('দুঃখিত, রক্তদানের জন্য ন্যূনতম ওজন অন্তত ৪৫ থেকে ৫০ কেজি হওয়া আবশ্যক।', 'error');
     }
 
@@ -300,11 +344,15 @@ export default function App() {
     };
 
     if (newDonor.id) {
+      console.log(`Processing update query execution cycle inside donors matrix target mapping ID: ${newDonor.id}`);
       const { error: submitError } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
       if (submitError) {
+        console.error("Supabase engine database update operations rejection captured:", submitError);
         showToast('তথ্য সংশোধন ব্যর্থ: ' + submitError.message, 'error');
       } else {
+        console.log("Donor profile modified records persisted successfully.");
         if (isUnlocked && !isAdmin) {
+          console.log(`Incrementing loyalty volunteer points configuration targeting system operator tracking phone identifier: ${volunteerPhone}`);
           await supabase.rpc('increment_volunteer_points', { v_phone: volunteerPhone });
           fetchVolunteers();
         }
@@ -314,15 +362,19 @@ export default function App() {
         setActiveTab('search'); 
       }
     } else {
+      console.log("Processing transactional insertion configuration for a new donor registry profile.");
       const { error: submitError } = await supabase.from('donors').insert([donorPayload]);
       if (submitError) {
+        console.error("Supabase record insertions exception captured during operations execution:", submitError);
         if (submitError.code === '23505') {
           showToast('এই নম্বরটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!', 'error');
         } else {
           showToast('নিবন্ধন ব্যর্থ হয়েছে: ' + submitError.message, 'error');
         }
       } else {
+        console.log("New donor directory object registered safely inside tracking vectors.");
         if (isUnlocked && !isAdmin) {
+          console.log(`Attributing points configuration increments tracking reference key operator via phone parameter: ${volunteerPhone}`);
           await supabase.rpc('increment_volunteer_points', { v_phone: volunteerPhone });
           fetchVolunteers();
         }
@@ -335,6 +387,7 @@ export default function App() {
   };
 
   const resetDonorForm = () => {
+    console.log("Resetting structural donor state property attributes back to initial defaults configuration map.");
     setNewDonor({ 
       id: null, name: '', blood_group: 'A+', phone: '', address: '',
       last_donation_date: '', gender: 'পুরুষ', weight: '', age: '', activity_count: ''
@@ -343,29 +396,37 @@ export default function App() {
 
   const handleAddRequest = async (e) => {
     e.preventDefault();
+    console.log("Initiating notice management transactional pipeline parameters...", newRequest);
     if (editRequestId) {
+      console.log(`Executing target modify parameters routing query for emergency request mapping ID: ${editRequestId}`);
       const { error: reqError } = await supabase.from('emergency_requests').update(newRequest).eq('id', editRequestId);
       if (!reqError) {
+        console.log("Target records fields adjusted inside emergency notice registries table layer safely.");
         showToast('জরুরি রক্তের নোটিশ সফলভাবে সংশোধন হয়েছে!', 'success');
         setNewRequest({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
         setEditRequestId(null);
         fetchRequests();
       } else {
+        console.error("Supabase query execution error during editing process of target emergency data:", reqError);
         showToast('নোটিশ সংশোধন করতে ব্যর্থ: ' + reqError.message, 'error');
       }
     } else {
+      console.log("Inserting new emergency request live notice message onto board schema.");
       const { error: reqError } = await supabase.from('emergency_requests').insert([newRequest]);
       if (!reqError) {
+        console.log("Live emergency alert record propagated across application indices.");
         showToast('জরুরি রক্তের নোটিশ বোর্ড আপডেট হয়েছে!', 'success');
         setNewRequest({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
         fetchRequests();
       } else {
+        console.error("Supabase record insertions exception while publishing emergency notice payload:", reqError);
         showToast('নোটিশ পোস্ট করতে ব্যর্থ: ' + reqError.message, 'error');
       }
     }
   };
 
   const handleEditRequest = (req) => {
+    console.log(`Mapping targeted request properties onto internal editing buffer tracking matrix. ID: ${req.id}`);
     setNewRequest({
       patient_name: req.patient_name,
       blood_group: req.blood_group,
@@ -378,30 +439,43 @@ export default function App() {
   };
 
   const handleDeleteRequest = async (id) => {
+    console.log(`Executing confirmation evaluations routing layer context for request deletion task mapping target ID: ${id}`);
     if (confirm('আপনি কি নিশ্চিতভাবে এই জরুরি নোটিশটি মুছে ফেলতে চান?')) {
       const { error: reqError } = await supabase.from('emergency_requests').delete().eq('id', id);
       if (!reqError) {
+        console.log(`Successfully completed tracking wipe routine on emergency query matching ID context: ${id}`);
         showToast('নোটিশটি সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchRequests();
       } else {
+        console.error(`Deletion routine exception caught on emergency tracker module targeted map key: ${id}`, reqError);
         showToast('নোটিশ ডিলিট করতে ব্যর্থ: ' + reqError.message, 'error');
       }
     }
   };
 
   const handleIncrementActivity = async (id, currentCount) => {
-    if (!isAdmin) return;
+    console.log(`Admin processing activity tracking adjustments command routine layer sequence for target profile index tracker: ${id}. Initial baseline count: ${currentCount}`);
+    if (!isAdmin) {
+      console.warn("Authorization intercept: Non-admin trying to fire execution block on restricted incrementer logic context.");
+      return;
+    }
     const { error: actError } = await supabase.from('donors').update({ activity_count: currentCount + 1 }).eq('id', id);
     if (!actError) {
+      console.log(`Target database mutations confirmed for object registry mapping ID index: ${id}. Transmitted value metrics updated.`);
       showToast('রক্তদানের সংখ্যা বৃদ্ধি করা হয়েছে!', 'success');
       fetchDonors();
     } else {
+      console.error(`Mutation block runtime failure during metrics calculation execution sequence tracker ID key: ${id}`, actError);
       showToast('আপডেট ব্যর্থ হয়েছে: ' + actError.message, 'error');
     }
   };
 
   const handleEditDonor = (donor) => {
-    if (!isAdmin && !isUnlocked) return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড বা নম্বর দিয়ে ডাটা আনলক করুন', 'error');
+    console.log(`Triggering modify data state setup context structure interface targeting donor context: ${donor.id}`);
+    if (!isAdmin && !isUnlocked) {
+      console.warn("Access intercept: Registry editing access verification parameters evaluation failed due to locked client instance.");
+      return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড বা নম্বর দিয়ে ডাটা আনলক করুন', 'error');
+    }
     setNewDonor({
       id: donor.id,
       name: donor.name,
@@ -421,20 +495,28 @@ export default function App() {
   };
 
   const handleDeleteDonor = async (id) => {
-    if (!isAdmin) return showToast('শুধুমাত্র মূল অ্যাডমিন প্যানেল থেকে তথ্য ডিলিট করা সম্ভব।', 'error');
+    console.log(`Processing explicit data record termination mapping matrix array request target profile reference index tracker key ID: ${id}`);
+    if (!isAdmin) {
+      console.warn("Wipe protocol termination signal canceled: Admin capabilities verified state false.");
+      return showToast('শুধুমাত্র মূল অ্যাডমিন প্যানেল থেকে তথ্য ডিলিট করা সম্ভব।', 'error');
+    }
     if (confirm('আপনি কি নিশ্চিতভাবে এই রক্তদাতার সম্পূর্ণ রেকর্ড ডিলিট করতে চান?')) {
       const { error: delError } = await supabase.from('donors').delete().eq('id', id);
       if (!delError) {
+        console.log(`Wipe routing process sequence successfully evaluated targeting resource object code schema key: ${id}`);
         showToast('রক্তদাতার তথ্য সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchDonors();
       } else {
+        console.error(`Data record termination framework failed mapping parameters on unique reference identity key tracking: ${id}`, delError);
         showToast('ডিলিট ব্যর্থ হয়েছে: ' + delError.message, 'error');
       }
     }
   };
 
   const handleCopyDonorInfo = (donor) => {
+    console.log(`Executing target text compilation parsing string buffer mapping for template layout matching item target sequence: ${donor.id}`);
     if (!isUnlocked && !isAdmin) {
+      console.warn("Interception: Protected directory copying block activated due to unauthorized identity states validation context.");
       showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নম্বর ও পাসওয়ার্ড দিয়ে ডাটা আনলক করুন।', 'error');
       return;
     }
@@ -447,13 +529,16 @@ export default function App() {
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
+      console.log("Clipboard string buffer allocation mapping successfully written by internal script action logic.");
       showToast('রক্তদাতার সমস্ত তথ্য ক্লিপবোর্ডে কপি করা হয়েছে!', 'success');
     } catch (e) {
+      console.error("Browser text copying capabilities invocation threw unexpected exception layout handling track context:", e);
       showToast('কপি করতে ব্যর্থ হয়েছে, অনুগ্রহ করে ম্যানুয়ালি কপি করুন।', 'error');
     }
   };
 
   const handleShareRequest = (req) => {
+    console.log(`Compiling standard shareable text string sequence formatting schema for emergency notice listing target reference index tracking layout: ${req.id}`);
     const shareText = `🚨 জরুরি রক্তের প্রয়োজন 🚨\n\n🩸 রক্তের গ্রুপ: ${req.blood_group}\n👤 রোগী: ${req.patient_name}\n🏥 স্থান: ${req.hospital}\n⏰ কখন লাগবে: ${req.needed_time}\n📞 যোগাযোগের নম্বর: ${req.phone}\n\n🙏 অনুগ্রহ করে নোটিশটি সবাই শেয়ার করে রক্তদাতার সন্ধান দিতে সাহায্য করুন।\n📌 সৌজন্যে: ব্লাড সেন্টার নদোনা নোয়াখালী`;
     try {
       const el = document.createElement('textarea');
@@ -462,14 +547,17 @@ export default function App() {
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
+      console.log("Social share data mapping object serialized and assigned to system user clipboard state tracking matrix variables.");
       showToast('শেয়ারিং টেক্সট কপি হয়েছে! এখন ফেসবুক বা মেসেঞ্জারে পোস্ট করুন।', 'success');
     } catch (e) {
+      console.error("Error writing copy layout tracking execution parameters:", e);
       showToast('কপি করতে ব্যর্থ হয়েছে।', 'error');
     }
   };
 
   const handleAddVolunteer = async (e) => {
     e.preventDefault();
+    console.log("Initiating target schema registration sequence routine layout for volunteer creation form systems handler...", newVolunteer);
     const volunteerPayload = { 
       name: newVolunteer.name, 
       phone: newVolunteer.phone, 
@@ -479,20 +567,26 @@ export default function App() {
     };
 
     if (editVolunteerId) {
+      console.log(`Admin context dispatching volunteer adjustment update matrix properties dataset criteria key tracking target index lookup: ${editVolunteerId}`);
       const { error: volError } = await supabase.from('volunteers').update(volunteerPayload).eq('id', editVolunteerId);
       if (!volError) {
+        console.log("Target tracking records mutations adjusted securely inside records infrastructure mapping database.");
         showToast('ভলান্টিয়ারের তথ্য ও সিকিউরিটি পাসওয়ার্ড সফলভাবে সংশোধন করা হয়েছে!', 'success');
         setNewVolunteer({ name: '', phone: '', password: '', points: '' });
         setEditVolunteerId(null);
         fetchVolunteers();
       } else {
+        console.error(`Supabase database mutation pipelines threw standard processing exception targeting unique identifier tracking: ${editVolunteerId}`, volError);
         showToast('সংশোধন ব্যর্থ: ' + volError.message, 'error');
       }
     } else {
+      console.log("Inserting completely new structural volunteer user interface permissions context node layout item.");
       const { error: volError } = await supabase.from('volunteers').insert([volunteerPayload]);
       if (volError) {
+        console.error("Conflict duplicate record keys database tracking error captured while processing target registry sequence pipeline:", volError);
         showToast('এই ভলান্টিয়ার নম্বরটি অলরেডি অনুমোদিত আছে অথবা সমস্যা হয়েছে!', 'error');
       } else {
+        console.log("Target operations sequence confirmed. Volunteer database record created securely.");
         showToast('নতুন ভলান্টিয়ার কাস্টম সিকিউরিটি পাসওয়ার্ড সহ অনুমোদিত হয়েছে!', 'success');
         setNewVolunteer({ name: '', phone: '', password: '', points: '' });
         fetchVolunteers();
@@ -501,62 +595,77 @@ export default function App() {
   };
 
   const handleEditVolunteer = (v) => {
+    console.log(`Buffering targeted volunteer tracking reference attributes data onto control state management nodes. Target ID: ${v.id}`);
     setNewVolunteer({ name: v.name, phone: v.phone, password: v.password || v.code || '', points: v.points === 0 ? '0' : String(v.points || '') });
     setEditVolunteerId(v.id);
   };
 
   const handleDeleteVolunteer = async (id) => {
+    console.log(`Executing target capability validation check routine for deleting volunteer targeting profile registry ID index key map tracking context: ${id}`);
     if (confirm('আপনি কি নিশ্চিতভাবে এই ভলান্টিয়ারকে ডিলিট করতে চান?')) {
       const { error: volError } = await supabase.from('volunteers').delete().eq('id', id);
       if (!volError) {
+        console.log(`Resource object securely unlinked and cleared from internal table infrastructure matrix target tracking code trace context reference path: ${id}`);
         showToast('ভলান্টিয়ার সফলভাবে মুছে ফেলা হয়েছে।', 'success');
         fetchVolunteers();
       } else {
+        console.error(`Wipe sequencing routines process engine error reported mapping targets configurations on parameter layout index: ${id}`, volError);
         showToast('মুছে ফেলতে ব্যর্থ: ' + volError.message, 'error');
       }
     }
   };
 
   const toggleVolunteerStatus = async (id, currentStatus) => {
+    console.log(`Dispatching target capability mutation process mapping tracker state adjustment for volunteer object map targeting index: ${id}. Mutating active flag from baseline: ${currentStatus}`);
     const { error: volError } = await supabase.from('volunteers').update({ is_active: !currentStatus }).eq('id', id);
     if (!volError) {
+      console.log(`Database transaction confirmed for state flag processing toggle parameters context index tracking code ID match routing: ${id}`);
       showToast('ভলান্টিয়ারের অবস্থা সফলভাবে পরিবর্তন করা হয়েছে।', 'info');
       fetchVolunteers();
     } else {
+      console.error(`Database operations engine reported failure handling toggle logic adjustments parameters sequencing tracker: ${id}`, volError);
       showToast('অবস্থা পরিবর্তন ব্যর্থ: ' + volError.message, 'error');
     }
   };
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    const { data } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
+    console.log(`Firing internal security subsystem authorization handshake targeting admin login parameter lookup identity user string text mapping: ${userId}`);
+    const { data, error: authQueryError } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
     if (data) {
+      console.log("Admin security credentials match evaluated successfully. Granted elevated privileges tracking context.");
       setIsAdmin(true);
       setShowAdminLogin(false);
       showToast('অ্যাডমিন ভেরিফিকেশন সফল হয়েছে!', 'success');
     } else {
+      console.warn("Admin security module verification failed due to unmatched credentials query trace path.", authQueryError);
       showToast('ভুল ইউজার আইডি অথবা পাসওয়ার্ড!', 'error');
     }
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    console.log("Initiating target master authentication code verification system to rewrite administrative backend password maps...");
     if (masterCode !== 'BCNN2013') {
+      console.warn("Rewrite capability denied: Input parameter sequence does not match master safety configuration string values.");
       return showToast('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
     }
     const { error: authError } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
     if (!authError) {
+      console.log("Master override record database transactions confirmed. Secure backend target application keys rewritten safely.");
       showToast('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!', 'success');
       setShowPassModal(false);
       setMasterCode('');
       setNewPassword('');
     } else {
+      console.error("Supabase mutations processing context rejected targeting administrative password reconfiguration parameters query tracking flow:", authError);
       showToast('পাসওয়ার্ড পরিবর্তন ব্যর্থ: ' + authError.message, 'error');
     }
   };
 
   // ==================== ক্যানভাস ভিত্তিক ডিজিটাল প্রিমিয়াম কার্ড এবং সার্টিফিকেট জেনারেটর ====================
   const downloadDonorCard = (donor) => {
+    console.log(`HTML5 Canvas drawing sequence initializing for premium identity generation matching candidate reference tracing target: ${donor.name}`);
     const canvas = document.createElement('canvas');
     canvas.width = 638;
     canvas.height = 400;
@@ -674,6 +783,7 @@ export default function App() {
   };
 
   const downloadDonorCertificate = (donor) => {
+    console.log(`Canvas graphic systems processing structural rendering layers data for official award recognition certificate template matching object target: ${donor.name}`);
     const canvas = document.createElement('canvas');
     canvas.width = 1120;
     canvas.height = 792; // Standard High Res A4 ratio
@@ -683,7 +793,7 @@ export default function App() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, 1120, 792);
     
-    // সফট উইন্ডো ব্যাকগ্রাউন্ড গ্রাডিয়েন্ট
+    // ソフト উইন্ডো ব্যাকগ্রাউন্ড গ্রাডিয়েন্ট
     const bgGrad = ctx.createRadialGradient(560, 396, 100, 560, 396, 600);
     bgGrad.addColorStop(0, '#fffdfa');
     bgGrad.addColorStop(1, '#fbf7f0');
@@ -711,7 +821,7 @@ export default function App() {
     };
     drawPremiumBorder();
 
-    // ব্যাকগ্রাউন্ড ওয়াটারমার্ক সিল (সেন্টার জায়ান্ট ড্রপলেট এফেক্ট)
+    // バックグラウンド ウォーターマーク シル (সেন্টার জায়ান্ট ড্রপレット এফেক্ট)
     ctx.fillStyle = 'rgba(185, 28, 28, 0.025)';
     ctx.beginPath();
     ctx.arc(560, 420, 160, 0, Math.PI * 2);
@@ -787,6 +897,7 @@ export default function App() {
   };
 
   const downloadVolunteerCard = (v) => {
+    console.log(`Canvas rendering pipeline operating for premium team identity compilation structure matching target entity context: ${v.name}`);
     const canvas = document.createElement('canvas');
     canvas.width = 638;
     canvas.height = 400;
@@ -886,6 +997,7 @@ export default function App() {
   };
 
   const triggerDownload = (canvas, filename) => {
+    console.log(`Executing triggerDownload payload conversion routine targeting file capture: ${filename}`);
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = dataUrl;
@@ -898,15 +1010,24 @@ export default function App() {
 
   // ==================== স্মার্ট ডোনার লগ ও হিস্ট্রি ট্র্যাকিং লজিক ====================
   const openLogModal = async (donor) => {
+    console.log(`Invoking operational context view setup. Opening sub-logs history model dashboard for candidate parameter: ${donor.id}`);
     setActiveLogDonor(donor);
     setShowLogModal(true);
-    const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', donor.id).order('date', { ascending: false });
-    if (data) setDonorLogs(data);
+    const { data, error: fetchErr } = await supabase.from('donation_logs').select('*').eq('donor_id', donor.id).order('date', { ascending: false });
+    if (fetchErr) console.error("Error loading targeted records from internal history indexes system configuration:", fetchErr);
+    if (data) {
+      console.log(`Sync complete matching target candidate key timeline datasets. Array count loaded: ${data.length}`);
+      setDonorLogs(data);
+    }
   };
 
   const handleAddLog = async (e) => {
     e.preventDefault();
-    if (!newLog.patient_name || !newLog.hospital || !newLog.date) return showToast('সব তথ্য পূরণ করুন', 'error');
+    console.log(`Processing historical ledger logs appending block action framework sequence layout criteria inputs... Target Donor: ${activeLogDonor?.id}`, newLog);
+    if (!newLog.patient_name || !newLog.hospital || !newLog.date) {
+      console.warn("Log appending transaction blocked: Input verification parameters criteria failed standard schema tests.");
+      return showToast('সব তথ্য পূরণ করুন', 'error');
+    }
     
     const payload = {
       donor_id: activeLogDonor.id,
@@ -917,6 +1038,7 @@ export default function App() {
 
     const { error: logErr } = await supabase.from('donation_logs').insert([payload]);
     if (!logErr) {
+      console.log("Historical timeline event node successfully committed across infrastructure systems storage arrays.");
       showToast('রক্তদানের স্মার্ট রেকর্ড লগ করা হয়েছে!', 'success');
       setNewLog({ patient_name: '', hospital: '', date: '' });
       // পুনরায় রিফ্রেশ লিস্ট
@@ -924,13 +1046,16 @@ export default function App() {
       if (data) setDonorLogs(data);
       fetchAllLogs(); // গ্লোবাল হিস্ট্রি রিফ্রেশ
     } else {
+      console.error("Supabase transactional database failures reported trying to ingest new layout trace indices details object:", logErr);
       showToast('লগ করতে সমস্যা হয়েছে: ' + logErr.message, 'error');
     }
   };
 
   const handleDeleteLog = async (logId) => {
-    if (confirm('আপনি কি এই ডোনেশন রেকর্ড হিস্ট্রিটি মুছে ফেলতে চান?')) {
-      await supabase.from('donation_logs').delete().eq('id', logId);
+    console.log(`Dispatching explicitly requested trace removal directive against specific history tracker identifier parameter node index: ${logId}`);
+    if (confirm('আপনি কি নিশ্চিতভাবে এই ডোনেশন রেকর্ড হিস্ট্রিটি মুছে ফেলতে চান?')) {
+      const { error: delErr } = await supabase.from('donation_logs').delete().eq('id', logId);
+      if (delErr) console.error("Error intercepted tracking history removal process pipeline sequence flow code map:", delErr);
       if (activeLogDonor) {
         const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
         if (data) setDonorLogs(data);
@@ -1149,13 +1274,21 @@ export default function App() {
               type="text" 
               placeholder="নাম বা ঠিকানা দিয়ে খুঁজুন" 
               value={searchTerm} 
-              onChange={e => { setSearchTerm(e.target.value); setVisibleDonorsCount(10); }}
+              onChange={e => { 
+                console.log(`Search text mutating to parameters: "${e.target.value}". Resetting load counts rows threshold.`);
+                setSearchTerm(e.target.value); 
+                setVisibleDonorsCount(10); 
+              }}
               className="w-full border-2 pl-10 p-3 rounded-2xl shadow-xs text-base focus:outline-red-500 leading-normal" 
             />
           </div>
           <select 
             value={eligibilityFilter} 
-            onChange={e => { setEligibilityFilter(e.target.value); setVisibleDonorsCount(10); }} 
+            onChange={e => { 
+              console.log(`Eligibility tracking criteria condition swapped: ${e.target.value}`);
+              setEligibilityFilter(e.target.value); 
+              setVisibleDonorsCount(10); 
+            }} 
             className="w-full border-2 p-3 rounded-2xl shadow-xs text-base bg-white font-bold text-slate-700 focus:outline-red-500 leading-normal"
           >
             <option value="All">সকল রক্তদাতা (ডাটাবেজে থাকা সবাই)</option>
@@ -1168,7 +1301,11 @@ export default function App() {
           {bloodGroups.map(group => (
             <button 
               key={group} 
-              onClick={() => { setSelectedGroup(group); setVisibleDonorsCount(10); }} 
+              onClick={() => { 
+                console.log(`Active categorization blood group criteria switched targeting item tag match: ${group}`);
+                setSelectedGroup(group); 
+                setVisibleDonorsCount(10); 
+              }} 
               className={`px-4 py-2 rounded-full text-sm font-black whitespace-nowrap shadow-xs transition-all flex items-center gap-1 ${selectedGroup === group ? 'bg-red-600 text-white' : 'bg-white border-2 text-slate-600 hover:bg-slate-100'}`}
             >
               <Droplet className={`w-3.5 h-3.5 ${selectedGroup === group ? 'fill-white' : 'text-red-500'}`} />
@@ -1240,7 +1377,7 @@ export default function App() {
                     </button>
                     {(isAdmin || isUnlocked) && (
                       <button onClick={() => openLogModal(donor)} className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border border-blue-200">
-                        <History className="w-3 h-3" /> স্মার্ট হিস্ট্রি
+                        <History className="w-3 h-3" /> スマート হিস্ট্রি
                       </button>
                     )}
                   </div>
@@ -1311,7 +1448,10 @@ export default function App() {
 
             {filteredDonors.length > visibleDonorsCount && (
               <button 
-                onClick={() => setVisibleDonorsCount(prev => prev + 10)} 
+                onClick={() => {
+                  console.log(`Paging boundary extension triggered. Increasing rows count visible thresholds map.`);
+                  setVisibleDonorsCount(prev => prev + 10);
+                }} 
                 className="w-full bg-slate-800 hover:bg-slate-950 text-white p-3 rounded-2xl font-black text-sm tracking-wide shadow transition-colors flex items-center justify-center gap-1"
               >
                 <RefreshCw className="w-4 h-4" /> আরো রক্তদাতা দেখুন (Load More)
@@ -1375,7 +1515,7 @@ export default function App() {
         {(newDonor.weight || newDonor.age) && (
           <div className="p-4 rounded-xl border space-y-2 bg-slate-50 border-slate-200 text-xs shadow-xs">
             <h5 className="font-bold text-slate-700 border-b pb-1 flex items-center gap-1">
-              <Stethoscope className="w-4 h-4 text-slate-500" /> স্বাস্থ্যগত যোগ্যতা পর্যালোচনা:
+              <Stethoscope className="w-4 h-4 text-slate-500" />  স্বাস্থ্যগত যোগ্যতা পর্যালোচনা:
             </h5>
             {newDonor.weight && (
               <div className="flex items-center gap-1.5 font-semibold">
@@ -1404,7 +1544,7 @@ export default function App() {
         )}
 
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">রক্তদাতার সম্পূর্ণ ঠিকানা *</label>
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">রক্তదাতার সম্পূর্ণ ঠিকানা *</label>
           <input type="text" placeholder="বাঘপাঁচড়া, সোনাইমুড়ী, নোয়াখালী" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
@@ -1591,7 +1731,7 @@ export default function App() {
       
       {!isAdmin && !isUnlocked && (
         <p className="text-center text-xs text-slate-400 py-10 leading-normal bg-white p-4 rounded-xl border flex items-center justify-center gap-1">
-          <Lock className="w-4 h-4 text-slate-400" /> ভলান্টিয়ার প্যানেল পরিচালনার জন্য আপনার রেজিস্টার্ড মোবাইল নম্বর ও অ্যাডমিনের দেওয়া কাস্টম পাসওয়ার্ড দিয়ে ডাটা আনলক করুন।
+          <Lock className="w-4 h-4 text-slate-400" />  ভলান্টিয়ার প্যানেল পরিচালনার জন্য আপনার রেজিস্টার্ড মোবাইল নম্বর ও অ্যাডমিনের দেওয়া কাস্টম পাসওয়ার্ড দিয়ে ডাটা আনলক করুন।
         </p>
       )}
     </div>
@@ -1624,7 +1764,10 @@ export default function App() {
             </div>
             <div className="w-full pt-2">
               <button 
-                onClick={() => setError(null)} 
+                onClick={() => {
+                  console.log("Resetting model error validation boundary message layout.");
+                  setError(null);
+                }} 
                 className="font-bengali bg-white text-red-700 font-bold px-8 py-2.5 rounded-xl hover:bg-red-50 transition-colors duration-200 shadow-md text-sm w-full md:w-auto"
               >
                 ঠিক আছে
@@ -1648,13 +1791,19 @@ export default function App() {
         
         <div className="absolute top-4 right-4 flex gap-2">
           {!isAdmin ? (
-            <button onClick={() => setShowAdminLogin(!showAdminLogin)} className="bg-red-700 hover:bg-red-800 text-xs font-bold px-3 py-1.5 rounded-xl text-white flex items-center gap-1 shadow">
+            <button onClick={() => {
+              console.log(`Toggling Admin Login container state configuration to: ${!showAdminLogin}`);
+              setShowAdminLogin(!showAdminLogin);
+            }} className="bg-red-700 hover:bg-red-800 text-xs font-bold px-3 py-1.5 rounded-xl text-white flex items-center gap-1 shadow">
               <Lock className="w-3.5 h-3.5" /> অ্যাডমিন
             </button>
           ) : (
             <div className="flex gap-1.5">
               <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-xs font-bold px-2.5 py-1.5 rounded-xl text-white shadow flex items-center gap-0.5"><Lock className="w-3 h-3" /> পাসওয়ার্ড</button>
-              <button onClick={() => setIsAdmin(false)} className="bg-slate-800 text-xs font-bold px-2.5 py-1.5 rounded-xl text-white shadow flex items-center gap-0.5"><LogOut className="w-3 h-3" /> লগআউট</button>
+              <button onClick={() => {
+                console.log("Admin log-out signal context fired. Revoking access states layout map.");
+                setIsAdmin(false);
+              }} className="bg-slate-800 text-xs font-bold px-2.5 py-1.5 rounded-xl text-white shadow flex items-center gap-0.5"><LogOut className="w-3 h-3" /> লগআউট</button>
             </div>
           )}
         </div>
@@ -1669,19 +1818,19 @@ export default function App() {
 
       <nav className="bg-white border-b sticky top-[38px] z-30 shadow-xs">
         <div className="max-w-md mx-auto grid grid-cols-5 text-center font-bold text-[10px] sm:text-xs">
-          <button onClick={() => setActiveTab('home')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'home' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => { console.log("Tab Swapped: home"); setActiveTab('home'); }} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'home' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
             <Home className="w-4 h-4 sm:w-5 sm:h-5" /><span>হোম</span>
           </button>
-          <button onClick={() => setActiveTab('notice')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'notice' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => { console.log("Tab Swapped: notice"); setActiveTab('notice'); }} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'notice' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
             <Megaphone className="w-4 h-4 sm:w-5 sm:h-5" /><span>জরুরি নোটিশ</span>
           </button>
-          <button onClick={() => setActiveTab('search')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'search' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => { console.log("Tab Swapped: search"); setActiveTab('search'); }} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'search' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
             <Search className="w-4 h-4 sm:w-5 sm:h-5" /><span>খুঁজুন</span>
           </button>
-          <button onClick={() => setActiveTab('register')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'register' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => { console.log("Tab Swapped: register"); setActiveTab('register'); }} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'register' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
             <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" /><span>নিবন্ধন</span>
           </button>
-          <button onClick={() => setActiveTab('volunteer')} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'volunteer' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => { console.log("Tab Swapped: volunteer"); setActiveTab('volunteer'); }} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'volunteer' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
             <Users className="w-4 h-4 sm:w-5 sm:h-5" /><span>ভলান্টিয়ার</span>
           </button>
         </div>
@@ -1730,7 +1879,7 @@ export default function App() {
       {showLogModal && activeLogDonor && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
           <div className="bg-white p-5 rounded-2xl max-w-md w-full space-y-4 shadow-2xl relative">
-            <button onClick={() => setShowLogModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+            <button onClick={() => { console.log("Closing sub-logs history layout window frame."); setShowLogModal(false); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
               <X className="w-5 h-5" />
             </button>
             <h3 className="text-base font-black text-slate-800 flex items-center gap-1.5 border-b pb-2">
@@ -1782,7 +1931,7 @@ export default function App() {
                 <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold text-sm shadow leading-normal flex items-center justify-center gap-1">
                   <RefreshCw className="w-4 h-4" /> আপডেট করুন
                 </button>
-                <button type="button" onClick={() => { setShowPassModal(false); setMasterCode(''); }} className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm border flex items-center justify-center gap-1">
+                <button type="button" onClick={() => { console.log("Closing pass modal setup context."); setShowPassModal(false); setMasterCode(''); }} className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm border flex items-center justify-center gap-1">
                   <X className="w-4 h-4" /> বাতিল
                 </button>
               </div>
