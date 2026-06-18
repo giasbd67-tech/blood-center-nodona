@@ -871,7 +871,7 @@ export default function App() {
     //  মিডল-বটম প্রিমিয়াম র্যাংক মেডেল ব্যাজ ক্যাপশন
     ctx.fillStyle = '#065f46';
     ctx.font = 'bold 16px system-ui, sans-serif';
-    ctx.fillText(`অর্জিত র্যাংক মর্যাদা: ${getDonorBadge(donor.activity_count).text}`, 560, 580);
+    ctx.fillText(`অর্জিত মর্যাদা: ${getDonorBadge(donor.activity_count).text}`, 560, 580);
 
     // ডাবল ডাইনামিক অফিশিয়াল সিগনেচার এলাইনমেন্ট
     ctx.strokeStyle = '#cbd5e1';
@@ -1177,7 +1177,7 @@ export default function App() {
       <div className="bg-white p-6 rounded-2xl shadow border border-slate-100 space-y-4">
         <div className="text-center">
           <h3 className="text-xl font-black text-slate-800 tracking-wide border-b-2 border-red-500 inline-block pb-1 flex items-center justify-center gap-2">
-            <Activity className="w-5 h-5 text-red-500" /> আমাদের ডাইনামিক অর্জন
+            <Activity className="w-5 h-5 text-red-500" /> আমাদের অর্জন
           </h3>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -1245,7 +1245,7 @@ export default function App() {
               মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে **২৭ মার্চ ২০১৩ ইং** তারিখে ব্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
             </p>
             <div className="pt-1">
-              <p className="text-xs font-bold text-slate-700 mb-1.5"> দূরदर्शी ৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
+              <p className="text-xs font-bold text-slate-700 mb-1.5">৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-600">
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ১</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ২</div>
@@ -1544,13 +1544,13 @@ export default function App() {
         )}
 
         <div>
-          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">রক্তదাতার সম্পূর্ণ ঠিকানা *</label>
-          <input type="text" placeholder="বাঘপাঁচড়া, সোনাইমুড়ী, নোয়াখালী" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
+          <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">রক্তদাতার সম্পূর্ণ ঠিকানা *</label>
+          <input type="text" placeholder="বাঘপাঁচড়া, সোনাইমুড়ী, নোয়াখালী 🇧🇩" value={newDonor.address} onChange={e => setNewDonor({...newDonor, address: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" required />
         </div>
 
         <div>
           <label className="block text-xs font-black text-slate-700 mb-1 leading-normal">পূর্বে কতবার রক্ত দিয়েছেন? (ঐচ্ছিক)</label>
-          <input type="number" placeholder="রক্তদানের মোট সংখ্যা লিখুন" value={newDonor.activity_count} onChange={e => setNewDonor({...newDonor, activity_count: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" />
+          <input type="number" placeholder="পূর্বে রক্তদানের মোট সংখ্যা লিখুন" value={newDonor.activity_count} onChange={e => setNewDonor({...newDonor, activity_count: e.target.value})} className="w-full border-2 p-3 rounded-xl text-base focus:outline-green-500 leading-normal" />
         </div>
 
         <div>
@@ -1731,7 +1731,7 @@ export default function App() {
       
       {!isAdmin && !isUnlocked && (
         <p className="text-center text-xs text-slate-400 py-10 leading-normal bg-white p-4 rounded-xl border flex items-center justify-center gap-1">
-          <Lock className="w-4 h-4 text-slate-400" />  ভলান্টিয়ার প্যানেল পরিচালনার জন্য আপনার রেজিস্টার্ড মোবাইল নম্বর ও অ্যাডমিনের দেওয়া কাস্টম পাসওয়ার্ড দিয়ে ডাটা আনলক করুন।
+          <Lock className="w-4 h-4 text-slate-400" />  ভলান্টিয়ার প্যানেল পরিচালনার জন্য আপনার রেজিস্টার্ড মোবাইল নাম্বার ও অ্যাডমিনের দেওয়া কাস্টম পাসওয়ার্ড দিয়ে ডাটা আনলক করুন।
         </p>
       )}
     </div>
