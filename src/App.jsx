@@ -338,7 +338,7 @@ export default function App() {
     } else {
       if (dbError && dbError.code === 'PGRST116') {
         console.warn(`Target phone identity record status is inactive or does not exist inside directory parameters: ${phone}`);
-        showToast('দুঃখিত! এই মোবাইল নম্বরটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
+        showToast('দুঃখিত! এই মোবাইল নাম্বারটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
         setIsUnlocked(false);
         localStorage.removeItem('v_phone');
         localStorage.removeItem('v_pass');
@@ -364,7 +364,7 @@ export default function App() {
   };
 
   const checkEligibility = (lastDate, gender) => {
-    if (!lastDate) return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
+    if (!lastDate) return { isEligible: true, statusText: 'বর্তমানে রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
     
     const today = new Date(); 
     const donationDate = new Date(lastDate);
@@ -379,7 +379,7 @@ export default function App() {
     const requiredDays = gender === 'মহিলা' ? 180 : 120;
     
     if (diffDays >= requiredDays) {
-      return { isEligible: true, statusText: 'রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
+      return { isEligible: true, statusText: 'বর্তমানে রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
     } else {
       const remainingDays = requiredDays - diffDays;
       const remainingMonths = Math.ceil(remainingDays / 30);
@@ -446,7 +446,7 @@ export default function App() {
       if (submitError) {
         console.error("Supabase record insertions exception captured during operations execution:", submitError);
         if (submitError.code === '23505') {
-          showToast('এই নম্বরটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!', 'error');
+          showToast('এই নাম্বারটি দিয়ে অলরেডি রেজিস্ট্রেশন করা আছে!', 'error');
         } else {
           showToast('নিবন্ধন ব্যর্থ হয়েছে: ' + submitError.message, 'error');
         }
@@ -618,7 +618,7 @@ export default function App() {
 
   const handleShareRequest = (req) => {
     console.log(`Compiling standard shareable text string sequence formatting schema for emergency notice listing target reference index tracking layout: ${req.id}`);
-    const shareText = `🚨 জরুরি রক্তের প্রয়োজন 🚨\n\n🩸 রক্তের গ্রুপ: ${req.blood_group}\n👤 রোগী: ${req.patient_name}\n🏥 স্থান: ${req.hospital}\n⏰ কখন লাগবে: ${req.needed_time}\n📞 যোগাযোগের নম্বর: ${req.phone}\n\n🙏 অনুগ্রহ করে নোটিশটি সবাই শেয়ার করে রক্তদাতার সন্ধান দিতে সাহায্য করুন।\n📌 সৌজন্যে: ব্লাড সেন্টার নদোনা নোয়াখালী`;
+    const shareText = `🚨 জরুরি রক্তের প্রয়োজন 🚨\n\n🩸 রক্তের গ্রুপ: ${req.blood_group}\n👤 রোগী: ${req.patient_name}\n🏥 স্থান: ${req.hospital}\n⏰ কখন লাগবে: ${req.needed_time}\n📞 যোগাযোগের নাম্বার: ${req.phone}\n\n🙏 অনুগ্রহ করে নোটিশটি সবাই শেয়ার করে রক্তদাতার সন্ধান দিতে সাহায্য করুন।\n🩸🏠 সৌজন্যে: ব্লাড সেন্টার নদোনা নোয়াখালী`;
     try {
       const el = document.createElement('textarea');
       el.value = shareText;
@@ -627,7 +627,7 @@ export default function App() {
       document.execCommand('copy');
       document.body.removeChild(el);
       console.log("Social share data mapping object serialized and assigned to system user clipboard state tracking matrix variables.");
-      showToast('শেয়ারিং টেক্সট কপি হয়েছে! এখন ফেসবুক বা মেসেঞ্জারে পোস্ট করুন।', 'success');
+      showToast('শেয়ারিং টেক্সট কপি হয়েছে! এখন ফেসবুক বা মেসেঞ্জারে পোস্ট বা ম্যাসেজ করুন।', 'success');
     } catch (e) {
       console.error("Error writing copy layout tracking execution parameters:", e);
       showToast('কপি করতে ব্যর্থ হয়েছে।', 'error');
@@ -663,7 +663,7 @@ export default function App() {
       const { error: volError } = await supabase.from('volunteers').insert([volunteerPayload]);
       if (volError) {
         console.error("Conflict duplicate record keys database tracking error captured while processing target registry sequence pipeline:", volError);
-        showToast('এই ভলান্টিয়ার নম্বরটি অলরেডি অনুমোদিত আছে অথবা সমস্যা হয়েছে!', 'error');
+        showToast('এই ভলান্টিয়ার নাম্বারটি অলরেডি অনুমোদিত আছে অথবা সমস্যা হয়েছে!', 'error');
       } else {
         console.log("Target operations sequence confirmed. Volunteer database record created securely.");
         showToast('নতুন ভলান্টিয়ার কাস্টম সিকিউরিটি পাসওয়ার্ড সহ অনুমোদিত হয়েছে!', 'success');
@@ -792,7 +792,7 @@ export default function App() {
     
     ctx.fillStyle = '#f59e0b';
     ctx.font = 'bold 11px system-ui, sans-serif';
-    ctx.fillText('★ মানবতা ও সামাজিক রক্তসেবা প্রতিষ্ঠান ★', 34, 70);
+    ctx.fillText('★ "রক্ত দিন, জীবন বাঁচান" স্লোগানে মানবতা ও সামাজিক রক্তসেবা প্রতিষ্ঠান ★', 34, 70);
 
     // মেম্বারশিপ মেটা ডাটা ফ্রেম
     ctx.fillStyle = '#1e293b';
@@ -815,8 +815,8 @@ export default function App() {
     };
 
     renderMetaRow('রক্তদাতার নাম:', donor.name, 155);
-    renderMetaRow('ঠিকানা এলাকা:', donor.location || donor.village || 'নদোনা', 190);
-    renderMetaRow('সর্বশেষ দান:', donor.last_donation_date || 'কখনো না', 225);
+    renderMetaRow('ঠিকানা:', donor.location || donor.village || 'নদোনা', 190);
+    renderMetaRow('সর্বশেষ রক্তদান:', donor.last_donation_date || 'কখনো না', 225);
     renderMetaRow('মোট রক্তদান:', `${donor.activity_count || 0} বার`, 260);
 
     // মেডেল অর্জন স্ট্যাটাস
@@ -856,7 +856,7 @@ export default function App() {
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
+    ctx.fillText('সার্বিক সহযোগিতায়: হাজী তফসির আহমেদ ট্রাস্ট | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
 
     triggerDownload(canvas, `Premium_ID_Card_${donor.name}.png`);
   };
@@ -914,7 +914,7 @@ export default function App() {
     
     ctx.fillStyle = '#d4af37';
     ctx.font = 'bold 16px system-ui, sans-serif';
-    ctx.fillText('★ ESTD: 2013 | মানবতার সেবায় উৎসর্গীকৃত একটি সামাজিক প্রতিষ্ঠান ★', 560, 145);
+    ctx.fillText('★ স্থাপিত: ২০১৩ ইং | "রক্ত দিন, জীবন বাঁচান" স্লোগানে মানবতার সেবায় উৎসর্গীকৃত একটি সামাজিক প্রতিষ্ঠান ★', 560, 145);
 
     // সার্টিফিকেট নাম ও উদ্দেশ্য
     ctx.fillStyle = '#0f172a';
@@ -1036,7 +1036,7 @@ export default function App() {
     };
 
     renderVolRow('সদস্যের নাম:', v.name, 170);
-    renderVolRow('মোবাইল নম্বর:', v.phone, 210);
+    renderVolRow('মোবাইল নাম্বার:', v.phone, 210);
     renderVolRow('অ্যাক্টিভিটি স্কোর:', `${v.points || 0} পয়েন্ট`, 250);
 
     ctx.fillStyle = '#1e40af';
@@ -1070,7 +1070,7 @@ export default function App() {
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
+    ctx.fillText('সার্বিক সহযোগিতায়: হাজী তফসির আহমেদ ট্রাস্ট | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
 
     triggerDownload(canvas, `Volunteer_ID_Card_${v.name}.png`);
   };
@@ -1177,7 +1177,7 @@ export default function App() {
         {isAdmin && (
           <form onSubmit={handleAddNp} className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
             <p className="text-xs font-bold text-blue-600 flex items-center gap-1">
-              <FileText className="w-3.5 h-3.5" /> নতুন পোস্ট তৈরি করুন (সর্বোচ্চ ২ টি)
+              <FileText className="w-3.5 h-3.5" /> নতুন পোস্ট তৈরি করুন
             </p>
             <textarea
               placeholder="ক্যাপশন লিখুন..."
@@ -1251,7 +1251,7 @@ export default function App() {
               </select>
               <input type="tel" placeholder="যোগাযোগের নাম্বার" value={newRequest.phone} onChange={e => setNewRequest({...newRequest, phone: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             </div>
-            <input type="text" placeholder="হাসপাতালের নাম ও ঠিকানা" value={newRequest.hospital} onChange={e => setNewRequest({...newRequest, hospital: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
+            <input type="text" placeholder="নোয়াখালী সদর হাসপাতাল। মাইজদী,নোয়াখালী।" value={newRequest.hospital} onChange={e => setNewRequest({...newRequest, hospital: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             <input type="text" placeholder="কখন রক্ত লাগবে" value={newRequest.needed_time} onChange={e => setNewRequest({...newRequest, needed_time: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             <div className="flex gap-1.5">
               <button type="submit" className="flex-1 bg-red-600 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1">
@@ -1285,7 +1285,7 @@ export default function App() {
                     <User className="w-3.5 h-3.5 text-slate-500" /> রোগী: {req.patient_name}
                   </h4>
                   <p className="text-xs text-slate-600 leading-normal flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400" /> स्थान: {req.hospital}
+                    <MapPin className="w-3.5 h-3.5 text-slate-400" /> স্থান: {req.hospital}
                   </p>
                   <p className="text-xs text-red-600 font-bold leading-normal flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" /> সময়: {req.needed_time}
@@ -1385,20 +1385,20 @@ export default function App() {
           <div className="space-y-2 w-full">
             <h4 className="font-black text-sm text-slate-800 mb-1 leading-relaxed border-b pb-1 flex items-center justify-between">
               <span className="flex items-center gap-1"><Sparkles className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" /> সংগঠনের গৌরবময় ইতিহাস ও উদ্যোক্তাগণ</span>
-              <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">প্রতিষ্ঠা: ২০১৩ ইং</span>
+              <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">  প্রতিষ্ঠা: ২০১৩ ইং</span>
             </h4>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে **২৭ মার্চ ২০১৩ ইং** তারিখে ব্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
+              মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে ২৭ মার্চ ২০১৩ ইং ব্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয় এবং পরবর্তীতে একঝাঁক সমাজসেবক ও তরুণ সচেতন সদস্যদের নিয়ে হাজী তফসির আহমেদ ট্রাস্টের সার্বিক সহযোগিতায়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
             </p>
             <div className="pt-1">
-              <p className="text-xs font-bold text-slate-700 mb-1.5">৬ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
+              <p className="text-xs font-bold text-slate-700 mb-1.5">৪ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-600">
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ১</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ২</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৩</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৪</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৫</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৬</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🩸রক্ত দিন</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🌱জীবন বাঁচান</div>
               </div>
             </div>
           </div>
@@ -1523,7 +1523,7 @@ export default function App() {
                     </button>
                     {(isAdmin || isUnlocked) && (
                       <button onClick={() => openLogModal(donor)} className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border border-blue-200">
-                        <History className="w-3 h-3" /> স্মার্ট হিস্ট্রি
+                        <History className="w-3 h-3" />হিস্ট্রি
                       </button>
                     )}
                   </div>
@@ -1563,10 +1563,10 @@ export default function App() {
                         </>
                       ) : (
                         <>
-                          <button type="button" onClick={() => showToast('মোবাইল নম্বর দেখতে ও কল করতে ভলান্টিয়ার কোড বা মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                          <button type="button" onClick={() => showToast('মোবাইল নাম্বার দেখতে ও কল করতে ভলান্টিয়ার কোড ও মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
                             <Lock className="w-4 h-4" />
                           </button>
-                          <button type="button" onClick={() => showToast('হোয়াটসঅ্যাপে মেসেজ দিতে ভলান্টিয়ার কোড বা মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
+                          <button type="button" onClick={() => showToast('হোয়াটসঅ্যাপে মেসেজ দিতে ভলান্টিয়ার কোড ও মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন।', 'error')} className="p-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm flex items-center justify-center cursor-not-allowed">
                             <Lock className="w-4 h-4" />
                           </button>
                         </>
@@ -1805,7 +1805,7 @@ export default function App() {
                     <span className="text-red-600">🩸 রক্তদাতা: {matchedDonor ? matchedDonor.name : 'অজানা দাতা'} ({matchedDonor ? matchedDonor.blood_group : ''})</span>
                     <span className="text-slate-500 text-[10px] bg-slate-200 px-2 py-0.5 rounded-full">{log.date}</span>
                   </div>
-                  <p className="text-slate-600 font-medium"> Hospital: <span className="text-slate-800">{log.hospital}</span></p>
+                  <p className="text-slate-600 font-medium"> হাসপাতাল: <span className="text-slate-800">{log.hospital}</span></p>
                   <p className="text-slate-600 font-medium">👤 রোগী: <span className="text-slate-800">{log.patient_name}</span></p>
                   {isAdmin && (
                     <div className="text-right pt-1">
@@ -1831,9 +1831,9 @@ export default function App() {
               <Plus className="w-4 h-4" /> {editVolunteerId ? 'ভলান্টিয়ার তথ্য ও পাসওয়ার্ড সংশোধন:' : 'নতুন ভলান্টিয়ার ও কাস্টম পাসওয়ার্ড অনুমোদন:'}
             </p>
             <div className="grid grid-cols-1 gap-2">
-              <input type="text" placeholder="ভলান্টিয়ারের নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
+              <input type="text" placeholder="ভলান্টিয়ার/সেচ্ছাসেবীর নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
               <input type="tel" placeholder="মোবাইল নাম্বার" value={newVolunteer.phone} onChange={e => setNewVolunteer({...newVolunteer, phone: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
-              <input type="text" placeholder="সিকিউরিটি কোড বা পাসওয়ার্ড (আলফানিউমেরিক যেকোনো দৈর্ঘ্য)" value={newVolunteer.password} onChange={e => setNewVolunteer({...newVolunteer, password: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
+              <input type="text" placeholder="সিকিউরিটি কোড বা পাসওয়ার্ড" value={newVolunteer.password} onChange={e => setNewVolunteer({...newVolunteer, password: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
               <input type="number" placeholder="অ্যাক্টিভিটি স্কোর পয়েন্ট সেট করুন" value={newVolunteer.points} onChange={e => setNewVolunteer({...newVolunteer, points: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" />
             </div>
             <div className="flex gap-1.5">
@@ -1931,7 +1931,7 @@ export default function App() {
           </h1>
           <div className="text-xs text-red-100 font-bold flex flex-col items-center gap-1 mt-1">
             <span className="bg-red-700/50 px-3 py-0.5 rounded-full">স্থাপিত: ২০১৩ ইং</span>
-            <span className="bg-red-700/50 px-3 py-0.5 rounded-full mt-1">📍 নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩</span>
+            <span className="bg-red-700/50 px-3 py-0.5 rounded-full mt-1">📍নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩</span>
           </div>
         </div>
         
@@ -2081,3 +2081,18 @@ export default function App() {
     </div>
   );
 }
+
+
+      {/* ফুটার */}
+      <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed">
+        <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
+        <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
+        <div className="flex items-center justify-center gap-2 pt-3 border-t border-slate-200 max-w-sm mx-auto whitespace-nowrap">
+          <span className="text-xs font-medium text-slate-400 leading-normal">অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</span>
+          <img src="/gias.png" alt="Developer" className="w-8 h-8 rounded-full" />
+        </div>
+      </footer>
+    </div>
+  );
+}
+
