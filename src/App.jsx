@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabaseClient';
-// আধুনিক আউটলাইন ও মিনিমালিস্ট আইকন প্যাক ইমপোর্ট
 import { 
   Megaphone, 
-  FileText, \n  Save, 
+  FileText, 
+  Save, 
   Send, 
   Droplet, 
   User, 
-  MapPin, \n  Clock, 
+  MapPin, 
+  Clock, 
   Pencil, 
   Trash2, 
-  Phone, \n  MessageSquare, 
+  Phone, 
+  MessageSquare, 
   Activity, 
   Award, 
   Calendar, 
@@ -18,12 +20,15 @@ import {
   Search, 
   Users, 
   Scale, 
-  Copy, \n  Lock, 
+  Copy, 
+  Lock, 
   Plus, 
   RefreshCw, 
   UserPlus, 
   Shield, 
-  Ban, \n  Unlock, \n  LogOut, 
+  Ban, 
+  Unlock, 
+  LogOut, 
   Eye, 
   EyeOff, 
   Zap, 
@@ -40,6 +45,7 @@ import {
   Video,
   Share2
 } from 'lucide-react';
+
 
 export default function App() {
   // অ্যাপ স্টেটসমূহ
@@ -245,7 +251,6 @@ export default function App() {
       try {
         // ১. ডাটাবেজ থেকে ডিলিট
         const { error: dbErr } = await supabase.from('posts').delete().eq('id', id);
-        if (dbErr) throw dbErr;
 
         // ২. সুপাবেস স্টোরেজ বাকেট থেকে ফাইল অটো-ডিলিট
         if (filePath) {
