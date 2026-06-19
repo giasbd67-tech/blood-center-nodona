@@ -599,13 +599,16 @@ export default function App() {
         <button onClick={() => setActiveTab('volunteer')} className={`flex flex-col items-center justify-center text-[10px] font-bold transition-all px-2 py-1 rounded-xl ${activeTab === 'volunteer' ? 'text-rose-600 bg-rose-50' : 'text-slate-400'}`}><Users className="w-5 h-5 mb-0.5" />ভলান্টিয়ার</button>
       </nav>
 
-      {/* অফিসিয়াল ট্রাস্ট ও কারিগরি পার্টনার ফুটার */}
+            {/* অফিসিয়াল ট্রাস্ট ও কারিগরি পার্টনার ফুটার */}
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed border-t border-slate-200/60 pt-6">
         <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
-        <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
+        <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">
+          সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট
+        </p>
         <div className="flex items-center justify-center gap-2 pt-3 border-t border-slate-200 max-w-sm mx-auto whitespace-nowrap">
           <span className="text-xs font-medium text-slate-400 leading-normal">কারিগরি সহযোগিতায়:</span>
-          <span className="text-slate-600 font-black text-xs">অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</span>
+          <img src="/gias.png" alt="Developer" className="h-5 object-contain" />
+          <span className="text-xs font-bold text-slate-500 leading-normal">অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</span>
         </div>
       </footer>
     </div>
