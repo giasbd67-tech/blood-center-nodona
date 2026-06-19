@@ -81,6 +81,11 @@ export default function App() {
   const [newVolunteer, setNewVolunteer] = useState({ name: '', phone: '', password: '', points: '' });
   const [editVolunteerId, setEditVolunteerId] = useState(null);
 
+  // নোয়াখালী পোস্ট স্টেট
+  const [noakhaliPosts, setNoakhaliPosts] = useState([]);
+  const [newNp, setNewNp] = useState({ caption: '', file: null, mediaType: 'image' });
+  const [isUploadingNp, setIsUploadingNp] = useState(false);
+
   // সিকিউরিটি ও অথেনটিকেশন স্টেট
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [volunteerPhone, setVolunteerPhone] = useState('');
@@ -122,6 +127,7 @@ export default function App() {
     fetchDonors();
     fetchRequests();
     fetchAllLogs();
+    fetchNoakhaliPosts();
     
     // অফলাইন ক্যাশ সাপোর্ট লোড
     const cachedDonors = localStorage.getItem('cached_donors');
@@ -147,6 +153,79 @@ export default function App() {
     console.log(`Admin status changed to: ${isAdmin}. Refreshing volunteer list leaderboard.`);
     fetchVolunteers(); // লিডারবোর্ডের জন্য ভলান্টিয়ার ডাটা সবসময় রিড করা প্রয়োজন
   }, [isAdmin]);
+
+  const fetchNoakhaliPosts = async () => {
+    try {
+      const { data, error } = await supabase.from('noakhali_posts').select('*').order('created_at', { ascending: false });
+      if (data) setNoakhaliPosts(data);
+    } catch (e) {
+      console.error("Error fetching Noakhali posts:", e);
+    }
+  };
+
+  const handleNpFileChange = (e) => {
+    const file = e.target.files[0];
+    if(file) {
+      const type = file.type.startsWith('video/') ? 'video' : 'image';
+      setNewNp({...newNp, file, mediaType: type});
+    }
+  };
+
+  const handleAddNp = async (e) => {
+    e.preventDefault();
+    if (noakhaliPosts.length >= 2) {
+      return showToast('সর্বোচ্চ ২টি পোস্ট করা যাবে। ৩ নাম্বার পোস্ট করতে পূর্বের একটি ডিলিট করুন।', 'error');
+    }
+    if (!newNp.caption && !newNp.file) return showToast('ক্যাপশন বা ছবি/ভিডিও দিন', 'error');
+
+    setIsUploadingNp(true);
+    let media_url = '';
+    let media_path = '';
+
+    if (newNp.file) {
+      const fileExt = newNp.file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
+      media_path = `posts/${fileName}`;
+      const { error: uploadError } = await supabase.storage.from('noakhali_media').upload(media_path, newNp.file);
+      if (uploadError) {
+        setIsUploadingNp(false);
+        return showToast('ফাইল আপলোড ব্যর্থ: ' + uploadError.message, 'error');
+      }
+      const { data: publicData } = supabase.storage.from('noakhali_media').getPublicUrl(media_path);
+      media_url = publicData.publicUrl;
+    }
+
+    const { error: insertErr } = await supabase.from('noakhali_posts').insert([{
+      caption: newNp.caption,
+      media_url: media_url,
+      media_type: newNp.file ? newNp.mediaType : null,
+      media_path: media_path
+    }]);
+
+    setIsUploadingNp(false);
+    if (!insertErr) {
+      showToast('নোয়াখালী পোস্ট সফলভাবে যুক্ত হয়েছে!', 'success');
+      setNewNp({ caption: '', file: null, mediaType: 'image' });
+      fetchNoakhaliPosts();
+    } else {
+      showToast('পোস্ট করতে ব্যর্থ: ' + insertErr.message, 'error');
+    }
+  };
+
+  const handleDeleteNp = async (post) => {
+    if(confirm('আপনি কি নিশ্চিতভাবে এই পোস্টটি ডিলিট করতে চান?')) {
+      if (post.media_path) {
+        await supabase.storage.from('noakhali_media').remove([post.media_path]);
+      }
+      const { error } = await supabase.from('noakhali_posts').delete().eq('id', post.id);
+      if(!error) {
+        showToast('পোস্ট অটো ডিলিট করা হয়েছে।', 'success');
+        fetchNoakhaliPosts();
+      } else {
+        showToast('ডিলিট করতে ব্যর্থ: ' + error.message, 'error');
+      }
+    }
+  };
 
   const fetchDonors = async () => {
     console.log("Invoking fetchDonors from Supabase...");
@@ -718,7 +797,7 @@ export default function App() {
     // মেম্বারশিপ মেটা ডাটা ফ্রেম
     ctx.fillStyle = '#1e293b';
     ctx.font = 'bold 18px system-ui, sans-serif';
-    ctx.fillText('অফিসিয়াল রক্তদাতা পরিচয়পত্র', 32, 115);
+    ctx.fillText('অফিসিয়াল রক্তদাতা পরিচয়পত্র', 32, 115);
 
     // কন্টেন্ট মডিউল গ্রিড (বাম পাশে তথ্য)
     const renderMetaRow = (label, value, yPos) => {
@@ -773,7 +852,7 @@ export default function App() {
     ctx.textAlign = 'center';
     ctx.fillText('BLOOD GROUP', 540, 255);
 
-    // ফুটার
+    // ফুটার[span_0](start_span)[span_0](end_span)
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
@@ -941,7 +1020,7 @@ export default function App() {
 
     ctx.fillStyle = '#1e293b';
     ctx.font = 'bold 18px system-ui, sans-serif';
-    ctx.fillText('ভলান্টিয়ার পরিচয়পত্র', 32, 120);
+    ctx.fillText('ভলান্টিয়ার পরিচয়পত্র', 32, 120);
 
     const renderVolRow = (label, value, yPos) => {
       ctx.fillStyle = '#64748b';
@@ -987,7 +1066,7 @@ export default function App() {
     ctx.font = '900 13px system-ui, sans-serif';
     ctx.fillText('MEMBER', 545, 195);
 
-    // ফুটার
+    // ফুটার[span_1](start_span)[span_1](end_span)
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
@@ -1089,6 +1168,73 @@ export default function App() {
 
   const renderNoticeSection = () => (
     <div className="space-y-6">
+
+      {/* নতুন সংযোজিত নোয়াখালী পোস্ট সেকশন */}
+      <div className="bg-white p-5 rounded-2xl shadow border-t-4 border-blue-600 space-y-4">
+        <h2 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">
+          <Megaphone className="w-5 h-5" /> নোয়াখালী পোস্ট
+        </h2>
+        {isAdmin && (
+          <form onSubmit={handleAddNp} className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
+            <p className="text-xs font-bold text-blue-600 flex items-center gap-1">
+              <FileText className="w-3.5 h-3.5" /> নতুন পোস্ট তৈরি করুন (সর্বোচ্চ ২ টি)
+            </p>
+            <textarea
+              placeholder="ক্যাপশন লিখুন..."
+              value={newNp.caption}
+              onChange={e => setNewNp({...newNp, caption: e.target.value})}
+              className="w-full border-2 p-2.5 rounded-xl text-sm bg-white focus:outline-blue-500"
+              rows="3"
+            />
+            <input
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleNpFileChange}
+              className="w-full border-2 p-2.5 rounded-xl text-sm bg-white focus:outline-blue-500"
+            />
+            <button type="submit" disabled={isUploadingNp || noakhaliPosts.length >= 2} className="w-full bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1 disabled:opacity-50 transition-colors">
+              {isUploadingNp ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              {isUploadingNp ? 'আপলোড হচ্ছে...' : 'পোস্ট করুন'}
+            </button>
+            {noakhaliPosts.length >= 2 && <p className="text-xs text-red-500 font-bold mt-1 text-center">৩ নাম্বার পোস্ট করতে হলে অবশ্যই পূর্বের ২টির মধ্য থেকে ১টি ডিলিট করতে হবে।</p>}
+          </form>
+        )}
+
+        <div className="space-y-4">
+          {noakhaliPosts.length === 0 ? (
+            <p className="text-center text-xs text-slate-400 py-4 leading-normal flex items-center justify-center gap-1">
+              <Info className="w-4 h-4" /> বর্তমানে নোয়াখালী পোস্টে কোনো আপডেট নেই।
+            </p>
+          ) : (
+            noakhaliPosts.map(post => (
+              <div key={post.id} className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
+                <div className="p-3 flex justify-between items-center bg-slate-50 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain rounded-full bg-white border p-0.5 shadow-xs" onError={(e) => {e.target.style.display='none'}} />
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-800 leading-none mb-1">নোয়াখালী পোস্ট</h4>
+                      <p className="text-[10px] text-slate-500 font-medium leading-none">{new Date(post.created_at || Date.now()).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  {isAdmin && (
+                    <button onClick={() => handleDeleteNp(post)} className="text-red-500 bg-red-50 p-2 rounded-lg hover:bg-red-100 transition-colors border border-red-100">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                {post.caption && <div className="p-4 text-sm text-slate-800 whitespace-pre-wrap font-medium">{post.caption}</div>}
+                {post.media_url && post.media_type === 'image' && (
+                  <img src={post.media_url} alt="Post media" className="w-full object-cover max-h-96 bg-slate-100" />
+                )}
+                {post.media_url && post.media_type === 'video' && (
+                  <video src={post.media_url} controls className="w-full max-h-96 bg-black"></video>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
       <div id="emergency-board-section" className="bg-white p-5 rounded-2xl shadow border-t-4 border-red-500 space-y-4">
         <h2 className="text-lg font-black text-red-600 flex items-center gap-2 animate-pulse leading-relaxed">
           <Megaphone className="w-5 h-5" /> জরুরি রক্তের লাইভ নোটিশ বোর্ড
@@ -1377,7 +1523,7 @@ export default function App() {
                     </button>
                     {(isAdmin || isUnlocked) && (
                       <button onClick={() => openLogModal(donor)} className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border border-blue-200">
-                        <History className="w-3 h-3" /> スマート হিস্ট্রি
+                        <History className="w-3 h-3" /> স্মার্ট হিস্ট্রি
                       </button>
                     )}
                   </div>
@@ -1515,7 +1661,7 @@ export default function App() {
         {(newDonor.weight || newDonor.age) && (
           <div className="p-4 rounded-xl border space-y-2 bg-slate-50 border-slate-200 text-xs shadow-xs">
             <h5 className="font-bold text-slate-700 border-b pb-1 flex items-center gap-1">
-              <Stethoscope className="w-4 h-4 text-slate-500" />  স্বাস্থ্যগত যোগ্যতা পর্যালোচনা:
+              <Stethoscope className="w-4 h-4 text-slate-500" />  স্বাস্থ্যগত যোগ্যতা পর্যালোচনা:
             </h5>
             {newDonor.weight && (
               <div className="flex items-center gap-1.5 font-semibold">
@@ -1639,7 +1785,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* নতুন গ্লোবাল ফিচার: দাতার রক্তদানের ইতিহাস ট্র্যাকিং সেকশন */}
+      {/* গ্লোবাল ফিচার: দাতার রক্তদানের ইতিহাস ট্র্যাকিং সেকশন */}
       <div className="bg-white p-5 rounded-2xl shadow border border-red-100 space-y-3">
         <h3 className="text-base font-black text-red-600 flex items-center gap-1.5">
           <History className="w-5 h-5 text-red-500" /> দাতার রক্তদানের ইতিহাস
@@ -1731,7 +1877,7 @@ export default function App() {
       
       {!isAdmin && !isUnlocked && (
         <p className="text-center text-xs text-slate-400 py-10 leading-normal bg-white p-4 rounded-xl border flex items-center justify-center gap-1">
-          <Lock className="w-4 h-4 text-slate-400" />  ভলান্টিয়ার প্যানেল পরিচালনার জন্য আপনার রেজিস্টার্ড মোবাইল নাম্বার ও অ্যাডমিনের দেওয়া কাস্টম পাসওয়ার্ড দিয়ে ডাটা আনলক করুন।
+          <Lock className="w-4 h-4 text-slate-400" />  ভলান্টিয়ার প্যানেল পরিচালনার জন্য আপনার রেজিস্টার্ড মোবাইল নাম্বার ও অ্যাডমিনের দেওয়া কাস্টম পাসওয়ার্ড দিয়ে ডাটা আনলক করুন।
         </p>
       )}
     </div>
@@ -1854,99 +2000,160 @@ export default function App() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-md leading-normal">
-                <Zap className="w-4 h-4" /> লগইন ভেরিফাই করুন
+              <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-xl font-black text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                <Unlock className="w-4 h-4" /> লগইন করুন
               </button>
             </form>
           </div>
         )}
 
-        {activeTab === 'home' && (
-          <div className="space-y-8 animate-fadeIn">
-            {renderNoticeSection()}
-            {renderRegisterSection()}
-            {renderSearchSection()}
-          </div>
-        )}
-
-        {activeTab === 'notice' && renderNoticeSection()}
-        {activeTab === 'search' && renderSearchSection()}
-        {activeTab === 'register' && renderRegisterSection()}
-        {activeTab === 'volunteer' && renderVolunteerSection()}
-      </main>
-
-      {/* スマート ডোনার লগ ও ডোনেশন হিস্ট্রি ট্র্যাকিং মোডাল UI */}
-      {showLogModal && activeLogDonor && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
-          <div className="bg-white p-5 rounded-2xl max-w-md w-full space-y-4 shadow-2xl relative">
-            <button onClick={() => { console.log("Closing sub-logs history layout window frame."); setShowLogModal(false); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-base font-black text-slate-800 flex items-center gap-1.5 border-b pb-2">
-              <History className="w-5 h-5 text-blue-600" /> {activeLogDonor.name} - রক্তদানের SMART হিস্ট্রি লগ
-            </h3>
-            
-            <form onSubmit={handleAddLog} className="bg-slate-50 p-3 rounded-xl border space-y-2.5">
-              <p className="text-xs font-black text-slate-600">নতুন ডোনেশন রেকর্ড যোগ করুন:</p>
-              <input type="text" placeholder="রোগীর নাম বা কেস (যেমন: থ্যালাসেমিয়া রোগী)" value={newLog.patient_name} onChange={e => setNewLog({...newLog, patient_name: e.target.value})} className="w-full border-2 p-2 rounded-xl text-xs bg-white" required />
-              <input type="text" placeholder="হাসপাতাল / স্থান (যেমন: নোয়াখালী সদর হাসপাতাল)" value={newLog.hospital} onChange={e => setNewLog({...newLog, hospital: e.target.value})} className="w-full border-2 p-2 rounded-xl text-xs bg-white" required />
-              <input type="date" value={newLog.date} onChange={e => setNewLog({...newLog, date: e.target.value})} className="w-full border-2 p-2 rounded-xl text-xs bg-white" required />
-              <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1 shadow-sm">
-                <Plus className="w-3.5 h-3.5" /> রেকর্ড সেভ করুন
-              </button>
-            </form>
-
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-              <p className="text-xs font-black text-slate-500">পূর্বের রক্তদানের রেকর্ডসমূহ:</p>
-              {donorLogs.length === 0 ? (
-                <p className="text-[11px] text-slate-400 text-center py-4">কোনো পূর্ববর্তী বিস্তারিত ডোনেশন হিস্ট্রি লগ পাওয়া যায়নি।</p>
-              ) : (
-                donorLogs.map(log => (
-                  <div key={log.id} className="p-2 bg-slate-50/50 rounded-xl border text-xs flex justify-between items-center">
-                    <div>
-                      <p className="font-bold text-slate-700">🏥 {log.hospital}</p>
-                      <p className="text-[11px] text-slate-500">রোগী: {log.patient_name} | তারিখ: {log.date}</p>
-                    </div>
-                    <button onClick={() => handleDeleteLog(log.id)} className="text-red-500 p-1 hover:bg-red-50 rounded-lg">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))
-              )}
+        {/* Change Password Modal */}
+        {showPassModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl border w-full max-w-sm overflow-hidden">
+               <div className="bg-blue-600 p-4 text-center">
+                 <h3 className="text-white font-bold flex justify-center items-center gap-2"><Lock className="w-5 h-5"/> পাসওয়ার্ড পরিবর্তন</h3>
+               </div>
+               <form onSubmit={handleChangePassword} className="p-5 space-y-4">
+                 <input type="password" placeholder="মাস্টার কোড দিন" value={masterCode} onChange={e => setMasterCode(e.target.value)} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
+                 <input type="password" placeholder="নতুন পাসওয়ার্ড দিন" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
+                 <div className="flex gap-2">
+                   <button type="submit" className="flex-1 bg-blue-600 text-white p-2.5 rounded-xl font-bold text-sm">পরিবর্তন করুন</button>
+                   <button type="button" onClick={() => setShowPassModal(false)} className="flex-1 bg-slate-200 text-slate-800 p-2.5 rounded-xl font-bold text-sm">বাতিল</button>
+                 </div>
+               </form>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {showPassModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
-          <div className="bg-white p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl">
-            <h3 className="text-base font-black text-slate-800 flex items-center gap-1.5 leading-relaxed">
-              <Lock className="w-4 h-4" /> পাসওয়ার্ড পরিবর্তন
-            </h3>
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <input type="password" placeholder="মাস্টার কোড (Master Code) দিন" value={masterCode} onChange={e => setMasterCode(e.target.value)} className="w-full border-2 p-3 rounded-xl text-base leading-normal" required />
-              <input type="password" placeholder="নতুন শক্তিশালী পাসওয়ার্ড লিখুন" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full border-2 p-3 rounded-xl text-base leading-normal" required />
-              <div className="flex gap-2 pt-2">
-                <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold text-sm shadow leading-normal flex items-center justify-center gap-1">
-                  <RefreshCw className="w-4 h-4" /> আপডেট করুন
-                </button>
-                <button type="button" onClick={() => { console.log("Closing pass modal setup context."); setShowPassModal(false); setMasterCode(''); }} className="flex-1 bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm border flex items-center justify-center gap-1">
-                  <X className="w-4 h-4" /> বাতিল
-                </button>
+        {/* Log Modal */}
+        {showLogModal && activeLogDonor && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl border w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
+              <div className="bg-red-600 p-4 text-center flex justify-between items-center text-white">
+                <h3 className="font-bold flex items-center gap-2"><History className="w-5 h-5"/> ডোনার হিস্ট্রি ({activeLogDonor.name})</h3>
+                <button onClick={() => setShowLogModal(false)}><X className="w-5 h-5" /></button>
               </div>
-            </form>
+              <div className="p-4 overflow-y-auto flex-1 space-y-4">
+                {(isAdmin || isUnlocked) && (
+                   <form onSubmit={handleAddLog} className="bg-slate-50 p-3 rounded-xl border space-y-2">
+                     <p className="text-xs font-bold text-slate-700">নতুন ডোনেশন রেকর্ড যুক্ত করুন</p>
+                     <input type="text" placeholder="রোগীর নাম" value={newLog.patient_name} onChange={e => setNewLog({...newLog, patient_name: e.target.value})} className="w-full border p-2 rounded text-xs" required />
+                     <input type="text" placeholder="হাসপাতাল" value={newLog.hospital} onChange={e => setNewLog({...newLog, hospital: e.target.value})} className="w-full border p-2 rounded text-xs" required />
+                     <input type="date" value={newLog.date} onChange={e => setNewLog({...newLog, date: e.target.value})} className="w-full border p-2 rounded text-xs" required />
+                     <button type="submit" className="w-full bg-red-600 text-white p-2 rounded font-bold text-xs">সেভ করুন</button>
+                   </form>
+                )}
+                <div className="space-y-2">
+                   {donorLogs.length === 0 ? (
+                      <p className="text-xs text-center text-slate-500 py-4">কোনো রেকর্ড নেই।</p>
+                   ) : (
+                      donorLogs.map(log => (
+                         <div key={log.id} className="bg-slate-50 p-2.5 rounded-lg border text-xs">
+                           <div className="flex justify-between items-center mb-1">
+                             <span className="font-bold text-slate-800">রোগী: {log.patient_name}</span>
+                             <span className="text-slate-500">{log.date}</span>
+                           </div>
+                           <p className="text-slate-600">হাসপাতাল: {log.hospital}</p>
+                           {isAdmin && (
+                             <button onClick={() => handleDeleteLog(log.id)} className="text-red-500 hover:text-red-700 mt-1 flex items-center gap-1 text-[10px] font-bold">
+                               <Trash2 className="w-3 h-3"/> মুছুন
+                             </button>
+                           )}
+                         </div>
+                      ))
+                   )}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
+        {/* Tab Routing */}
+        <div className="pb-10">
+          {activeTab === 'home' && renderNoticeSection()}
+          {activeTab === 'notice' && renderNoticeSection()}
+          {activeTab === 'search' && renderSearchSection()}
+          {activeTab === 'register' && renderRegisterSection()}
+          {activeTab === 'volunteer' && renderVolunteerSection()}
+        </div>
+      </main>
+    </div>
+  );
+}
+import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
+import { 
+  Megaphone, FileText, Save, Send, Droplet, User, MapPin, Clock, Pencil, 
+  Trash2, Phone, MessageSquare, Activity, Award, Calendar, Sparkles, 
+  Search, Users, Scale, Copy, Lock, Plus, RefreshCw, UserPlus, Shield, 
+  Ban, Unlock, LogOut, Eye, EyeOff, Zap, Home, Heart, Stethoscope, 
+  Check, AlertTriangle, X, Info, Download, History, Image as ImageIcon, Video, Share2
+} from 'lucide-react';
+
+export default function App() {
+  const [donors, setDonors] = useState([]);
+  const [emergencyRequests, setEmergencyRequests] = useState([]);
+  const [volunteers, setVolunteers] = useState([]);
+  const [posts, setPosts] = useState([]); // নতুন নোয়াখালী পোস্ট স্টেট
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('All');
+  const [eligibilityFilter, setEligibilityFilter] = useState('All'); 
+  const [activeTab, setActiveTab] = useState('home');
+  const [showPassModal, setShowPassModal] = useState(false);
+  const [masterCode, setMasterCode] = useState('');
+
+  // এখানে আপনার আগের বাকি স্টেট এবং ফাংশনগুলো অপরিবর্তিত থাকবে...
+
+  // নতুন ফিচার: নোয়াখালী পোস্ট হ্যান্ডেলার
+  const handleAddPost = async (postData) => {
+    if (posts.length >= 2) {
+      alert("দুঃখিত! সর্বোচ্চ ২টি পোস্ট করা সম্ভব। নতুন পোস্ট করতে একটি ডিলিট করুন।");
+      return;
+    }
+    // সুপাবেসে ডাটা ইনসার্ট করার লজিক
+  };
+
+  const handleDeletePost = async (post) => {
+    // সুপাবেস স্টোরেজ এবং ডাটাবেস থেকে ডিলিট করার লজিক
+    setPosts(posts.filter(p => p.id !== post.id));
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 pb-20">
+      {/* আপনার অ্যাপের আগের হেডার ও কন্টেন্ট এখানে থাকবে */}
+
+      {/* 'জরুরি নোটিশ' বাটনের উপরে 'নোয়াখালী পোস্ট' কার্ড */}
+      <div className="px-4 mt-6">
+        <h2 className="text-lg font-bold text-slate-800 mb-4">নোয়াখালী পোস্ট</h2>
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+          {posts.length === 0 ? (
+            <p className="text-center text-slate-400 py-4">কোনো পোস্ট নেই</p>
+          ) : (
+            posts.map(post => (
+              <div key={post.id} className="mb-4 pb-4 border-b">
+                <p>{post.caption}</p>
+                {/* ছবি বা ভিডিও প্রদর্শন */}
+                <button onClick={() => handleDeletePost(post)} className="text-red-500 text-xs mt-2">ডিলিট</button>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* জরুরি রক্তের লাইভ নোটিশ বোর্ড */}
+      <div className="px-4 mt-6">
+        <h2 className="text-lg font-bold text-slate-800 mb-4">জরুরি রক্তের লাইভ নোটিশ বোর্ড</h2>
+        {/* আগের নোটিশ বোর্ডের কোড */}
+      </div>
+
+      {/* ফুটার */}
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed">
         <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
         <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
         <div className="flex items-center justify-center gap-2 pt-3 border-t border-slate-200 max-w-sm mx-auto whitespace-nowrap">
-          <span className="text-xs font-medium text-slate-400 leading-normal">কারিগরি সহযোগিতায়:</span>
-          <img src="/gias.png" alt="Developer" className="w-6 h-6 rounded-full object-cover border shadow-xs" />
-          <span className="font-black text-slate-600 text-sm tracking-normal">অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</span>
+          <span className="text-xs font-medium text-slate-400 leading-normal">অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</span>
+          <img src="/gias.png" alt="Developer" className="w-8 h-8 rounded-full" />
         </div>
       </footer>
     </div>
