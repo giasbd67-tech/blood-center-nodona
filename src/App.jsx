@@ -51,13 +51,12 @@ export default function App() {
   const [volunteers, setVolunteers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('All');
-  const [eligibilityFilter, setEligibilityFilter] = useState('All'); 
+  const [eligibilityFilter, setEligibilityFilter] = useState('All');
   const [activeTab, setActiveTab] = useState('home'); // ৫টি টগল ট্যাব: home, notice, search, register, volunteer
-  const [visibleDonorsCount, setVisibleDonorsCount] = useState(10); // লোড মোর লিমিট
+  const [visibleDonorsCount, setVisibleDonorsCount] = useState(10);
   
   // কাস্টম নোটিফিকেশন স্টেট
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
-  
   // নতুন মোডাল এরর স্টেট
   const [error, setError] = useState(null);
 
@@ -77,7 +76,7 @@ export default function App() {
   const [newRequest, setNewRequest] = useState({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
   const [editRequestId, setEditRequestId] = useState(null);
   
-  // নতুন পাসওয়ার্ড ফিল্ড সহ ভলান্টিয়ার স্টেট (শুরুর মান 0 না দিয়ে খালি স্ট্রিং "" ব্যবহার করা হয়েছে)
+  // নতুন পাসওয়ার্ড ফিল্ড সহ ভলান্টিয়ার স্টেট
   const [newVolunteer, setNewVolunteer] = useState({ name: '', phone: '', password: '', points: '' });
   const [editVolunteerId, setEditVolunteerId] = useState(null);
 
@@ -89,7 +88,7 @@ export default function App() {
   // সিকিউরিটি ও অথেনটিকেশন স্টেট
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [volunteerPhone, setVolunteerPhone] = useState('');
-  const [volunteerPassword, setVolunteerPassword] = useState(''); // ভলান্টিয়ার পাসওয়ার্ড স্টেট
+  const [volunteerPassword, setVolunteerPassword] = useState(''); 
   const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
@@ -105,7 +104,7 @@ export default function App() {
   const [selectedDonorForCard, setSelectedDonorForCard] = useState(null);
   const [selectedVolunteerForCard, setSelectedVolunteerForCard] = useState(null);
   const [donorLogs, setDonorLogs] = useState([]);
-  const [allLogs, setAllLogs] = useState([]); // গ্লোবাল দাতার রক্তদানের ইতিহাস স্টেট
+  const [allLogs, setAllLogs] = useState([]);
   const [showLogModal, setShowLogModal] = useState(false);
   const [activeLogDonor, setActiveLogDonor] = useState(null);
   const [newLog, setNewLog] = useState({ patient_name: '', hospital: '', date: '' });
@@ -201,7 +200,7 @@ export default function App() {
       media_type: newNp.file ? newNp.mediaType : null,
       media_path: media_path
     }]);
-
+    
     setIsUploadingNp(false);
     if (!insertErr) {
       showToast('নোয়াখালী পোস্ট সফলভাবে যুক্ত হয়েছে!', 'success');
@@ -365,7 +364,6 @@ export default function App() {
 
   const checkEligibility = (lastDate, gender) => {
     if (!lastDate) return { isEligible: true, statusText: 'বর্তমানে রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
-    
     const today = new Date(); 
     const donationDate = new Date(lastDate);
 
@@ -373,7 +371,7 @@ export default function App() {
       return { isEligible: false, statusText: 'সাময়িক অযোগ্য (ভবিষ্যতের তারিখ দেওয়া হয়েছে)', percent: 0, remainingDays: 0 };
     }
     
-    const diffTime = today - donationDate; 
+    const diffTime = today - donationDate;
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     const requiredDays = gender === 'মহিলা' ? 180 : 120;
@@ -811,7 +809,8 @@ export default function App() {
       // ডটেড সেপারেটর লাইন
       ctx.strokeStyle = '#e2e8f0';
       ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(32, yPos + 8); ctx.lineTo(380, yPos + 8); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(32, yPos + 8); ctx.lineTo(380, yPos + 8); ctx.stroke();
     };
 
     renderMetaRow('রক্তদাতার নাম:', donor.name, 155);
@@ -852,7 +851,7 @@ export default function App() {
     ctx.textAlign = 'center';
     ctx.fillText('BLOOD GROUP', 540, 255);
 
-    // ফুটার[span_0](start_span)[span_0](end_span)
+    // ফুটার
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
@@ -871,7 +870,7 @@ export default function App() {
     // লাক্সারি ব্যাকগ্রাউন্ড রেন্ডারিং (আইভরি/রয়্যাল অফ-হোয়াইট থিম)
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, 1120, 792);
-    
+
     // ソフト উইন্ডো ব্যাকগ্রাউন্ড গ্রাডিয়েন্ট
     const bgGrad = ctx.createRadialGradient(560, 396, 100, 560, 396, 600);
     bgGrad.addColorStop(0, '#fffdfa');
@@ -1066,7 +1065,7 @@ export default function App() {
     ctx.font = '900 13px system-ui, sans-serif';
     ctx.fillText('MEMBER', 545, 195);
 
-    // ফুটার[span_1](start_span)[span_1](end_span)
+    // ফুটার
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
@@ -1661,7 +1660,7 @@ export default function App() {
         {(newDonor.weight || newDonor.age) && (
           <div className="p-4 rounded-xl border space-y-2 bg-slate-50 border-slate-200 text-xs shadow-xs">
             <h5 className="font-bold text-slate-700 border-b pb-1 flex items-center gap-1">
-              <Stethoscope className="w-4 h-4 text-slate-500" />  স্বাস্থ্যগত যোগ্যতা পর্যালোচনা:
+              <Stethoscope className="w-4 h-4 text-slate-500" />  স্বাস্থ্যগত যোগ্যতা পর্যালোচনা:
             </h5>
             {newDonor.weight && (
               <div className="flex items-center gap-1.5 font-semibold">
@@ -1785,7 +1784,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* গ্লোবাল ফিচার: দাতার রক্তদানের ইতিহাস ট্র্যাকিং সেকশন */}
+      {/* নতুন গ্লোবাল ফিচার: দাতার রক্তদানের ইতিহাস ট্র্যাকিং সেকশন */}
       <div className="bg-white p-5 rounded-2xl shadow border border-red-100 space-y-3">
         <h3 className="text-base font-black text-red-600 flex items-center gap-1.5">
           <History className="w-5 h-5 text-red-500" /> দাতার রক্তদানের ইতিহাস
@@ -1906,7 +1905,7 @@ export default function App() {
               <AlertTriangle className="h-8 w-8 text-white" />
             </div>
             <div className="font-bengali text-lg md:text-xl font-medium whitespace-normal break-words leading-relaxed w-full">
-              {error}
+               {error}
             </div>
             <div className="w-full pt-2">
               <button 
@@ -1930,8 +1929,8 @@ export default function App() {
               ব্লাড সেন্টার নদোনা নোয়াখালী
           </h1>
           <div className="text-xs text-red-100 font-bold flex flex-col items-center gap-1 mt-1">
-            <span className="bg-red-700/50 px-3 py-0.5 rounded-full">স্থাপিত: ২০১৩ ইং</span>
-            <span className="bg-red-700/50 px-3 py-0.5 rounded-full mt-1">📍নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩</span>
+            <span className="bg-red-700/50 px-3 py-0.5 rounded-full">প্রতিষ্ঠা: ২০১৩ ইং</span>
+            <span className="bg-red-700/50 px-3 py-0.5 rounded-full mt-1">📍 নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩</span>
           </div>
         </div>
         
@@ -1962,6 +1961,7 @@ export default function App() {
         </a>
       </div>
 
+      {/* আপনার দেওয়া নতুন নেভিগেশন ট্যাবের অর্ডার (ঠিক আগের মতো) */}
       <nav className="bg-white border-b sticky top-[38px] z-30 shadow-xs">
         <div className="max-w-md mx-auto grid grid-cols-5 text-center font-bold text-[10px] sm:text-xs">
           <button onClick={() => { console.log("Tab Swapped: home"); setActiveTab('home'); }} className={`py-3 flex flex-col items-center justify-center gap-1 border-b-2 transition-all ${activeTab === 'home' ? 'border-red-600 text-red-600 bg-red-50/30' : 'border-transparent text-slate-500'}`}>
@@ -2078,8 +2078,17 @@ export default function App() {
           {activeTab === 'volunteer' && renderVolunteerSection()}
         </div>
       </main>
+
+      {/* আপনার নির্দেশিত হুবহু ফুটার ডিজাইন ও লেখা */}
+      <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed pb-8">
+        <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
+        <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
+        <div className="flex items-center justify-center gap-2 pt-3 border-t border-slate-200 max-w-sm mx-auto whitespace-nowrap">
+          <span className="text-xs font-medium text-slate-400 leading-normal">কারিগরি সহযোগিতায়:</span>
+          <img src="/gias.png" alt="Developer" className="w-6 h-6 rounded-full object-cover border shadow-xs" onError={(e) => {e.target.style.display='none'}} />
+          <span className="font-black text-slate-600 text-sm tracking-normal">অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</span>
+        </div>
+      </footer>
     </div>
   );
 }
-
-  
