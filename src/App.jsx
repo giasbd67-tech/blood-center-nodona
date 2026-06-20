@@ -2082,8 +2082,7 @@ export default function App() {
   );
 }
 
-
-      {/* ফুটার */}
+{/* ফুটার */}
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed">
         <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
         <p className="text-slate-500 font-bold text-xs bg-slate-200/50 inline-block px-4 py-1.5 rounded-full leading-normal">সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট</p>
