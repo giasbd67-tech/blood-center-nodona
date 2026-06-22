@@ -661,10 +661,11 @@ export default function App() {
     } else {
       console.log("Inserting completely new structural volunteer user interface permissions context node layout item.");
       const { error: volError } = await supabase.from('volunteers').insert([volunteerPayload]);
-      if (volError) {
-        console.error("Conflict duplicate record keys database tracking error captured while processing target registry sequence pipeline:", volError);
-        showToast('এই ভলান্টিয়ার নাম্বারটি অলরেডি অনুমোদিত আছে অথবা সমস্যা হয়েছে!', 'error');
-      } else {
+     if (volError) {
+  console.error("Error Details:", volError);
+  alert("ডাটাবেজ এরর: " + volError.message + "\nডিটেইলস: " + (volError.details || 'নেই'));
+  showToast('ভুল: ' + volError.message, 'error');
+} else {
         console.log("Target operations sequence confirmed. Volunteer database record created securely.");
         showToast('নতুন ভলান্টিয়ার কাস্টম সিকিউরিটি পাসওয়ার্ড সহ অনুমোদিত হয়েছে!', 'success');
         setNewVolunteer({ name: '', phone: '', password: '', points: '' });
