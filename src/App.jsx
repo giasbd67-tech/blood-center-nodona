@@ -296,7 +296,7 @@ export default function App() {
     if (num <= 5) return { text: 'নিয়মিত দাতা', classes: 'bg-blue-100 text-blue-700 border-blue-200' };
     if (num <= 9) return { text: 'স্টার দাতা', classes: 'bg-green-100 text-green-700 border-green-200' };
     if (num <= 14) return { text: 'সুপার হিরো', classes: 'bg-yellow-100 text-yellow-700 border-yellow-300 font-black animate-pulse shadow-xs' };
-    return { text: 'লাইভ সেভার লিজেন্ড', classes: 'bg-purple-100 text-purple-700 border-purple-300 font-black tracking-wide shadow animate-bounce' };
+    return { text: 'রেড ডায়মন্ড', classes: 'bg-purple-100 text-purple-700 border-purple-300 font-black tracking-wide shadow animate-bounce' };
   };
 
   // ভলান্টিয়ারদের সফল কাজের ওপর ভিত্তি করে রিয়েলটাইম মেডেল নির্ধারণ
@@ -553,7 +553,7 @@ export default function App() {
     console.log(`Triggering modify data state setup context structure interface targeting donor context: ${donor.id}`);
     if (!isAdmin && !isUnlocked) {
       console.warn("Access intercept: Registry editing access verification parameters evaluation failed due to locked client instance.");
-      return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড বা নম্বর দিয়ে ডাটা আনলক করুন', 'error');
+      return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড বা নাম্বার দিয়ে ডাটা আনলক করুন', 'error');
     }
     setNewDonor({
       id: donor.id,
@@ -596,7 +596,7 @@ export default function App() {
     console.log(`Executing target text compilation parsing string buffer mapping for template layout matching item target sequence: ${donor.id}`);
     if (!isUnlocked && !isAdmin) {
       console.warn("Interception: Protected directory copying block activated due to unauthorized identity states validation context.");
-      showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার নম্বর ও পাসওয়ার্ড দিয়ে ডাটা আনলক করুন।', 'error');
+      showToast('রক্তদাতার তথ্য কপি করতে ভলান্টিয়ার মোবাইল নাম্বার ও পাসওয়ার্ড দিয়ে ডাটা আনলক করুন।', 'error');
       return;
     }
     const infoText = `🩸 ব্লাড সেন্টার নদোনা নোয়াখালী 🩸\nরক্তদাতা: ${donor.name}\nগ্রুপ: ${donor.blood_group}\nমোবাইল: ${donor.phone}\nঠিকানা: ${donor.location || donor.village || ''}`;
@@ -962,8 +962,8 @@ export default function App() {
 
     ctx.fillStyle = '#334155';
     ctx.font = 'bold 14px system-ui, sans-serif';
-    ctx.fillText('পরিচালক স্বাক্ষর', 290, 705);
-    ctx.fillText('সংগঠন মডারেটর', 830, 705);
+    ctx.fillText('সভাপতি স্বাক্ষর', 290, 705);
+    ctx.fillText('সাধারণ সম্পাদক স্বাক্ষর', 830, 705);
     
     // গোল্ডেন সিল রেপ্লিকা ভেক্টর (নিচের ঠিক মাঝখানে)
     ctx.fillStyle = '#f59e0b';
@@ -1174,7 +1174,7 @@ export default function App() {
       {/* নতুন সংযোজিত নোয়াখালী পোস্ট সেকশন */}
       <div className="bg-white p-5 rounded-2xl shadow border-t-4 border-blue-600 space-y-4">
         <h2 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">
-          <Megaphone className="w-5 h-5" /> নোয়াখালী পোস্ট
+          <Megaphone className="w-5 h-5" /> ব্লাড সেন্টার পোস্ট
         </h2>
         {isAdmin && (
           <form onSubmit={handleAddNp} className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
@@ -1205,7 +1205,7 @@ export default function App() {
         <div className="space-y-4">
           {noakhaliPosts.length === 0 ? (
             <p className="text-center text-xs text-slate-400 py-4 leading-normal flex items-center justify-center gap-1">
-              <Info className="w-4 h-4" /> বর্তমানে নোয়াখালী পোস্টে কোনো আপডেট নেই।
+              <Info className="w-4 h-4" /> বর্তমানে ব্লাড সেন্টার পোস্টে কোনো আপডেট নেই।
             </p>
           ) : (
             noakhaliPosts.map(post => (
@@ -1214,7 +1214,7 @@ export default function App() {
                   <div className="flex items-center gap-2.5">
                     <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain rounded-full bg-white border p-0.5 shadow-xs" onError={(e) => {e.target.style.display='none'}} />
                     <div>
-                      <h4 className="font-bold text-sm text-slate-800 leading-none mb-1">নোয়াখালী পোস্ট</h4>
+                      <h4 className="font-bold text-sm text-slate-800 leading-none mb-1">ব্লাড সেন্টার পোস্ট</h4>
                       <p className="text-[10px] text-slate-500 font-medium leading-none">{new Date(post.created_at || Date.now()).toLocaleString()}</p>
                     </div>
                   </div>
@@ -1253,7 +1253,7 @@ export default function App() {
               </select>
               <input type="tel" placeholder="যোগাযোগের নাম্বার" value={newRequest.phone} onChange={e => setNewRequest({...newRequest, phone: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             </div>
-            <input type="text" placeholder="নোয়াখালী সদর হাসপাতাল। মাইজদী,নোয়াখালী।" value={newRequest.hospital} onChange={e => setNewRequest({...newRequest, hospital: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
+            <input type="text" placeholder="নোয়াখালী সদর হাসপাতাল।মাইজদী,নোয়াখালী।" value={newRequest.hospital} onChange={e => setNewRequest({...newRequest, hospital: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             <input type="text" placeholder="কখন রক্ত লাগবে" value={newRequest.needed_time} onChange={e => setNewRequest({...newRequest, needed_time: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm bg-white" required />
             <div className="flex gap-1.5">
               <button type="submit" className="flex-1 bg-red-600 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1">
@@ -1331,19 +1331,19 @@ export default function App() {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-slate-50 p-4 rounded-xl border text-center shadow-xs">
             <span className="block text-2xl font-black text-red-600">{totalDonorsCount}</span>
-            <span className="text-xs font-bold text-slate-500 mt-1 block">নিবন্ধিত রক্তদাতা</span>
+            <span className="text-xs font-bold text-slate-500 mt-1 block">মোট নিবন্ধিত রক্তদাতা</span>
           </div>
           <div className="bg-slate-50 p-4 rounded-xl border text-center shadow-xs">
             <span className="block text-2xl font-black text-red-600">{totalDonationsCount}</span>
-            <span className="text-xs font-bold text-slate-500 mt-1 block">রক্তদান সম্পন্ন</span>
+            <span className="text-xs font-bold text-slate-500 mt-1 block">মোট রক্তদান সম্পন্ন</span>
           </div>
           <div className="bg-red-50/50 p-4 rounded-xl border border-red-100 text-center shadow-xs">
             <span className="block text-2xl font-black text-green-600">{readyTodayCount}</span>
-            <span className="text-xs font-bold text-red-700 mt-1 block">আজকে প্রস্তুত</span>
+            <span className="text-xs font-bold text-red-700 mt-1 block">আজকে রক্তদানে প্রস্তুত</span>
           </div>
           <div className="bg-slate-50 p-4 rounded-xl border text-center shadow-xs">
             <span className="block text-2xl font-black text-red-600">{emergencyRequests.length}</span>
-            <span className="text-xs font-bold text-slate-500 mt-1 block">জরুরি অনুরোধ</span>
+            <span className="text-xs font-bold text-slate-500 mt-1 block">জরুরি রক্তের অনুরোধ</span>
           </div>
         </div>
       </div>
@@ -1395,10 +1395,10 @@ export default function App() {
             <div className="pt-1">
               <p className="text-xs font-bold text-slate-700 mb-1.5">৪ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-600">
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ১</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ২</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৩</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> প্রতিষ্ঠাতা সদস্য ৪</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নিজাম উদ্দিন</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> তুহিন</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নাজমুল হাসান</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> ইয়াসিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🩸রক্ত দিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🌱জীবন বাঁচান</div>
               </div>
@@ -1518,7 +1518,7 @@ export default function App() {
                   {/* নতুন সংযোজিত পার্ট: ডিজিটাল কার্ড, সার্টিফিকেট ও হিস্ট্রি লগ বাটনপ্যাক */}
                   <div className="flex flex-wrap items-center justify-between gap-1.5 border-t pt-2 border-dashed border-slate-200">
                     <button onClick={() => downloadDonorCard(donor)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border">
-                      <Download className="w-3 h-3 text-red-500" /> ডিজিটাল কার্ড
+                      <Download className="w-3 h-3 text-red-500" /> পরিচয়পত্র
                     </button>
                     <button onClick={() => downloadDonorCertificate(donor)} className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 border border-amber-200">
                       <Award className="w-3 h-3 text-amber-600" /> সম্মাননা স্মারক
