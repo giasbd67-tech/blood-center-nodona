@@ -824,7 +824,7 @@ export default function App() {
     // মেডেল অর্জন স্ট্যাটাস
     ctx.fillStyle = '#7f1d1d';
     ctx.font = 'bold 13px system-ui, sans-serif';
-    ctx.fillText(`স্থায়ী র্যাংক: ${getDonorBadge(donor.activity_count).text}`, 32, 305);
+    ctx.fillText(`স্থায়ী অর্জন: ${getDonorBadge(donor.activity_count).text}`, 32, 305);
     
     // ডানপাশের প্রিমিয়াম ব্লাড ড্রপ রাউন্ড সিল
     ctx.fillStyle = '#ffffff';
@@ -1088,7 +1088,200 @@ export default function App() {
     document.body.removeChild(a);
     showToast('ডাউনলোড সফলভাবে সম্পন্ন হয়েছে!', 'success');
   };
+  
+    const downloadVolunteerCertificate = (v) => {
+    console.log(`Generating 10MS style premium certificate for: ${v.name}`);
+    const canvas = document.createElement('canvas');
+    canvas.width = 1120;
+    canvas.height = 792; 
+    const ctx = canvas.getContext('2d');
 
+    const drawPremiumCertificate = (logoImg, devImg) => {
+      // ১. প্রিস্টিন লাইট ব্যাকগ্রাউন্ড (১০টি মিনিট স্কুল থিম)
+      ctx.fillStyle = '#f8fafc'; 
+      ctx.fillRect(0, 0, 1120, 792);
+
+      // ২. বাম পাশের সিগনেচার জ্যামিতিক শেপ (Geometric Side Accents)
+      // গাঢ় কোরাল/লাল শেপ (ব্লাড সেন্টারের থিমের সাথে মিল রেখে)
+      ctx.fillStyle = '#e11d48'; 
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(45, 0);
+      ctx.lineTo(0, 250);
+      ctx.fill();
+
+      ctx.fillStyle = '#be123c'; 
+      ctx.beginPath();
+      ctx.moveTo(0, 120);
+      ctx.lineTo(25, 0);
+      ctx.lineTo(0, 0);
+      ctx.fill();
+
+      // ডানদিকের নিচের কোণার শেপ
+      ctx.fillStyle = '#0f172a'; 
+      ctx.beginPath();
+      ctx.moveTo(1120, 792);
+      ctx.lineTo(1040, 792);
+      ctx.lineTo(1120, 620);
+      ctx.fill();
+
+      ctx.fillStyle = '#eab308'; 
+      ctx.beginPath();
+      ctx.moveTo(1120, 792);
+      ctx.lineTo(1080, 792);
+      ctx.lineTo(1120, 710);
+      ctx.fill();
+
+      // ৩. এলিগ্যান্ট চিকন বর্ডার ফ্রেম
+      ctx.lineWidth = 1.5; 
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.08)'; 
+      ctx.strokeRect(40, 40, 1040, 712);
+
+      // ৪. লোগো সেকশন (একদম উপরে এবং বড় করে)
+      if (logoImg) {
+        ctx.drawImage(logoImg, 495, 60, 130, 130); 
+      }
+
+      // ৫. হেডার ও টাইটেল (১০এমএস স্টাইল ক্লিয়ার টাইপোগ্রাফি)
+      ctx.textAlign = 'center';
+      
+      // সংগঠনের নাম
+      ctx.fillStyle = '#0f172a'; 
+      ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+      ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 560, 230);
+      
+      // সাব-টাইটেল
+      ctx.fillStyle = '#64748b'; 
+      ctx.font = 'bold 14px system-ui, sans-serif';
+      ctx.fillText('★ অফিশিয়াল ভলান্টিয়ার রিকগনিশন অ্যাওয়ার্ড ★', 560, 260);
+
+      // মেইন সার্টিফিকেট টাইটেল
+      ctx.fillStyle = '#e11d48'; // বোল্ড রেড টোন
+      ctx.font = '900 42px system-ui, sans-serif';
+      ctx.fillText('CERTIFICATE OF APPRECIATION', 560, 330);
+
+      // টাইটেল ডিভাইডার লাইন
+      ctx.strokeStyle = '#e11d48'; 
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(420, 350); ctx.lineTo(700, 350); ctx.stroke();
+
+      // ৬. বডি টেক্সট (অত্যন্ত ক্লিন এবং প্রফেশনাল)
+      ctx.fillStyle = '#334155';
+      ctx.font = '500 20px system-ui, sans-serif';
+      ctx.fillText('এই সম্মাননা স্মারকটি অত্যন্ত गर्वের সাথে প্রদান করা হচ্ছে', 560, 410);
+
+      // ভলান্টিয়ারের নাম (বিশাল ও আকর্ষণীয় গাঢ় কালার)
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 46px system-ui, sans-serif';
+      ctx.fillText(v.name, 560, 475);
+
+      // বর্ণনা লাইনসমূহ
+      const line1 = `যিনি আমাদের ব্লাড সেন্টারের হয়ে অত্যন্ত নিষ্ঠার সাথে কাজ করে মোট ${v.points || 0} পয়েন্ট অর্জন করেছেন।`;
+      const line2 = `মানবতার সেবায় উনার এই অসামান্য ও নিঃস্বার্থ অবদানকে আমরা গভীরভাবে মূল্যায়ন করি।`;
+      
+      ctx.fillStyle = '#475569';
+      ctx.font = '500 17px system-ui, sans-serif';
+      ctx.fillText(line1, 560, 530);
+      ctx.fillText(line2, 560, 560);
+
+      // ব্যাজ/মেডেল স্ট্যাটাস
+      ctx.fillStyle = '#be123c';
+      ctx.font = 'bold 16px system-ui, sans-serif';
+      ctx.fillText(`অর্জন: ${getVolunteerBadge(v.points).text}`, 560, 605);
+
+      // ৭. সিগনেচার এলাইনমেন্ট (১০এমএস স্টাইল সাইড সিগনেচার)
+      ctx.strokeStyle = '#cbd5e1'; 
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(180, 655); ctx.lineTo(360, 655); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(760, 655); ctx.lineTo(940, 655); ctx.stroke();
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 13px system-ui, sans-serif';
+      ctx.fillText('প্রতিষ্ঠাতা ও পরিচালক', 270, 675);
+      ctx.fillText('সংগঠন মডারেটর', 850, 675);
+
+      // ==========================================
+      // ৮. হুবহু অ্যাপের ফুটার ডিজাইন ও ব্র্যান্ডিং
+      // ==========================================
+      
+      // কপিরাইট এবং স্থাপিত সাল
+      ctx.fillStyle = '#64748b'; 
+      ctx.font = '400 12px system-ui, sans-serif';
+      ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত।', 560, 710);
+      
+      // ট্রাস্টের নাম (পিল শেপড ব্যাকগ্রাউন্ড - লাইট মোড মানানসই)
+      const trustText = 'সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট';
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      const tWidth = ctx.measureText(trustText).width;
+      
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.05)'; 
+      ctx.beginPath();
+      ctx.roundRect(560 - (tWidth/2) - 12, 732 - 14, tWidth + 24, 22, 11);
+      ctx.fill();
+      
+      ctx.fillStyle = '#334155'; 
+      ctx.fillText(trustText, 560, 736);
+
+      // কারিগরি সহযোগিতা ও ডেভেলপার সেকশন
+      const devLabel = 'কারিগরি সহযোগিতায়:';
+      const devName = 'অ্যাপ ডেভেলপার: গিয়াস উদ্দিন';
+      
+      ctx.font = '500 11px system-ui, sans-serif';
+      const w1 = ctx.measureText(devLabel).width;
+      
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      const w2 = ctx.measureText(devName).width;
+      
+      const gap = 6;
+      const imgSize = 20;
+      const totalW = w1 + gap + imgSize + gap + w2;
+      
+      let startX = 560 - (totalW / 2);
+      const devY = 765; 
+      
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#64748b';
+      ctx.font = '500 11px system-ui, sans-serif';
+      ctx.fillText(devLabel, startX, devY);
+      
+      startX += w1 + gap;
+
+      // ছবি বসানো (Circular Shape)
+      if (devImg) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(startX + (imgSize/2), devY - 4, imgSize/2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(devImg, startX, devY - 4 - (imgSize/2), imgSize, imgSize);
+        ctx.restore();
+      }
+      
+      startX += imgSize + gap;
+      
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      ctx.fillText(devName, startX, devY);
+    };
+
+    const loadImage = (src) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null); 
+      });
+    };
+
+    // আপনার ফোল্ডারের ফাইল নেম ফরম্যাট অনুযায়ী লোড করা হচ্ছে
+    Promise.all([
+      loadImage('/logo.png'), 
+      loadImage('/gias.png')  
+    ]).then(([logoImg, devImg]) => {
+      drawPremiumCertificate(logoImg, devImg);
+      triggerDownload(canvas, `Volunteer_Certificate_${v.name}.png`);
+    });
+  };
+  
   // ==================== স্মার্ট ডোনার লগ ও হিস্ট্রি ট্র্যাকিং লজিক ====================
   const openLogModal = async (donor) => {
     console.log(`Invoking operational context view setup. Opening sub-logs history model dashboard for candidate parameter: ${donor.id}`);
