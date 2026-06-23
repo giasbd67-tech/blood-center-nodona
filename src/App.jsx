@@ -1969,16 +1969,16 @@ export default function App() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">{v.points || 0} পয়েন্ট</span>
                   {(isAdmin || isUnlocked) && (
-  <div className="flex items-center gap-2">
-    {/* আইডি কার্ড বাটন */}
-    <button onClick={() => downloadVolunteerCard(v)} title="কার্ড ডাউনলোড" className="flex items-center gap-1 px-2.5 py-1.5 bg-white border rounded-lg text-slate-600 hover:bg-slate-50 shadow-2xs text-xs font-bold transition-all">
-      <Download className="w-3.5 h-3.5" />
+    <div className="flex items-center gap-1.5">
+    {/* আইডি কার্ড বাটন (ছোট সাইজ) */}
+    <button onClick={() => downloadVolunteerCard(v)} title="কার্ড ডাউনলোড" className="flex items-center gap-1 px-2 py-1 bg-white border rounded-md text-slate-600 hover:bg-slate-50 shadow-3xs text-[10px] font-bold transition-all">
+      <Download className="w-3 h-3" />
       আইডি কার্ড
     </button>
     
-    {/* সার্টিফিকেট বাটন */}
-    <button onClick={() => downloadVolunteerCertificate(v)} title="সার্টিফিকেট ডাউনলোড" className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 border border-rose-100 rounded-lg text-rose-600 hover:bg-rose-100 shadow-2xs text-xs font-bold transition-all">
-      <Award className="w-3.5 h-3.5" />
+    {/* সার্টিফিকেট বাটন (ছোট সাইজ) */}
+    <button onClick={() => downloadVolunteerCertificate(v)} title="সার্টিফিকেট ডাউনলোড" className="flex items-center gap-1 px-2 py-1 bg-rose-50 border border-rose-100 rounded-md text-rose-600 hover:bg-rose-100 shadow-3xs text-[10px] font-bold transition-all">
+      <Award className="w-3 h-3" />
       সার্টিফিকেট
     </button>
   </div>
