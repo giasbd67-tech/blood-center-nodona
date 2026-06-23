@@ -1072,7 +1072,7 @@ export default function App() {
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('সার্বিক সহযোগিতায়: হাজী তফসির আহমেদ ট্রাস্ট | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
+    ctx.fillText('সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
 
     triggerDownload(canvas, `Volunteer_ID_Card_${v.name}.png`);
   };
@@ -1583,7 +1583,7 @@ export default function App() {
               <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">  প্রতিষ্ঠা: ২০১৩ ইং</span>
             </h4>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে ২৭ মার্চ ২০১৩ ইং ব্লাড সেন্টার নদোনা নোয়াখালী সংগঠনের গৌরবময় পথচলা শুরু হয় এবং পরবর্তীতে একঝাঁক সমাজসেবক ও তরুণ সচেতন সদস্যদের নিয়ে হাজী তফসির আহমেদ ট্রাস্টের সার্বিক সহযোগিতায়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
+              মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে ২৭ মার্চ ২০১৩ ইং "ব্লাড সেন্টার নদোনা নোয়াখালী" এই সামাজিক সংগঠনের গৌরবময় পথচলা শুরু হয় এবং পরবর্তীতে একঝাঁক সমাজসেবক ও সচেতন তরুণ সেচ্ছাসেবী সদস্যদের নিয়ে "মরহুম হাজী তফসির আহমেদ ট্রাস্ট" এর সার্বিক সহযোগিতায়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
             </p>
             <div className="pt-1">
               <p className="text-xs font-bold text-slate-700 mb-1.5">৪ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
@@ -1592,8 +1592,8 @@ export default function App() {
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> তুহিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নাজমুল হাসান</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> ইয়াসিন</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🩸রক্ত দিন</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🌱জীবন বাঁচান</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🩸 রক্ত দিন</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🌱 জীবন বাঁচান</div>
               </div>
             </div>
           </div>
@@ -2136,7 +2136,7 @@ export default function App() {
           </h1>
           <div className="text-xs text-red-100 font-bold flex flex-col items-center gap-1 mt-1">
             <span className="bg-red-700/50 px-3 py-0.5 rounded-full">প্রতিষ্ঠা: ২০১৩ ইং</span>
-            <span className="bg-red-700/50 px-3 py-0.5 rounded-full mt-1">📍 নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩</span>
+            <span className="bg-red-700/50 px-3 py-0.5 rounded-full mt-1">📍নদোনা বাজার, সোনাইমুড়ী, নোয়াখালী 🇧🇩</span>
           </div>
         </div>
         
