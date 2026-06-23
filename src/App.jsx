@@ -864,117 +864,194 @@ export default function App() {
   };
 
   const downloadDonorCertificate = (donor) => {
-    console.log(`Canvas graphic systems processing structural rendering layers data for official award recognition certificate template matching object target: ${donor.name}`);
+    console.log(`Generating 10MS style premium certificate for donor: ${donor.name}`);
     const canvas = document.createElement('canvas');
     canvas.width = 1120;
-    canvas.height = 792; // Standard High Res A4 ratio
+    canvas.height = 792; 
     const ctx = canvas.getContext('2d');
-    
-    // লাক্সারি ব্যাকগ্রাউন্ড রেন্ডারিং (আইভরি/রয়্যাল অফ-হোয়াইট থিম)
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 1120, 792);
-    
-    // ソフト উইন্ডো ব্যাকগ্রাউন্ড গ্রাডিয়েন্ট
-    const bgGrad = ctx.createRadialGradient(560, 396, 100, 560, 396, 600);
-    bgGrad.addColorStop(0, '#fffdfa');
-    bgGrad.addColorStop(1, '#fbf7f0');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 1120, 792);
 
-    // ৪ কোনায় ১০ মিনিট স্কুলের মত প্রিমিয়াম কাস্টম কর্নার শেপ ও ফ্রেম
-    const drawPremiumBorder = () => {
-      ctx.lineWidth = 16;
-      ctx.strokeStyle = '#7f1d1d'; // Deep Burgundy
-      ctx.strokeRect(16, 16, 1088, 760);
+    const drawPremiumCertificate = (logoImg, devImg) => {
+      // ১. প্রিস্টিন লাইট ব্যাকগ্রাউন্ড
+      ctx.fillStyle = '#f8fafc'; 
+      ctx.fillRect(0, 0, 1120, 792);
+
+      // ২. বাম পাশের সিগনেচার জ্যামিতিক শেপ
+      ctx.fillStyle = '#e11d48'; 
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(45, 0);
+      ctx.lineTo(0, 250);
+      ctx.fill();
+
+      ctx.fillStyle = '#be123c'; 
+      ctx.beginPath();
+      ctx.moveTo(0, 120);
+      ctx.lineTo(25, 0);
+      ctx.lineTo(0, 0);
+      ctx.fill();
+
+      // ডানদিকের নিচের কোণার শেপ
+      ctx.fillStyle = '#0f172a'; 
+      ctx.beginPath();
+      ctx.moveTo(1120, 792);
+      ctx.lineTo(1040, 792);
+      ctx.lineTo(1120, 620);
+      ctx.fill();
+
+      ctx.fillStyle = '#eab308'; 
+      ctx.beginPath();
+      ctx.moveTo(1120, 792);
+      ctx.lineTo(1080, 792);
+      ctx.lineTo(1120, 710);
+      ctx.fill();
+
+      // ৩. এলিগ্যান্ট চিকন বর্ডার ফ্রেম
+      ctx.lineWidth = 1.5; 
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.08)'; 
+      ctx.strokeRect(40, 40, 1040, 712);
+
+      // ৪. লোগো সেকশন
+      if (logoImg) {
+        ctx.drawImage(logoImg, 495, 60, 130, 130); 
+      }
+
+      // ৫. হেডার ও টাইটেল
+      ctx.textAlign = 'center';
       
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = '#d4af37'; // Premium Gold
-      ctx.strokeRect(32, 32, 1056, 728);
+      // সংগঠনের নাম
+      ctx.fillStyle = '#0f172a'; 
+      ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+      ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 560, 230);
       
-      // ৪ কোণার অলঙ্করণ এলিমেন্ট
-      const corners = [[32, 32], [1088, 32], [32, 760], [1088, 760]];
-      ctx.fillStyle = '#d4af37';
-      corners.forEach(([cx, cy]) => {
+      // সাব-টাইটেল
+      ctx.fillStyle = '#64748b'; 
+      ctx.font = 'bold 14px system-ui, sans-serif';
+      ctx.fillText('★ "রক্ত দিন, জীবন বাঁচান" স্লোগানে মানবতার সেবায় উৎসর্গীকৃত একটি সামাজিক প্রতিষ্ঠান ★', 560, 260);
+
+      // মেইন সার্টিফিকেট টাইটেল
+      ctx.fillStyle = '#e11d48'; 
+      ctx.font = '900 42px system-ui, sans-serif';
+      ctx.fillText('সম্মাননা ও স্বীকৃতি স্মারক গৌরবপত্র', 560, 330);
+
+      // টাইটেল ডিভাইডার লাইন
+      ctx.strokeStyle = '#e11d48'; 
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(420, 350); ctx.lineTo(700, 350); ctx.stroke();
+
+      // ৬. বডি টেক্সট
+      ctx.fillStyle = '#334155';
+      ctx.font = '500 20px system-ui, sans-serif';
+      ctx.fillText('এই গৌরবপত্র অত্যন্ত আনন্দের সাথে কৃতজ্ঞচিত্তে প্রদান করা যাচ্ছে যে', 560, 410);
+
+      // ডোনারের নাম
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 46px system-ui, sans-serif';
+      ctx.fillText(donor.name || 'সম্মানিত রক্তদাতা', 560, 475);
+
+      // বর্ণনা লাইনসমূহ
+      const line1 = `যিনি "ব্লাড সেন্টার নদোনা নোয়াখালী" এর একজন নিয়মিত মানবতার সেবক।`;
+      const line2 = `উনার এই মহান ও মানবিক অবদান সমাজকে এক নতুন আলোর দিশা দেখিয়েছে। আমরা উনার সুস্বাস্থ্য ও দীর্ঘায়ু কামনা করি।`;
+      
+      ctx.fillStyle = '#475569';
+      ctx.font = '500 17px system-ui, sans-serif';
+      ctx.fillText(line1, 560, 530);
+      ctx.fillText(line2, 560, 560);
+
+      // রক্তের গ্রুপ ব্যাজ
+      ctx.fillStyle = '#be123c';
+      ctx.font = 'bold 16px system-ui, sans-serif';
+      ctx.fillText(`রক্তের গ্রুপ: ${donor.blood_group || 'অজানা'}`, 560, 605);
+
+      // ৭. সিগনেচার এলাইনমেন্ট
+      ctx.strokeStyle = '#cbd5e1'; 
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(180, 655); ctx.lineTo(360, 655); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(760, 655); ctx.lineTo(940, 655); ctx.stroke();
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 13px system-ui, sans-serif';
+      ctx.fillText('সভাপতি', 270, 675);
+      ctx.fillText('সাধারণ সম্পাদক', 850, 675);
+
+      // ==========================================
+      // ৮. ফুটার ডিজাইন ও ব্র্যান্ডিং
+      // ==========================================
+      
+      // কপিরাইট
+      ctx.fillStyle = '#64748b'; 
+      ctx.font = '400 12px system-ui, sans-serif';
+      ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। স্থাপিত: ২৭ মার্চ ২০১৩ ইং।', 560, 710);
+      
+      // ট্রাস্ট
+      const trustText = 'সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট';
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      const tWidth = ctx.measureText(trustText).width;
+      
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.05)'; 
+      ctx.beginPath();
+      ctx.roundRect(560 - (tWidth/2) - 12, 732 - 14, tWidth + 24, 22, 11);
+      ctx.fill();
+      
+      ctx.fillStyle = '#334155'; 
+      ctx.fillText(trustText, 560, 736);
+
+      // ডেভেলপার সেকশন
+      const devLabel = 'কারিগরি সহযোগিতায়:';
+      const devName = 'অ্যাপ ডেভেলপার: গিয়াস উদ্দিন';
+      
+      ctx.font = '500 11px system-ui, sans-serif';
+      const w1 = ctx.measureText(devLabel).width;
+      
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      const w2 = ctx.measureText(devName).width;
+      
+      const gap = 6;
+      const imgSize = 20;
+      const totalW = w1 + gap + imgSize + gap + w2;
+      
+      let startX = 560 - (totalW / 2);
+      const devY = 765; 
+      
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#64748b';
+      ctx.font = '500 11px system-ui, sans-serif';
+      ctx.fillText(devLabel, startX, devY);
+      
+      startX += w1 + gap;
+
+      if (devImg) {
+        ctx.save();
         ctx.beginPath();
-        ctx.arc(cx, cy, 18, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.arc(startX + (imgSize/2), devY - 4, imgSize/2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(devImg, startX, devY - 4 - (imgSize/2), imgSize, imgSize);
+        ctx.restore();
+      }
+      
+      startX += imgSize + gap;
+      
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      ctx.fillText(devName, startX, devY);
+    };
+
+    const loadImage = (src) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null); 
       });
     };
-    drawPremiumBorder();
 
-    // バックグラウンド ウォーターマーク シル (সেন্টার জায়ান্ট ড্রপレット এফেক্ট)
-    ctx.fillStyle = 'rgba(185, 28, 28, 0.025)';
-    ctx.beginPath();
-    ctx.arc(560, 420, 160, 0, Math.PI * 2);
-    ctx.fill();
-
-    // হেডার টেক্সট টাইপোগ্রাফি
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#7f1d1d';
-    ctx.font = 'bold 44px system-ui, -apple-system, sans-serif';
-    ctx.fillText('ব্লাড সেন্টার নদোনা নোয়াখালী', 560, 110);
-    
-    ctx.fillStyle = '#d4af37';
-    ctx.font = 'bold 16px system-ui, sans-serif';
-    ctx.fillText('★ স্থাপিত: ২০১৩ ইং | "রক্ত দিন, জীবন বাঁচান" স্লোগানে মানবতার সেবায় উৎসর্গীকৃত একটি সামাজিক প্রতিষ্ঠান ★', 560, 145);
-    
-    // সার্টিফিকেট নাম ও উদ্দেশ্য
-    ctx.fillStyle = '#0f172a';
-    ctx.font = '900 28px system-ui, sans-serif';
-    ctx.fillText('সম্মাননা ও স্বীকৃতি স্মারক গৌরবপত্র', 560, 225);
-
-    // আন্ডারলাইন অলংকার লাইন
-    ctx.strokeStyle = '#d4af37';
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(420, 245); ctx.lineTo(700, 245); ctx.stroke();
-
-    ctx.fillStyle = '#475569';
-    ctx.font = '600 18px system-ui, sans-serif';
-    ctx.fillText('এই গৌরবপত্র অত্যন্ত আনন্দের সাথে কৃতজ্ঞচিত্তে প্রদান করা যাচ্ছে যে,', 560, 310);
-    
-    // রক্তদাতার নাম (বিশাল ও আকর্ষণীয় ফন্ট)
-    ctx.fillStyle = '#b91c1c';
-    ctx.font = 'bold 38px system-ui, sans-serif';
-    ctx.fillText(donor.name, 560, 375);
-
-    // প্রশংসাপত্র মূল বিবরণী টেক্সটবডি (১০ মিনিট স্কুল ডিজাইন স্পেসিং)
-    ctx.fillStyle = '#1e293b';
-    ctx.font = '500 17px system-ui, sans-serif';
-    
-    const line1 = `যিনি "ব্লাড সেন্টার নদোনা নোয়াখালী" এর একজন নিয়মিত মানবতার সেবক। উনার রক্তের গ্রুপ হলো [ ${donor.blood_group} ]।`;
-    const line2 = `তিনি এই পর্যন্ত সমাজের মুমূর্ষু রোগীদের জীবন বাঁচাতে স্বেচ্ছায় ও নিঃস্বার্থভাবে মোট ${donor.activity_count || 0} বার সফলভাবে রক্তদান করেছেন।`;
-    const line3 = `উনার এই মহান ও মানবিক অবদান সমাজকে এক নতুন আলোর দিশা দেখিয়েছে। আমরা উনার সুস্বাস্থ্য ও দীর্ঘায়ু কামনা করি।`;
-
-    ctx.fillText(line1, 560, 435);
-    ctx.fillText(line2, 560, 475);
-    ctx.fillText(line3, 560, 515);
-    
-    //  মিডল-বটম প্রিমিয়াম র্যাংক মেডেল ব্যাজ ক্যাপশন
-    ctx.fillStyle = '#065f46';
-    ctx.font = 'bold 16px system-ui, sans-serif';
-    ctx.fillText(`অর্জিত মর্যাদা: ${getDonorBadge(donor.activity_count).text}`, 560, 580);
-
-    // ডাবল ডাইনামিক অফিশিয়াল সিগনেচার এলাইনমেন্ট
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(200, 680); ctx.lineTo(380, 680); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(740, 680); ctx.lineTo(920, 680); ctx.stroke();
-
-    ctx.fillStyle = '#334155';
-    ctx.font = 'bold 14px system-ui, sans-serif';
-    ctx.fillText('সভাপতি', 290, 705);
-    ctx.fillText('সাধারণ সম্পাদক', 830, 705);
-    
-    // গোল্ডেন সিল রেপ্লিকা ভেক্টর (নিচের ঠিক মাঝখানে)
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.arc(560, 680, 32, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 10px system-ui, sans-serif';
-    ctx.fillText('APPROVED', 560, 684);
-    
-    triggerDownload(canvas, `Official_Certificate_${donor.name}.png`);
+    // ইমেজ লোড
+    Promise.all([
+      loadImage('/logo.png'), 
+      loadImage('/gias.png')      
+    ]).then(([logoImg, devImg]) => {
+      drawPremiumCertificate(logoImg, devImg);
+      triggerDownload(canvas, `Official_Certificate_${donor.name}.png`);
+    });
   };
 
   const downloadVolunteerCard = (v) => {
