@@ -863,8 +863,8 @@ export default function App() {
     triggerDownload(canvas, `Premium_ID_Card_${donor.name}.png`);
   };
 
-  const downloadDonorCertificate = (donor) => {
-    console.log(`Generating 10MS style premium certificate for donor: ${donor.name}`);
+    const downloadDonorCertificate = (donor) => {
+    console.log(`Generating premium certificate for donor: ${donor.name}`);
     const canvas = document.createElement('canvas');
     canvas.width = 1120;
     canvas.height = 792; 
@@ -875,30 +875,32 @@ export default function App() {
       ctx.fillStyle = '#f8fafc'; 
       ctx.fillRect(0, 0, 1120, 792);
 
-      // ২. বাম পাশের সিগনেচার জ্যামিতিক শেপ
-      ctx.fillStyle = '#e11d48'; 
+      // ২. বাম পাশের সিগনেচার জ্যামিতিক শেপ (বাংলাদেশের পতাকার সবুজ)
+      ctx.fillStyle = '#006a4e'; 
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(45, 0);
       ctx.lineTo(0, 250);
       ctx.fill();
 
-      ctx.fillStyle = '#be123c'; 
+      // বাম পাশের ভেতরের ছোট শেপ (বাংলাদেশের পতাকার লাল)
+      ctx.fillStyle = '#f42a41'; 
       ctx.beginPath();
       ctx.moveTo(0, 120);
       ctx.lineTo(25, 0);
       ctx.lineTo(0, 0);
       ctx.fill();
 
-      // ডানদিকের নিচের কোণার শেপ
-      ctx.fillStyle = '#0f172a'; 
+      // ডানদিকের নিচের কোণার শেপ (বাংলাদেশের পতাকার সবুজ)
+      ctx.fillStyle = '#006a4e'; 
       ctx.beginPath();
       ctx.moveTo(1120, 792);
       ctx.lineTo(1040, 792);
       ctx.lineTo(1120, 620);
       ctx.fill();
 
-      ctx.fillStyle = '#eab308'; 
+      // ডানদিকের নিচের ভেতরের ছোট শেপ (বাংলাদেশের পতাকার লাল)
+      ctx.fillStyle = '#f42a41'; 
       ctx.beginPath();
       ctx.moveTo(1120, 792);
       ctx.lineTo(1080, 792);
@@ -957,30 +959,72 @@ export default function App() {
       ctx.fillText(line1, 560, 530);
       ctx.fillText(line2, 560, 560);
 
-      // রক্তের গ্রুপ ব্যাজ
-      ctx.fillStyle = '#be123c';
-      ctx.font = 'bold 16px system-ui, sans-serif';
-      ctx.fillText(`রক্তের গ্রুপ: ${donor.blood_group || 'অজানা'}`, 560, 605);
+      // ==========================================
+      // ৭. ডোনারের স্ট্যাটাস ও ব্যাজ সেকশন (ডাইনামিক ডাটা সহ)
+      // ==========================================
+      const statsY = 595;
+      const pillHeight = 36;
+      const pillRadius = 18;
+      
+      ctx.font = 'bold 15px system-ui, sans-serif';
+      
+      // ডাটাগুলো অ্যাপের ভ্যারিয়েবল থেকে নেওয়া হচ্ছে
+      const donCount = donor.activity_count || 0;
+      const bgText = `রক্তের গ্রুপ: ${donor.blood_group || 'অজানা'}`;
+      const dcText = `মোট রক্তদান: ${donCount} বার`;
+      const bdText = `অর্জন: ${getDonorBadge(donCount).text}`;
+      
+      // টেক্সটের প্রস্থ মাপা হচ্ছে যাতে সুন্দরভাবে সেন্টারে বসে
+      const w1 = ctx.measureText(bgText).width + 36;
+      const w2 = ctx.measureText(dcText).width + 36;
+      const w3 = ctx.measureText(bdText).width + 36;
+      
+      const totalGap = 24;
+      const totalW = w1 + w2 + w3 + (totalGap * 2);
+      let currentX = 560 - (totalW / 2);
+      
+      // ১. রক্তের গ্রুপ (লাল থিম)
+      ctx.fillStyle = '#ffe4e6'; // হালকা লাল ব্যাকগ্রাউন্ড
+      ctx.beginPath(); ctx.roundRect(currentX, statsY, w1, pillHeight, pillRadius); ctx.fill();
+      ctx.fillStyle = '#be123c'; // গাঢ় লাল টেক্সট
+      ctx.fillText(bgText, currentX + (w1/2), statsY + 23);
+      
+      currentX += w1 + totalGap;
+      
+      // ২. মোট রক্তদান (সিলভার/গ্রে থিম)
+      ctx.fillStyle = '#f1f5f9'; // হালকা গ্রে ব্যাকগ্রাউন্ড
+      ctx.beginPath(); ctx.roundRect(currentX, statsY, w2, pillHeight, pillRadius); ctx.fill();
+      ctx.fillStyle = '#334155'; // গাঢ় গ্রে টেক্সট
+      ctx.fillText(dcText, currentX + (w2/2), statsY + 23);
+      
+      currentX += w2 + totalGap;
+      
+      // ৩. অর্জন/ব্যাজ (সোনালী থিম)
+      ctx.fillStyle = '#fef3c7'; // হালকা সোনালী ব্যাকগ্রাউন্ড
+      ctx.beginPath(); ctx.roundRect(currentX, statsY, w3, pillHeight, pillRadius); ctx.fill();
+      ctx.fillStyle = '#b45309'; // গাঢ় সোনালী টেক্সট
+      ctx.fillText(bdText, currentX + (w3/2), statsY + 23);
 
-      // ৭. সিগনেচার এলাইনমেন্ট
+
+      // ৮. সিগনেচার এলাইনমেন্ট
       ctx.strokeStyle = '#cbd5e1'; 
       ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(180, 655); ctx.lineTo(360, 655); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(760, 655); ctx.lineTo(940, 655); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(180, 670); ctx.lineTo(360, 670); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(760, 670); ctx.lineTo(940, 670); ctx.stroke();
 
       ctx.fillStyle = '#64748b';
       ctx.font = 'bold 13px system-ui, sans-serif';
-      ctx.fillText('সভাপতি', 270, 675);
-      ctx.fillText('সাধারণ সম্পাদক', 850, 675);
+      ctx.fillText('সভাপতি', 270, 690);
+      ctx.fillText('সাধারণ সম্পাদক', 850, 690);
 
       // ==========================================
-      // ৮. ফুটার ডিজাইন ও ব্র্যান্ডিং
+logo     // ৯. ফুটার ডিজাইন ও ব্র্যান্ডিং
       // ==========================================
       
       // কপিরাইট
       ctx.fillStyle = '#64748b'; 
       ctx.font = '400 12px system-ui, sans-serif';
-      ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। স্থাপিত: ২৭ মার্চ ২০১৩ ইং।', 560, 710);
+      ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। স্থাপিত: ২৭ মার্চ ২০১৩ ইং।', 560, 725);
       
       // ট্রাস্ট
       const trustText = 'সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট';
@@ -989,50 +1033,50 @@ export default function App() {
       
       ctx.fillStyle = 'rgba(15, 23, 42, 0.05)'; 
       ctx.beginPath();
-      ctx.roundRect(560 - (tWidth/2) - 12, 732 - 14, tWidth + 24, 22, 11);
+      ctx.roundRect(560 - (tWidth/2) - 12, 747 - 14, tWidth + 24, 22, 11);
       ctx.fill();
       
       ctx.fillStyle = '#334155'; 
-      ctx.fillText(trustText, 560, 736);
+      ctx.fillText(trustText, 560, 751);
 
       // ডেভেলপার সেকশন
       const devLabel = 'কারিগরি সহযোগিতায়:';
       const devName = 'অ্যাপ ডেভেলপার: গিয়াস উদ্দিন';
       
       ctx.font = '500 11px system-ui, sans-serif';
-      const w1 = ctx.measureText(devLabel).width;
+      const wLabel = ctx.measureText(devLabel).width;
       
       ctx.font = 'bold 11px system-ui, sans-serif';
-      const w2 = ctx.measureText(devName).width;
+      const wName = ctx.measureText(devName).width;
       
       const gap = 6;
       const imgSize = 20;
-      const totalW = w1 + gap + imgSize + gap + w2;
+      const footerTotalW = wLabel + gap + imgSize + gap + wName;
       
-      let startX = 560 - (totalW / 2);
-      const devY = 765; 
+      let fStartX = 560 - (footerTotalW / 2);
+      const devY = 775; 
       
       ctx.textAlign = 'left';
       ctx.fillStyle = '#64748b';
       ctx.font = '500 11px system-ui, sans-serif';
-      ctx.fillText(devLabel, startX, devY);
+      ctx.fillText(devLabel, fStartX, devY);
       
-      startX += w1 + gap;
+      fStartX += wLabel + gap;
 
       if (devImg) {
         ctx.save();
         ctx.beginPath();
-        ctx.arc(startX + (imgSize/2), devY - 4, imgSize/2, 0, Math.PI * 2);
+        ctx.arc(fStartX + (imgSize/2), devY - 4, imgSize/2, 0, Math.PI * 2);
         ctx.clip();
-        ctx.drawImage(devImg, startX, devY - 4 - (imgSize/2), imgSize, imgSize);
+        ctx.drawImage(devImg, fStartX, devY - 4 - (imgSize/2), imgSize, imgSize);
         ctx.restore();
       }
       
-      startX += imgSize + gap;
+      fStartX += imgSize + gap;
       
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 11px system-ui, sans-serif';
-      ctx.fillText(devName, startX, devY);
+      ctx.fillText(devName, fStartX, devY);
     };
 
     const loadImage = (src) => {
