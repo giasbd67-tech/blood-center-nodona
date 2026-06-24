@@ -2283,13 +2283,18 @@ const downloadDonorCertificate = (donor) => {
         </div>
       </header>
 
-            <div className="bg-amber-500 text-white font-bold text-[10px] sm:text-xs py-2 px-3 text-center flex flex-col items-center justify-center gap-1 shadow-inner sticky top-0 z-40">
-        <span className="leading-tight">জরুরি রক্ত প্রয়োজনে সরাসরি যোগাযোগ করুন। <br className="hidden sm:block" />
-        <span className="font-normal opacity-90">(কল দেওয়ার আগে "খুঁজুন" বাটনে ক্লিক করে "রক্তদাতা অনুসন্ধান প্যানেল" থেকে আপনার প্রয়েজনীয় রক্তের গ্রুপের ডোনার আছে কিনা খুঁজে দেখুন)</span></span>
-        <a href="tel:+8801813132013" className="bg-white text-red-600 px-2.5 py-0.5 rounded-full font-black shadow-xs hover:bg-slate-100 transition-all flex items-center gap-1 mt-0.5">
-          <Phone className="w-3 h-3" /> +880 1813-132013
+                  <div className="bg-gradient-to-r from-[#006a4e] via-[#006a4e] to-[#f42a41] text-white py-2 px-3 text-center flex flex-col items-center justify-center shadow-md sticky top-0 z-40">
+        <span className="font-bold text-xs sm:text-sm mb-0.5 drop-shadow-sm">
+          জরুরি রক্ত প্রয়োজনে যোগাযোগ করুন
+        </span>
+        <span className="text-[9px] sm:text-[10px] font-medium opacity-90 leading-tight max-w-[90%] mb-1.5 text-green-50">
+          (কল দেওয়ার আগে "খুঁজুন" বাটনে ক্লিক করে প্রয়োজনীয় রক্তের ডোনার খুঁজে দেখুন)
+        </span>
+        <a href="tel:+8801813132013" className="bg-white text-[#f42a41] px-3 py-1 rounded-full text-[11px] font-black shadow-sm hover:shadow-md transition-all flex items-center gap-1.5">
+          <Phone className="w-3 h-3 text-[#006a4e]" /> +880 1813-132013
         </a>
       </div>
+
 
       {/* আপনার দেওয়া নতুন নেভিগেশন ট্যাবের অর্ডার (ঠিক আগের মতো) */}
       <nav className="bg-white border-b sticky top-[38px] z-30 shadow-xs">
