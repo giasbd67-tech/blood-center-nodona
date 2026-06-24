@@ -2287,7 +2287,7 @@ const downloadDonorCertificate = (donor) => {
         <span>জরুরি রক্ত প্রয়োজনে সরাসরি যোগাযোগ করুন।
 (কল দেওয়ার আগে "খুঁজুন" বাটনে ক্লিক করুন তারপর "রক্তদাতা অনুসন্ধান প্যানেল" থেকে খুঁজুন):</span>
         <a href="tel:+8801813132013" className="bg-white text-red-600 px-3 py-0.5 rounded-full font-black shadow-xs hover:bg-slate-100 transition-all flex items-center gap-1">
-          <Phone className="w-3.5 h-3.5" /> +880 1813-132013
+          <Phone className="w-3.0 h-3.0" /> +880 1813-132013
         </a>
       </div>
 
