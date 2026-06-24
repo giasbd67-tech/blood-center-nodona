@@ -1715,8 +1715,8 @@ const downloadDonorCertificate = (donor) => {
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> তুহিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নাজমুল হাসান</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> ইয়াসিন</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1">< className="w-3.5 h-3.5 text-slate-400" /> 🩸 রক্ত দিন</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1">< className="w-3.5 h-3.5 text-slate-400" /> 🌱 জীবন বাঁচান</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🩸 রক্ত দিন</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🌱 জীবন বাঁচান</div>
               </div>
             </div>
           </div>
