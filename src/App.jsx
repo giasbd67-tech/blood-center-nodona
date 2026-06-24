@@ -2285,7 +2285,7 @@ const downloadDonorCertificate = (donor) => {
 
             <div className="bg-amber-500 text-white font-bold text-[10px] sm:text-xs py-2 px-3 text-center flex flex-col items-center justify-center gap-1 shadow-inner sticky top-0 z-40">
         <span className="leading-tight">জরুরি রক্ত প্রয়োজনে সরাসরি যোগাযোগ করুন। <br className="hidden sm:block" />
-        <span className="font-normal opacity-90">(কল দেওয়ার আগে "খুঁজুন" বাটনে ক্লিক করে "রক্তদাতা অনুসন্ধান প্যানেল" থেকে ডোনার খুঁজুন)</span></span>
+        <span className="font-normal opacity-90">(কল দেওয়ার আগে "খুঁজুন" বাটনে ক্লিক করে "রক্তদাতা অনুসন্ধান প্যানেল" থেকে আপনার প্রয়েজনীয় রক্তের গ্রুপের ডোনার আছে কিনা খুঁজে দেখুন)</span></span>
         <a href="tel:+8801813132013" className="bg-white text-red-600 px-2.5 py-0.5 rounded-full font-black shadow-xs hover:bg-slate-100 transition-all flex items-center gap-1 mt-0.5">
           <Phone className="w-3 h-3" /> +880 1813-132013
         </a>
