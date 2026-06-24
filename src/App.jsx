@@ -858,7 +858,7 @@ export default function App() {
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('সার্বিক সহযোগিতায়: হাজী তফসির আহমেদ ট্রাস্ট | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
+    ctx.fillText('সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট | কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন', 319, 380);
     
     triggerDownload(canvas, `Premium_ID_Card_${donor.name}.png`);
   };
@@ -1330,7 +1330,7 @@ const downloadDonorCertificate = (donor) => {
       // কপিরাইট এবং স্থাপিত সাল
       ctx.fillStyle = '#64748b'; 
       ctx.font = '400 12px system-ui, sans-serif';
-      ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত।', 560, 710);
+      ctx.fillText('© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। স্থাপিত: ২৭ মার্চ ২০১৩ ইং।', 560, 710);
       
       // ট্রাস্টের নাম (পিল শেপড ব্যাকগ্রাউন্ড - লাইট মোড মানানসই)
       const trustText = 'সার্বিক সহযোগিতায়: মরহুম হাজী তফসির আহমেদ ট্রাস্ট';
@@ -1703,20 +1703,20 @@ const downloadDonorCertificate = (donor) => {
           <div className="space-y-2 w-full">
             <h4 className="font-black text-sm text-slate-800 mb-1 leading-relaxed border-b pb-1 flex items-center justify-between">
               <span className="flex items-center gap-1"><Sparkles className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" /> সংগঠনের গৌরবময় ইতিহাস ও উদ্যোক্তাগণ</span>
-              <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">  প্রতিষ্ঠা: ২০১৩ ইং</span>
+              <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold">      প্রতিষ্ঠা: ২০১৩ ইং</span>
             </h4>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              মানবতার সেবায় রক্তদানের মহান ব্রত নিয়ে ২৭ মার্চ ২০১৩ ইং "ব্লাড সেন্টার নদোনা নোয়াখালী" এই সামাজিক সংগঠনের গৌরবময় পথচলা শুরু হয় এবং পরবর্তীতে একঝাঁক সমাজসেবক ও সচেতন তরুণ সেচ্ছাসেবী সদস্যদের নিয়ে "মরহুম হাজী তফসির আহমেদ ট্রাস্ট" এর সার্বিক সহযোগিতায়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
+              মানবতার সেবায় রক্তদানের মহান শপথ নিয়ে ২৭ মার্চ ২০১৩ ইং "ব্লাড সেন্টার নদোনা নোয়াখালী" এই সামাজিক সংগঠনের গৌরবময় পথচলা শুরু হয় এবং পরবর্তীতে একঝাঁক সমাজসেবক ও সচেতন তরুণ সেচ্ছাসেবী সদস্যদের নিয়ে "মরহুম হাজী তফসির আহমেদ ট্রাস্ট" এর সার্বিক সহযোগিতায়। মুমূর্ষু রোগীদের পাশে দাঁড়ানো ও গ্রামীণ জনপদে রক্তদানে সচেতনতা সৃষ্টি করাই ছিল এর মূল লক্ষ্য।
             </p>
             <div className="pt-1">
-              <p className="text-xs font-bold text-slate-700 mb-1.5">৪ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
+              <p className="text-xs font-bold text-slate-700 mb-1.5"> ৪ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-600">
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নিজাম উদ্দিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> তুহিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নাজমুল হাসান</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> ইয়াসিন</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🩸 রক্ত দিন</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🌱 জীবন বাঁচান</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1">< className="w-3.5 h-3.5 text-slate-400" /> 🩸 রক্ত দিন</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1">< className="w-3.5 h-3.5 text-slate-400" /> 🌱 জীবন বাঁচান</div>
               </div>
             </div>
           </div>
@@ -2059,7 +2059,7 @@ const downloadDonorCertificate = (donor) => {
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                <input type="password" placeholder="অ্যাডমিনের দেওয়া সিকিউরিটি কোড বা পাসওয়ার্ড দিন" value={volunteerPassword} onChange={e => setVolunteerPassword(e.target.value)} className="w-full border-2 pl-9 p-2.5 rounded-xl text-sm focus:outline-red-500 leading-normal" required />
+                <input type="password" placeholder="সিকিউরিটি কোড বা পাসওয়ার্ড দিন" value={volunteerPassword} onChange={e => setVolunteerPassword(e.target.value)} className="w-full border-2 pl-9 p-2.5 rounded-xl text-sm focus:outline-red-500 leading-normal" required />
               </div>
               <button type="submit" className="w-full bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1">
                 <Unlock className="w-4 h-4" /> ভলান্টিয়ার ডাটা আনলক করুন
@@ -2284,7 +2284,7 @@ const downloadDonorCertificate = (donor) => {
       </header>
 
       <div className="bg-amber-500 text-white font-black text-xs sm:text-sm py-2.5 px-4 text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2 shadow-inner sticky top-0 z-40">
-        <span>জরুরি রক্ত প্রয়োজনে সরাসরি যোগাযোগ করুন:</span>
+        <span>জরুরি রক্ত প্রয়োজনে সরাসরি যোগাযোগ করুন (আগে "রক্তদাতা অনুসন্ধান প্যানেল" থেকে খুঁজুন):</span>
         <a href="tel:+8801813132013" className="bg-white text-red-600 px-3 py-0.5 rounded-full font-black shadow-xs hover:bg-slate-100 transition-all flex items-center gap-1">
           <Phone className="w-3.5 h-3.5" /> +880 1813-132013
         </a>
