@@ -2272,13 +2272,31 @@ const downloadDonorCertificate = (donor) => {
               <Lock className="w-3.5 h-3.5" /> অ্যাডমিন
             </button>
           ) : (
-                        <div className="flex gap-1">
-              <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-[10px] font-bold px-2 py-1 rounded-lg text-white shadow flex items-center gap-0.5"><Lock className="w-2.5 h-2.5" /> পাসওয়ার্ড</button>
+      
+      <div className="absolute top-4 right-4 flex flex-col gap-1 items-end">
+          {!isAdmin ? (
+            <button onClick={() => {
+              console.log(`Toggling Admin Login container state configuration to: ${!showAdminLogin}`);
+              setShowAdminLogin(!showAdminLogin);
+            }} className="bg-red-700 hover:bg-red-800 text-xs font-bold px-3 py-1.5 rounded-lg text-white flex items-center gap-1 shadow">
+              <Lock className="w-3 h-3" /> অ্যাডমিন
+            </button>
+          ) : (
+            <div className="flex flex-col gap-1 items-end">
+              <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-[10px] font-bold px-2 py-1 rounded-lg text-white shadow flex items-center gap-0.5 w-full justify-center"><Lock className="w-2.5 h-2.5" /> পাসওয়ার্ড</button>
               <button onClick={() => {
                 console.log("Admin log-out signal context fired. Revoking access states layout map.");
                 setIsAdmin(false);
-              }} className="bg-slate-800 text-[10px] font-bold px-2 py-1 rounded-lg text-white shadow flex items-center gap-0.5"><LogOut className="w-2.5 h-2.5" /> লগআউট</button>
+              }} className="bg-slate-800 text-[10px] font-bold px-2 py-1 rounded-lg text-white shadow flex items-center gap-0.5 w-full justify-center"><LogOut className="w-2.5 h-2.5" /> লগআউট</button>
             </div>
+          )}
+          
+          {/* অ্যাডমিন বাটনের নিচে শেয়ার বাটন */}
+          <button onClick={() => setShowShareModal(true)} className="bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold px-3 py-1.5 rounded-lg text-white shadow flex items-center gap-1 mt-1 transition-colors w-full justify-center">
+             <Share2 className="w-3 h-3" /> শেয়ার
+          </button>
+          </div>
+
           )}
         </div>
       </header>
