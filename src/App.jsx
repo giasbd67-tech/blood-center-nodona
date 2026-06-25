@@ -2426,28 +2426,28 @@ const downloadDonorCertificate = (donor) => {
         <div className="pb-10">
           {/* এখানে হোম ট্যাবের ভেতরে আপনার চাওয়া ৩টি বাটন যুক্ত করা হলো */}
           {activeTab === 'home' && (
-          * Quick Actions Grid - Updated with Share Button */}
-            <div className="grid grid-cols-4 gap-2 px-2 mb-8">
-  <button onClick={() => { setActiveTab('notice'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-red-50 text-red-600 border border-red-100 shadow-sm">
+          {/* Quick Actions Grid */}
+<div className="grid grid-cols-4 gap-1.5 px-2 mb-6">
+  <button onClick={() => { setActiveTab('notice'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-red-50 text-red-600 border border-red-100 shadow-sm">
     <Megaphone className="w-5 h-5" />
-    <span className="text-[10px] font-black leading-tight text-center">জরুরি<br/>নোটিশ</span>
+    <span className="text-[9px] font-black leading-tight text-center">জরুরি<br/>নোটিশ</span>
   </button>
-  <button onClick={() => { setActiveTab('register'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-green-50 text-green-600 border border-green-100 shadow-sm">
+  <button onClick={() => { setActiveTab('register'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-green-50 text-green-600 border border-green-100 shadow-sm">
     <UserPlus className="w-5 h-5" />
-    <span className="text-[10px] font-black leading-tight text-center">নিবন্ধন<br/>করুন</span>
+    <span className="text-[9px] font-black leading-tight text-center">নিবন্ধন<br/>করুন</span>
   </button>
-  <button onClick={() => { setActiveTab('search'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
+  <button onClick={() => { setActiveTab('search'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
     <Search className="w-5 h-5" />
-    <span className="text-[10px] font-black leading-tight text-center">রক্ত<br/>খুঁজুন</span>
+    <span className="text-[9px] font-black leading-tight text-center">রক্ত<br/>খুঁজুন</span>
   </button>
-  <button onClick={() => setShowShareModal(true)} className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
+  <button onClick={() => setShowShareModal(true)} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
     <Share2 className="w-5 h-5" />
-    <span className="text-[10px] font-black leading-tight text-center">অ্যাপ<br/>শেয়ার</span>
+    <span className="text-[9px] font-black leading-tight text-center">অ্যাপ<br/>শেয়ার</span>
   </button>
 </div>
 )}
-
-          {activeTab === 'home' && renderNoticeSection()}
+      
+      {activeTab === 'home' && renderNoticeSection()}
           {activeTab === 'notice' && renderNoticeSection()}
           {activeTab === 'search' && renderSearchSection()}
           {activeTab === 'register' && renderRegisterSection()}
