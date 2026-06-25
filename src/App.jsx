@@ -41,7 +41,9 @@ import {
   X,
   Info,
   Download,
-  History
+  History,
+  Share2,
+  QrCode
 } from 'lucide-react';
 
 export default function App() {
@@ -2440,7 +2442,7 @@ const downloadDonorCertificate = (donor) => {
       <span className="text-[9px] font-black leading-tight text-center">রক্ত<br/>খুঁজুন</span>
     </button>
     <button onClick={() => setShowShareModal(true)} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
-      <Share2 className="w-5 h-5" />
+      <QrCode className="w-5 h-5" />
       <span className="text-[9px] font-black leading-tight text-center">অ্যাপ<br/>শেয়ার</span>
     </button>
   </div>
