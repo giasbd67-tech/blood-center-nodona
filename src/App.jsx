@@ -2426,24 +2426,24 @@ const downloadDonorCertificate = (donor) => {
 
         {/* Tab Routing */}
         <div className="pb-10">
-          {/* এখানে হোম ট্যাবের ভেতরে আপনার চাওয়া ৩টি বাটন যুক্ত করা হলো */}
+          {/* এখানে হোম ট্যাবের ভেতরে আপনার চাওয়া ৪টি বাটন যুক্ত করা হলো */}
           {activeTab === 'home' && (
   <div className="grid grid-cols-4 gap-1.5 px-2 mb-6">
     <button onClick={() => { setActiveTab('notice'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-red-50 text-red-600 border border-red-100 shadow-sm">
       <Megaphone className="w-5 h-5" />
-      <span className="text-[9px] font-black leading-tight text-center">জরুরি<br/>নোটিশ</span>
+      <span className="text-[10px] font-black whitespace-nowrap">জরুরি নোটিশ</span>
     </button>
     <button onClick={() => { setActiveTab('register'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-green-50 text-green-600 border border-green-100 shadow-sm">
       <UserPlus className="w-5 h-5" />
-      <span className="text-[9px] font-black leading-tight text-center">নিবন্ধন<br/>করুন</span>
+      <span className="text-[10px] font-black whitespace-nowrap">নিবন্ধন করুন</span>
     </button>
     <button onClick={() => { setActiveTab('search'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
       <Search className="w-5 h-5" />
-      <span className="text-[9px] font-black leading-tight text-center">রক্ত<br/>খুঁজুন</span>
+      <span className="text-[10px] font-black whitespace-nowrap">রক্ত খুঁজুন</span>
     </button>
     <button onClick={() => setShowShareModal(true)} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
       <QrCode className="w-5 h-5" />
-      <span className="text-[9px] font-black leading-tight text-center">অ্যাপ<br/>শেয়ার</span>
+      <span className="text-[10px] font-black whitespace-nowrap">অ্যাপ শেয়ার</span>
     </button>
   </div>
 )}
