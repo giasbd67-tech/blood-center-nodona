@@ -2425,82 +2425,83 @@ const downloadDonorCertificate = (donor) => {
           </div>
         )}
 
-        {/* Tab Routing */}
+                {/* Tab Routing */}
         <div className="pb-10">
           {/* এখানে হোম ট্যাবের ভেতরে আপনার চাওয়া ৪টি বাটন যুক্ত করা হলো */}
           {activeTab === 'home' && (
-  <div className="grid grid-cols-4 gap-1.5 px-2 mb-6">
-    <button onClick={() => { setActiveTab('notice'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-red-50 text-red-600 border border-red-100 shadow-sm">
-      <Megaphone className="w-5 h-5" />
-      <span className="text-[10px] font-black whitespace-nowrap">জরুরি নোটিশ</span>
-    </button>
-    <button onClick={() => { setActiveTab('register'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-green-50 text-green-600 border border-green-100 shadow-sm">
-      <UserPlus className="w-5 h-5" />
-      <span className="text-[10px] font-black whitespace-nowrap">নিবন্ধন করুন</span>
-    </button>
-    <button onClick={() => { setActiveTab('search'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
-      <Search className="w-5 h-5" />
-      <span className="text-[10px] font-black whitespace-nowrap">রক্ত খুঁজুন</span>
-    </button>
-    <button onClick={() => setShowShareModal(true)} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
-      <QrCode className="w-5 h-5" />
-      <span className="text-[10px] font-black whitespace-nowrap">অ্যাপ শেয়ার</span>
-    </button>
-  </div>
-)}
-      
-      {activeTab === 'home' && renderNoticeSection()}
+            <div className="grid grid-cols-4 gap-1.5 px-2 mb-6">
+              <button onClick={() => { setActiveTab('notice'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-red-50 text-red-600 border border-red-100 shadow-sm">
+                <Megaphone className="w-5 h-5" />
+                <span className="text-[10px] font-black whitespace-nowrap">জরুরি নোটিশ</span>
+              </button>
+              <button onClick={() => { setActiveTab('register'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-green-50 text-green-600 border border-green-100 shadow-sm">
+                <UserPlus className="w-5 h-5" />
+                <span className="text-[10px] font-black whitespace-nowrap">নিবন্ধন করুন</span>
+              </button>
+              <button onClick={() => { setActiveTab('search'); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
+                <Search className="w-5 h-5" />
+                <span className="text-[10px] font-black whitespace-nowrap">রক্ত খুঁজুন</span>
+              </button>
+              <button onClick={() => setShowShareModal(true)} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
+                <QrCode className="w-5 h-5" />
+                <span className="text-[10px] font-black whitespace-nowrap">অ্যাপ শেয়ার</span>
+              </button>
+            </div>
+          )}
+          
+          {activeTab === 'home' && renderNoticeSection()}
           {activeTab === 'notice' && renderNoticeSection()}
           {activeTab === 'search' && renderSearchSection()}
           {activeTab === 'register' && renderRegisterSection()}
           {activeTab === 'volunteer' && renderVolunteerSection()}
-          
+        </div> {/* <-- এই div টা আপনার কোডে মিসিং ছিল, এখানে দেওয়া হয়েছে */}
+
         {/* App Share QR Modal */}
-{showShareModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden flex flex-col transform transition-all">
-      
-      <div className="bg-gradient-to-r from-[#006a4e] to-[#f42a41] p-4 text-center relative">
-        <h3 className="text-white font-bold flex justify-center items-center gap-2 text-lg">
-          <QrCode className="w-5 h-5"/> অ্যাপটি শেয়ার করুন
-        </h3>
-        <button onClick={() => setShowShareModal(false)} className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
-          <X className="w-5 h-5" />
-        </button>
-      </div>
+        {showShareModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden flex flex-col transform transition-all">
+              
+              <div className="bg-gradient-to-r from-[#006a4e] to-[#f42a41] p-4 text-center relative">
+                <h3 className="text-white font-bold flex justify-center items-center gap-2 text-lg">
+                  <QrCode className="w-5 h-5"/> অ্যাপটি শেয়ার করুন
+                </h3>
+                <button onClick={() => setShowShareModal(false)} className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-      <div className="p-6 flex flex-col items-center space-y-4 text-center">
-        <p className="text-sm text-slate-600 font-medium leading-relaxed">
-          নিচের কিউআর (QR) কোডটি স্ক্যান করে খুব সহজেই <span className="font-bold text-[#f42a41]">"ব্লাড সেন্টার নদোনা নোয়াখালী"</span> অ্যাপটি অন্য ডিভাইসে ইন্সটল করুন।
-        </p>
-        
-        <div className="p-3 bg-white border-2 border-dashed border-[#006a4e]/30 rounded-2xl shadow-sm">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://bloodcnn.vercel.app/" alt="App QR Code" className="w-40 h-40 object-contain" />
-        </div>
+              <div className="p-6 flex flex-col items-center space-y-4 text-center">
+                <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                  নিচের কিউআর (QR) কোডটি স্ক্যান করে খুব সহজেই <span className="font-bold text-[#f42a41]">"ব্লাড সেন্টার নদোনা নোয়াখালী"</span> অ্যাপটি অন্য ডিভাইসে ইন্সটল করুন।
+                </p>
+                
+                <div className="p-3 bg-white border-2 border-dashed border-[#006a4e]/30 rounded-2xl shadow-sm">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://bloodcnn.vercel.app/" alt="App QR Code" className="w-40 h-40 object-contain" />
+                </div>
 
-        <button 
-          onClick={() => {
-            const appLink = 'https://bloodcnn.vercel.app/'; 
-            if (navigator.share) {
-              navigator.share({
-                title: 'ব্লাড সেন্টার নদোনা নোয়াখালী',
-                text: 'জরুরি রক্তের প্রয়োজনে আমাদের অ্যাপটি ব্যবহার করুন।',
-                url: appLink, 
-              });
-            } else {
-              navigator.clipboard.writeText(appLink);
-              alert('লিংক কপি হয়েছে!'); 
-            }
-          }} 
-          className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
-        >
-          <Copy className="w-4 h-4" /> সরাসরি লিংক শেয়ার করুন
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-  </main>
+                <button 
+                  onClick={() => {
+                    const appLink = 'https://bloodcnn.vercel.app/';
+                    if (navigator.share) {
+                      navigator.share({
+                        title: 'ব্লাড সেন্টার নদোনা নোয়াখালী',
+                        text: 'জরুরি রক্তের প্রয়োজনে আমাদের অ্যাপটি ব্যবহার করুন।',
+                        url: appLink, 
+                      });
+                    } else {
+                      navigator.clipboard.writeText(appLink);
+                      alert('লিংক কপি হয়েছে!');
+                    }
+                  }} 
+                  className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Copy className="w-4 h-4" /> সরাসরি লিংক শেয়ার করুন
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
 
       {/* আপনার নির্দেশিত হুবহু ফুটার ডিজাইন ও লেখা */}
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed pb-8">
