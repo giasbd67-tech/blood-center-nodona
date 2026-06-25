@@ -58,6 +58,7 @@ export default function App() {
   const [visibleDonorsCount, setVisibleDonorsCount] = useState(10);
   
   // কাস্টম নোটিফিকেশন স্টেট
+  const [showShareModal, setShowShareModal] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
   
   // নতুন মোডাল এরর স্টেট
@@ -2453,53 +2454,53 @@ const downloadDonorCertificate = (donor) => {
           {activeTab === 'search' && renderSearchSection()}
           {activeTab === 'register' && renderRegisterSection()}
           {activeTab === 'volunteer' && renderVolunteerSection()}
-        {/* এখানে আপনার মোডাল কোডটি বসান */}
-          {showShareModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-              <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden flex flex-col transform transition-all">
-                
-                <div className="bg-gradient-to-r from-[#006a4e] to-[#f42a41] p-4 text-center relative">
-                  <h3 className="text-white font-bold flex justify-center items-center gap-2 text-lg">
-                    <QrCode className="w-5 h-5"/> অ্যাপটি শেয়ার করুন
-                  </h3>
-                  <button onClick={() => setShowShareModal(false)} className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="p-6 flex flex-col items-center space-y-4 text-center">
-                  <p className="text-sm text-slate-600 font-medium leading-relaxed">
-                    নিচের কিউআর (QR) কোডটি স্ক্যান করে খুব সহজেই <span className="font-bold text-[#f42a41]">"ব্লাড সেন্টার নদোনা নোয়াখালী"</span> অ্যাপটি অন্য ডিভাইসে ইন্সটল করুন।
-                  </p>
-                  
-                  <div className="p-3 bg-white border-2 border-dashed border-[#006a4e]/30 rounded-2xl shadow-sm">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://bloodcnn.vercel.app/" alt="App QR Code" className="w-40 h-40 object-contain" />
-                  </div>
-
-                  <button 
-                    onClick={() => {
-                      const appLink = 'https://bloodcnn.vercel.app/'; 
-                      if (navigator.share) {
-                        navigator.share({
-                          title: 'ব্লাড সেন্টার নদোনা নোয়াখালী',
-                          text: 'জরুরি রক্তের প্রয়োজনে আমাদের অ্যাপটি ব্যবহার করুন।',
-                          url: appLink, 
-                        });
-                      } else {
-                        navigator.clipboard.writeText(appLink);
-                        alert('লিংক কপি হয়েছে!'); 
-                      }
-                    }} 
-                    className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Copy className="w-4 h-4" /> সরাসরি লিংক শেয়ার করুন
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
           
-      </main>
+        {/* App Share QR Modal */}
+{showShareModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden flex flex-col transform transition-all">
+      
+      <div className="bg-gradient-to-r from-[#006a4e] to-[#f42a41] p-4 text-center relative">
+        <h3 className="text-white font-bold flex justify-center items-center gap-2 text-lg">
+          <QrCode className="w-5 h-5"/> অ্যাপটি শেয়ার করুন
+        </h3>
+        <button onClick={() => setShowShareModal(false)} className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-6 flex flex-col items-center space-y-4 text-center">
+        <p className="text-sm text-slate-600 font-medium leading-relaxed">
+          নিচের কিউআর (QR) কোডটি স্ক্যান করে খুব সহজেই <span className="font-bold text-[#f42a41]">"ব্লাড সেন্টার নদোনা নোয়াখালী"</span> অ্যাপটি অন্য ডিভাইসে ইন্সটল করুন।
+        </p>
+        
+        <div className="p-3 bg-white border-2 border-dashed border-[#006a4e]/30 rounded-2xl shadow-sm">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://bloodcnn.vercel.app/" alt="App QR Code" className="w-40 h-40 object-contain" />
+        </div>
+
+        <button 
+          onClick={() => {
+            const appLink = 'https://bloodcnn.vercel.app/'; 
+            if (navigator.share) {
+              navigator.share({
+                title: 'ব্লাড সেন্টার নদোনা নোয়াখালী',
+                text: 'জরুরি রক্তের প্রয়োজনে আমাদের অ্যাপটি ব্যবহার করুন।',
+                url: appLink, 
+              });
+            } else {
+              navigator.clipboard.writeText(appLink);
+              alert('লিংক কপি হয়েছে!'); 
+            }
+          }} 
+          className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
+        >
+          <Copy className="w-4 h-4" /> সরাসরি লিংক শেয়ার করুন
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+  </main>
 
       {/* আপনার নির্দেশিত হুবহু ফুটার ডিজাইন ও লেখা */}
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed pb-8">
