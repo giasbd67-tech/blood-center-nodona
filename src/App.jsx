@@ -42,8 +42,10 @@ import {
   Info,
   Download,
   History,
-  Share2,
-  QrCode
+    Share2,
+  QrCode,
+  Trophy,
+  WifiOff
 } from 'lucide-react';
 
 export default function App() {
