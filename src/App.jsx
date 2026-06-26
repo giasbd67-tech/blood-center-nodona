@@ -42,7 +42,7 @@ import {
   Info,
   Download,
   History,
-    Share2,
+  Share2,
   QrCode,
   Trophy,
   WifiOff
@@ -58,7 +58,9 @@ export default function App() {
   const [eligibilityFilter, setEligibilityFilter] = useState('All');
   const [activeTab, setActiveTab] = useState('home'); // ৫টি টগল ট্যাব: home, notice, search, register, volunteer
   const [visibleDonorsCount, setVisibleDonorsCount] = useState(10);
-  
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [leaderboardType, setLeaderboardType] = useState('monthly');
+
   // কাস্টম নোটিফিকেশন স্টেট
   const [showShareModal, setShowShareModal] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
@@ -84,7 +86,7 @@ export default function App() {
   const [editRequestId, setEditRequestId] = useState(null);
   
   // নতুন পাসওয়ার্ড ফিল্ড সহ ভলান্টিয়ার স্টেট
-  const [newVolunteer, setNewVolunteer] = useState({ name: '', phone: '', password: '', points: '' });
+  const [newVolunteer, setNewVolunteer] = useState({ name: '', phone: '', password: '', points: '', monthly_points: '' });
   const [editVolunteerId, setEditVolunteerId] = useState(null);
 
   // নোয়াখালী পোস্ট স্টেট
