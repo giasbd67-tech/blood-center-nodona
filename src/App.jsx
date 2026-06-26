@@ -129,155 +129,50 @@ export default function App() {
     }, 4000);
   };
 
-  // অ্যাপ লোড হওয়ার সাথে সাথে ডাটাবেজ থেকে ডাটা আনা
+  // অ্যাপ লোড হওয়ার সাথে সাথে ডাটাবেজ থেকে ডাটা আনা ও অফলাইন ট্র্যাকিং
   useEffect(() => {
-    console.log("Application initialized. Fetching core data configurations...");
-    fetchDonors();
-    fetchRequests();
-    fetchAllLogs();
-    fetchNoakhaliPosts();
-    
-    // অফলাইন ক্যাশ সাপোর্ট লোড
     const cachedDonors = localStorage.getItem('cached_donors');
     const cachedRequests = localStorage.getItem('cached_requests');
-    if (cachedDonors) {
-      console.log("Loaded donors data layer from localStorage cache.");
-      setDonors(JSON.parse(cachedDonors));
-    }
-    if (cachedRequests) {
-      console.log("Loaded emergency requests layout from localStorage cache.");
-      setEmergencyRequests(JSON.parse(cachedRequests));
-    }
+    if (cachedDonors) setDonors(JSON.parse(cachedDonors));
+    if (cachedRequests) setEmergencyRequests(JSON.parse(cachedRequests));
+
+    fetchDonors(); fetchRequests(); fetchAllLogs(); fetchNoakhaliPosts();
 
     const savedPhone = localStorage.getItem('v_phone');
     const savedPass = localStorage.getItem('v_pass');
-    if (savedPhone && savedPass) {
-      console.log("Found existing volunteer session in cache storage. Attempting auto-login...");
-      checkVolunteerAccess(savedPhone, savedPass);
-    }
+    if (savedPhone && savedPass) checkVolunteerAccess(savedPhone, savedPass);
+
+    const handleOnline = () => { setIsOnline(true); fetchDonors(); fetchRequests(); };
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => { window.removeEventListener('online', handleOnline); window.removeEventListener('offline', handleOffline); };
   }, []);
 
   useEffect(() => {
-    console.log(`Admin status changed to: ${isAdmin}. Refreshing volunteer list leaderboard.`);
-    fetchVolunteers(); // লিডারবোর্ডের জন্য ভলান্টিয়ার ডাটা সবসময় রিড করা প্রয়োজন
-  }, [isAdmin]);
-
-  const fetchNoakhaliPosts = async () => {
-    try {
-      const { data, error } = await supabase.from('noakhali_posts').select('*').order('created_at', { ascending: false });
-      if (data) setNoakhaliPosts(data);
-    } catch (e) {
-      console.error("Error fetching Noakhali posts:", e);
-    }
-  };
-
-  const handleNpFileChange = (e) => {
-    const file = e.target.files[0];
-    if(file) {
-      const type = file.type.startsWith('video/') ? 'video' : 'image';
-      setNewNp({...newNp, file, mediaType: type});
-    }
-  };
-
-  const handleAddNp = async (e) => {
-    e.preventDefault();
-    if (noakhaliPosts.length >= 2) {
-      return showToast('সর্বোচ্চ ২টি পোস্ট করা যাবে। ৩ নাম্বার পোস্ট করতে পূর্বের একটি ডিলিট করুন।', 'error');
-    }
-    if (!newNp.caption && !newNp.file) return showToast('ক্যাপশন বা ছবি/ভিডিও দিন', 'error');
-
-    setIsUploadingNp(true);
-    let media_url = '';
-    let media_path = '';
-
-    if (newNp.file) {
-      const fileExt = newNp.file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random()}.${fileExt}`;
-      media_path = `posts/${fileName}`;
-      const { error: uploadError } = await supabase.storage.from('noakhali_media').upload(media_path, newNp.file);
-      
-      if (uploadError) {
-        setIsUploadingNp(false);
-        return showToast('ফাইল আপলোড ব্যর্থ: ' + uploadError.message, 'error');
-      }
-      const { data: publicData } = supabase.storage.from('noakhali_media').getPublicUrl(media_path);
-      media_url = publicData.publicUrl;
-    }
-
-    const { error: insertErr } = await supabase.from('noakhali_posts').insert([{
-      caption: newNp.caption,
-      media_url: media_url,
-      media_type: newNp.file ? newNp.mediaType : null,
-      media_path: media_path
-    }]);
-    
-    setIsUploadingNp(false);
-    if (!insertErr) {
-      showToast('নোয়াখালী পোস্ট সফলভাবে যুক্ত হয়েছে!', 'success');
-      setNewNp({ caption: '', file: null, mediaType: 'image' });
-      fetchNoakhaliPosts();
-    } else {
-      showToast('পোস্ট করতে ব্যর্থ: ' + insertErr.message, 'error');
-    }
-  };
-
-  const handleDeleteNp = async (post) => {
-    if(confirm('আপনি কি নিশ্চিতভাবে এই পোস্টটি ডিলিট করতে চান?')) {
-      if (post.media_path) {
-        await supabase.storage.from('noakhali_media').remove([post.media_path]);
-      }
-      const { error } = await supabase.from('noakhali_posts').delete().eq('id', post.id);
-      if(!error) {
-        showToast('পোস্ট অটো ডিলিট করা হয়েছে।', 'success');
-        fetchNoakhaliPosts();
-      } else {
-        showToast('ডিলিট করতে ব্যর্থ: ' + error.message, 'error');
-      }
-    }
-  };
+    fetchVolunteers();
+  }, [isAdmin, leaderboardType]);
 
   const fetchDonors = async () => {
-    console.log("Invoking fetchDonors from Supabase...");
     try {
       const { data, error: fetchErr } = await supabase.from('donors').select('*').order('activity_count', { ascending: false });
-      if (fetchErr) throw fetchErr;
-      if (data) {
-        console.log(`Successfully loaded ${data.length} donors records.`);
-        setDonors(data);
-        localStorage.setItem('cached_donors', JSON.stringify(data)); // অফলাইন ক্যাশিং
-      }
-    } catch (e) {
-      console.error("Offline mode or error tracking donor loading sequence. Falling back to cache.", e);
-    }
+      if (data) { setDonors(data); localStorage.setItem('cached_donors', JSON.stringify(data)); }
+    } catch (e) { console.log("Offline mode, keeping cached donors."); }
   };
 
   const fetchRequests = async () => {
-    console.log("Invoking fetchRequests from Supabase notice-board layers...");
     try {
       const { data, error: fetchErr } = await supabase.from('emergency_requests').select('*').order('id', { ascending: false });
-      if (fetchErr) throw fetchErr;
-      if (data) {
-        console.log(`Successfully loaded ${data.length} emergency notices.`);
-        setEmergencyRequests(data);
-        localStorage.setItem('cached_requests', JSON.stringify(data)); // অফলাইন নোটিশ ক্যাশিং
-      }
-    } catch (e) {
-      console.error("Offline mode requests tracking loading sequence failed. Using cache.", e);
-    }
+      if (data) { setEmergencyRequests(data); localStorage.setItem('cached_requests', JSON.stringify(data)); }
+    } catch (e) { console.log("Offline mode, keeping cached requests."); }
   };
 
   const fetchVolunteers = async () => {
-    console.log("Invoking fetchVolunteers data payload for leaderboard systems...");
     try {
-      const { data, error: fetchErr } = await supabase.from('volunteers').select('*').order('points', { ascending: false });
-      if (fetchErr) throw fetchErr;
-      if (data) {
-        console.log(`Successfully sync completed for ${data.length} volunteer records.`);
-        setVolunteers(data);
-      }
-    } catch (e) {
-      console.error("Error executing volunteer records indexing pipelines:", e);
-    }
+      const orderByField = leaderboardType === 'monthly' ? 'monthly_points' : 'points';
+      const { data, error: fetchErr } = await supabase.from('volunteers').select('*').order(orderByField, { ascending: false });
+      if (data) setVolunteers(data);
+    } catch (e) { console.error("Volunteer fetch error", e); }
   };
 
   // সামগ্রিক রক্তদানের ইতিহাস নিয়ে আসার ফাংশন
@@ -309,8 +204,8 @@ export default function App() {
   // ভলান্টিয়ারদের সফল কাজের ওপর ভিত্তি করে রিয়েলটাইম মেডেল নির্ধারণ
   const getVolunteerBadge = (points) => {
     const pts = Number(points) || 0;
-    if (pts >= 15) return { text: 'প্লাটিনাম লিডার', classes: 'bg-purple-600 text-white' };
-    if (pts >= 8) return { text: 'গোল্ডেন স্টার', classes: 'bg-yellow-500 text-white' };
+    if (pts >= 50) return { text: 'প্লাটিনাম লিডার', classes: 'bg-purple-600 text-white' };
+    if (pts >= 20) return { text: 'গোল্ডেন স্টার', classes: 'bg-yellow-500 text-white' };
     return { text: 'সক্রিয় সদস্য', classes: 'bg-blue-500 text-white' };
   };
 
@@ -1173,7 +1068,7 @@ const downloadDonorCertificate = (donor) => {
 
     ctx.fillStyle = '#1e40af';
     ctx.font = 'bold 13px system-ui, sans-serif';
-    ctx.fillText(`মেডেল স্ট্যাটাস: ${getVolunteerBadge(v.points).text}`, 32, 300);
+    ctx.fillText(`অর্জন (মেডেল স্ট্যাটাস): ${getVolunteerBadge(v.points).text}`, 32, 300);
     
     // ডানপাশের প্রিমিয়াম সিল কন্টেইনার
     ctx.fillStyle = '#ffffff';
