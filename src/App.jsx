@@ -1335,13 +1335,22 @@ const downloadDonorCertificate = (donor) => {
       hospital: newLog.hospital,
       date: newLog.date
     };
-        const { error: logErr } = await supabase.from('donation_logs').insert([payload]);
+            const { error: logErr } = await supabase.from('donation_logs').insert([logPayload]);
+    
     if (!logErr) {
-      // রুলস: ১ জন ডোনার ম্যানেজ বা ১ ব্যাগ রক্ত সফলভাবে সম্পন্ন করলে ভলান্টিয়ার ১ পয়েন্ট পাবে
-      if (isUnlocked && !isAdmin) {
-        await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
-        fetchVolunteers();
-      }
+        // সফলভাবে লগ এন্ট্রি হলে পয়েন্ট যোগ করার লজিক
+        if (isUnlocked && !isAdmin) {
+            await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
+            fetchVolunteers(); 
+        }
+        
+        showToast('রক্তদানের রেকর্ড এবং পয়েন্ট সফলভাবে যুক্ত হয়েছে!', 'success');
+        setNewLog({ patient_name: '', hospital: '', date: '' });
+        fetchAllLogs(); // ডাটা রিফ্রেশ করা
+    } else {
+        showToast('লগ যুক্ত করতে সমস্যা হয়েছে: ' + logErr.message, 'error');
+    }
+
       showToast('রক্তদানের স্মার্ট রেকর্ড লগ করা হয়েছে ও পয়েন্ট যুক্ত হয়েছে!', 'success');
       setNewLog({ patient_name: '', hospital: '', date: '' });
       // পুনরায় রিফ্রেশ লিস্ট
