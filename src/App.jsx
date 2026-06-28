@@ -1335,10 +1335,14 @@ const downloadDonorCertificate = (donor) => {
       hospital: newLog.hospital,
       date: newLog.date
     };
-    const { error: logErr } = await supabase.from('donation_logs').insert([payload]);
+        const { error: logErr } = await supabase.from('donation_logs').insert([payload]);
     if (!logErr) {
-      console.log("Historical timeline event node successfully committed across infrastructure systems storage arrays.");
-      showToast('রক্তদানের স্মার্ট রেকর্ড লগ করা হয়েছে!', 'success');
+      // রুলস: ১ জন ডোনার ম্যানেজ বা ১ ব্যাগ রক্ত সফলভাবে সম্পন্ন করলে ভলান্টিয়ার ১ পয়েন্ট পাবে
+      if (isUnlocked && !isAdmin) {
+        await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
+        fetchVolunteers();
+      }
+      showToast('রক্তদানের স্মার্ট রেকর্ড লগ করা হয়েছে ও পয়েন্ট যুক্ত হয়েছে!', 'success');
       setNewLog({ patient_name: '', hospital: '', date: '' });
       // পুনরায় রিফ্রেশ লিস্ট
       const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
