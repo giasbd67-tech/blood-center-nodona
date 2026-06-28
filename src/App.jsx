@@ -544,7 +544,8 @@ export default function App() {
       phone: newVolunteer.phone, 
       password: newVolunteer.password,
       code: newVolunteer.password,
-      points: Number(newVolunteer.points) || 0
+            points: Number(newVolunteer.points) || 0,
+      monthly_points: Number(newVolunteer.monthly_points) || 0
     };
 
     if (editVolunteerId) {
