@@ -2070,11 +2070,19 @@ const downloadDonorCertificate = (donor) => {
         </div>
       </div>
 
-      {isAdmin && (
+            {isAdmin && (
         <div className="bg-white p-5 rounded-2xl shadow-t-4 border-blue-600 space-y-4">
-          <h3 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">
-            <Users className="w-5 h-5" /> ভলান্টিয়ার কন্ট্রোল প্যানেল
-          </h3>
+          <div className="flex justify-between items-center border-b pb-2">
+            <h3 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">
+              <Users className="w-5 h-5" /> ভলান্টিয়ার প্যানেল
+            </h3>
+            <button onClick={async () => {
+              if (confirm('সকল ভলান্টিয়ারের এই মাসের পয়েন্ট ০ করে নতুন মাসের লিডারবোর্ড শুরু করতে চান?')) {
+                await supabase.rpc('reset_monthly_leaderboard'); showToast('লিডারবোর্ড রিসেট হয়েছে!', 'success'); fetchVolunteers();
+              }
+            }} className="bg-red-50 text-red-600 border border-red-200 text-[10px] font-black px-2 py-1 rounded-lg">মাসিক রিসেট</button>
+          </div>
+         
           <form onSubmit={handleAddVolunteer} className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
             <p className="text-xs font-bold text-slate-600 flex items-center gap-1">
               <Plus className="w-4 h-4" /> {editVolunteerId ? 'ভলান্টিয়ার তথ্য ও পাসওয়ার্ড সংশোধন:' : 'নতুন ভলান্টিয়ার ও কাস্টম পাসওয়ার্ড অনুমোদন:'}
@@ -2087,12 +2095,13 @@ const downloadDonorCertificate = (donor) => {
                 <input type="number" placeholder="সর্বমোট পয়েন্ট" value={newVolunteer.points} onChange={e => setNewVolunteer({...newVolunteer, points: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" />
                 <input type="number" placeholder="মাসিক পয়েন্ট" value={newVolunteer.monthly_points} onChange={e => setNewVolunteer({...newVolunteer, monthly_points: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" />
               </div>
-            <div className="flex gap-1.5">
+            </div>
+            <div className="flex gap-1.5 mt-2">
               <button type="submit" className="flex-1 bg-blue-600 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1">
                 <Save className="w-3.5 h-3.5" /> {editVolunteerId ? 'তথ্য আপডেট' : 'ভলান্টিয়ার অনুমোদন'}
               </button>
               {editVolunteerId && (
-                <button type="button" onClick={() => { setEditVolunteerId(null); setNewVolunteer({ name: '', phone: '', password: '', points: '' }); }} className="bg-slate-200 text-slate-700 px-3 rounded-xl font-bold text-xs">বাতিল</button>
+                <button type="button" onClick={() => { setEditVolunteerId(null); setNewVolunteer({ name: '', phone: '', password: '', points: '', monthly_points: '' }); }} className="bg-slate-200 text-slate-700 px-3 rounded-xl font-bold text-xs">বাতিল</button>
               )}
             </div>
           </form>
