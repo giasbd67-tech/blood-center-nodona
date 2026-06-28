@@ -2146,6 +2146,13 @@ const downloadDonorCertificate = (donor) => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 leading-normal">
       
+      {/* অফলাইন PWA নেটওয়ার্ক নোটিফিকেশন */}
+      {!isOnline && (
+        <div className="bg-red-600 text-white text-[11px] font-bold text-center py-2 flex items-center justify-center gap-1.5 sticky top-0 z-50 animate-pulse">
+          <WifiOff className="w-3.5 h-3.5" /> ইন্টারনেট সংযোগ বিচ্ছিন্ন! অফলাইন ক্যাশ ডাটা দেখানো হচ্ছে।
+        </div>
+      )}
+
       {/* ফিক্সড নোটিফিকেশন UI */}
       {notification.show && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">
