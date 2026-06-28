@@ -334,8 +334,8 @@ export default function App() {
         console.log("Donor profile modified records persisted successfully.");
         if (isUnlocked && !isAdmin) {
           console.log(`Incrementing loyalty volunteer points configuration targeting system operator tracking phone identifier: ${volunteerPhone}`);
-          await supabase.rpc('increment_volunteer_points', { v_phone: volunteerPhone });
-          fetchVolunteers();
+          await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 })
+          nteers();
         }
         showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
         resetDonorForm();
@@ -356,7 +356,7 @@ export default function App() {
         console.log("New donor directory object registered safely inside tracking vectors.");
         if (isUnlocked && !isAdmin) {
           console.log(`Attributing points configuration increments tracking reference key operator via phone parameter: ${volunteerPhone}`);
-          await supabase.rpc('increment_volunteer_points', { v_phone: volunteerPhone });
+          await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
           fetchVolunteers();
         }
         showToast('রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!', 'success');
