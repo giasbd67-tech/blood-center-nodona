@@ -2073,7 +2073,7 @@ const downloadDonorCertificate = (donor) => {
             <div className="grid grid-cols-1 gap-2">
               <input type="text" placeholder="ভলান্টিয়ার/সেচ্ছাসেবীর নাম" value={newVolunteer.name} onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
               <input type="tel" placeholder="মোবাইল নাম্বার" value={newVolunteer.phone} onChange={e => setNewVolunteer({...newVolunteer, phone: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
-                            <input type="text" placeholder="সিকিউরিটি কোড বা পাসওয়ার্ড" value={newVolunteer.password} onChange={e => setNewVolunteer({...newVolunteer, password: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
+              <input type="text" placeholder="সিকিউরিটি কোড বা পাসওয়ার্ড" value={newVolunteer.password} onChange={e => setNewVolunteer({...newVolunteer, password: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" required />
               <div className="grid grid-cols-2 gap-2">
                 <input type="number" placeholder="সর্বমোট পয়েন্ট" value={newVolunteer.points} onChange={e => setNewVolunteer({...newVolunteer, points: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" />
                 <input type="number" placeholder="মাসিক পয়েন্ট" value={newVolunteer.monthly_points} onChange={e => setNewVolunteer({...newVolunteer, monthly_points: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" />
