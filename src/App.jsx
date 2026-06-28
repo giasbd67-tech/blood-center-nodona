@@ -1976,17 +1976,22 @@ const downloadDonorCertificate = (donor) => {
         </div>
       )}
 
-      {/* স্থানান্তরকৃত ভলান্টিয়ার লিডারবোর্ড মডিউল (ভলান্টিয়ার আনলক প্যানেল এর নিচে) */}
-      <div className="bg-white p-5 rounded-2xl shadow border border-blue-100 space-y-3">
-        <h3 className="text-base font-black text-blue-600 flex items-center gap-1.5">
-          <Award className="w-5 h-5 text-amber-500 fill-amber-500" /> ভলান্টিয়ার লিডারবোর্ড (সক্রিয়তা তালিকা)
-        </h3>
-        <p className="text-[11px] text-slate-400 font-semibold leading-none">ডোনার রেজিস্ট্রেশন ও ম্যানেজ করার উপর ভিত্তি করে তৈরি রিয়েলটাইম র‍্যাংকিং।</p>
-        <div className="space-y-2 max-h-48 overflow-y-auto pt-1">
+            {/* স্থানান্তরকৃত ভলান্টিয়ার লিডারবোর্ড মডিউল (মাসিক ও সর্বমোট পয়েন্ট সহ) */}
+      <div className="bg-white p-5 rounded-2xl shadow border-t-4 border-blue-600 space-y-4">
+        <div className="flex justify-between items-center border-b pb-2">
+          <h2 className="text-base font-black text-blue-600 flex items-center gap-1.5"><Trophy className="w-5 h-5 text-amber-500" /> ভলান্টিয়ার লিডারবোর্ড</h2>
+          <div className="flex bg-slate-100 p-1 rounded-xl border text-[10px] font-bold">
+            <button onClick={() => setLeaderboardType('monthly')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'monthly' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>মাসিক হিসাব</button>
+            <button onClick={() => setLeaderboardType('lifetime')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'lifetime' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>সর্বমোট</button>
+          </div>
+        </div>
+
+        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
           {volunteers.map((v, idx) => {
             const vBadge = getVolunteerBadge(v.points);
+            const isTopMonthly = leaderboardType === 'monthly' && idx === 0 && v.monthly_points > 0;
             return (
-              <div key={v.id} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-150">
+              <div key={v.id} className={`p-3 rounded-xl border flex items-center justify-between transition-all ${isTopMonthly ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-50'}`}>
                 <div className="flex items-center gap-2">
                   <span className={`w-6 h-6 rounded-full text-xs font-black flex items-center justify-center ${idx === 0 ? 'bg-yellow-400 text-white' : idx === 1 ? 'bg-slate-300 text-slate-800' : 'bg-slate-200 text-slate-600'}`}>
                     {idx + 1}
