@@ -2095,7 +2095,6 @@ const downloadDonorCertificate = (donor) => {
                 <input type="number" placeholder="মাসিক পয়েন্ট" value={newVolunteer.monthly_points} onChange={e => setNewVolunteer({...newVolunteer, monthly_points: e.target.value})} className="w-full border-2 p-2.5 rounded-xl text-sm" />
               </div>
             </div>
-            </div>
             <div className="flex gap-1.5 mt-2">
               <button type="submit" className="flex-1 bg-blue-600 text-white p-2.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1">
                 <Save className="w-3.5 h-3.5" /> {editVolunteerId ? 'তথ্য আপডেট' : 'ভলান্টিয়ার অনুমোদন'}
