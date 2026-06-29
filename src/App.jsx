@@ -2285,6 +2285,7 @@ const downloadDonorCertificate = (donor) => {
           ) : (
             
         <div className="flex flex-col gap-1 items-end">
+  {/* অ্যাডমিন বাটনসমূহ (যদিisAdmin সত্য হয় তবেই দেখাবে) */}
   {isAdmin && (
     <>
       <button 
@@ -2306,6 +2307,7 @@ const downloadDonorCertificate = (donor) => {
     </>
   )}
 
+  {/* শেয়ার বাটন (এটি সবার জন্য সবসময় দেখাবে) */}
   <button 
     onClick={() => setShowShareModal(true)} 
     className="bg-emerald-600 hover:bg-emerald-700 text-[9px] font-bold px-2 py-1 rounded-md text-white shadow flex items-center gap-1 mt-1 transition-colors w-full justify-center"
@@ -2313,15 +2315,7 @@ const downloadDonorCertificate = (donor) => {
     <Share2 className="w-2.5 h-2.5" /> শেয়ার
   </button>
 </div>
-)}
-          
-          {/* অ্যাডমিন বাটনের নিচে শেয়ার বাটন */}
-          <button onClick={() => setShowShareModal(true)} className="bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold px-3 py-1.5 rounded-lg text-white shadow flex items-center gap-1 mt-1 transition-colors w-full justify-center">
-             <Share2 className="w-3 h-3" /> শেয়ার
-          </button>
-          </div>
-
-          )}
+      )}
         </div>
       </header>
 
