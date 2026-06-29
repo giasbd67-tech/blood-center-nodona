@@ -1321,9 +1321,10 @@ const downloadDonorCertificate = (donor) => {
     }
   };
 
-  const handleAddLog = async (e) => {
+    const handleAddLog = async (e) => {
     e.preventDefault();
     console.log(`Processing historical ledger logs appending block action framework sequence layout criteria inputs... Target Donor: ${activeLogDonor?.id}`, newLog);
+    
     if (!newLog.patient_name || !newLog.hospital || !newLog.date) {
       console.warn("Log appending transaction blocked: Input verification parameters criteria failed standard schema tests.");
       return showToast('সব তথ্য পূরণ করুন', 'error');
@@ -1335,7 +1336,9 @@ const downloadDonorCertificate = (donor) => {
       hospital: newLog.hospital,
       date: newLog.date
     };
-            const { error: logErr } = await supabase.from('donation_logs').insert([logPayload]);
+
+    // এখানে logPayload এর বদলে সঠিক ভেরিয়েবল payload ব্যবহার করা হয়েছে
+    const { error: logErr } = await supabase.from('donation_logs').insert([payload]);
     
     if (!logErr) {
         // সফলভাবে লগ এন্ট্রি হলে পয়েন্ট যোগ করার লজিক
@@ -1346,22 +1349,18 @@ const downloadDonorCertificate = (donor) => {
         
         showToast('রক্তদানের রেকর্ড এবং পয়েন্ট সফলভাবে যুক্ত হয়েছে!', 'success');
         setNewLog({ patient_name: '', hospital: '', date: '' });
-        fetchAllLogs(); // ডাটা রিফ্রেশ করা
+        
+        // পুনরায় ডাটাবেজ থেকে রিফ্রেশ করা
+        const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
+        if (data) setDonorLogs(data);
+        
+        fetchAllLogs(); // গ্লোবাল হিস্ট্রি রিফ্রেশ
     } else {
+        console.error("Supabase transactional database failures reported trying to ingest new layout trace indices details object:", logErr);
         showToast('লগ যুক্ত করতে সমস্যা হয়েছে: ' + logErr.message, 'error');
     }
-
-      showToast('রক্তদানের স্মার্ট রেকর্ড লগ করা হয়েছে ও পয়েন্ট যুক্ত হয়েছে!', 'success');
-      setNewLog({ patient_name: '', hospital: '', date: '' });
-      // পুনরায় রিফ্রেশ লিস্ট
-      const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
-      if (data) setDonorLogs(data);
-      fetchAllLogs(); // গ্লোবাল হিস্ট্রি রিফ্রেশ
-    } else {
-      console.error("Supabase transactional database failures reported trying to ingest new layout trace indices details object:", logErr);
-      showToast('লগ করতে সমস্যা হয়েছে: ' + logErr.message, 'error');
-    }
   };
+
   
   const handleDeleteLog = async (logId) => {
     console.log(`Dispatching explicitly requested trace removal directive against specific history tracker identifier parameter node index: ${logId}`);
