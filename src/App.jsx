@@ -2284,26 +2284,28 @@ const downloadDonorCertificate = (donor) => {
             </button>
           ) : (
             
-        <div className="flex flex-col gap-1 items-end">
-  {/* পাসওয়ার্ড বাটন */}
-  <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white shadow flex items-center gap-0.5 w-full justify-center">
-    <Lock className="w-2 h-2" /> পাসওয়ার্ড
-  </button>
+        {/* অ্যাডমিন প্যানেল এবং শেয়ার বাটন কন্ট্রোল */}
+<div className="flex flex-col gap-1 items-end">
   
-  {/* লগআউট বাটন */}
-  <button onClick={() => {
-    console.log("Admin log-out signal context fired.");
-    setIsAdmin(false);
-  }} className="bg-slate-800 text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white shadow flex items-center gap-0.5 w-full justify-center">
-    <LogOut className="w-2 h-2" /> লগআউট
-  </button>
-</div>
-)}
+  {isAdmin && (
+    <>
+      <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white shadow flex items-center gap-0.5 w-full justify-center">
+        <Lock className="w-2 h-2" /> পাসওয়ার্ড
+      </button>
+      
+      <button onClick={() => {
+        console.log("Admin log-out signal context fired.");
+        setIsAdmin(false);
+      }} className="bg-slate-800 text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white shadow flex items-center gap-0.5 w-full justify-center">
+        <LogOut className="w-2 h-2" /> লগআউট
+      </button>
+    </>
+  )}
 
-{/* শেয়ার বাটন */}
-<button onClick={() => setShowShareModal(true)} className="bg-emerald-600 hover:bg-emerald-700 text-[9px] font-bold px-2 py-1 rounded-md text-white shadow flex items-center gap-1 mt-1 transition-colors w-full justify-center">
-  <Share2 className="w-2.5 h-2.5" /> শেয়ার
-</button>
+  {/* শেয়ার বাটন - এটিisAdmin কন্ডিশনের বাইরে থাকবে */}
+  <button onClick={() => setShowShareModal(true)} className="bg-emerald-600 hover:bg-emerald-700 text-[9px] font-bold px-2 py-1 rounded-md text-white shadow flex items-center gap-1 mt-1 transition-colors w-full justify-center">
+    <Share2 className="w-2.5 h-2.5" /> শেয়ার
+  </button>
 </div>
 )}
           
