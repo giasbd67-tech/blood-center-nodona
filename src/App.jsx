@@ -190,6 +190,68 @@ export default function App() {
     }
   };
 
+    // ব্লাড সেন্টার নোয়াখালী পোস্ট ফিচার লজিক
+  const fetchNoakhaliPosts = async () => {
+    try {
+      const { data, error } = await supabase.from('noakhali_posts').select('*').order('created_at', { ascending: false });
+      if (data) setNoakhaliPosts(data);
+    } catch (e) {
+      console.error("Error fetching posts:", e);
+    }
+  };
+
+  const handleNpFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const type = file.type.startsWith('video/') ? 'video' : 'image';
+      setNewNp({ ...newNp, file, mediaType: type });
+    }
+  };
+
+  const handleAddNp = async (e) => {
+    e.preventDefault();
+    if (!newNp.caption && !newNp.file) return showToast('ক্যাপশন অথবা ছবি/ভিডিও দিন', 'error');
+    setIsUploadingNp(true);
+    
+    let media_url = '';
+    if (newNp.file) {
+      const fileExt = newNp.file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('noakhali_media').upload(fileName, newNp.file);
+      if (!uploadError) {
+        const { data } = supabase.storage.from('noakhali_media').getPublicUrl(fileName);
+        media_url = data.publicUrl;
+      }
+    }
+
+    const { error } = await supabase.from('noakhali_posts').insert([{
+      caption: newNp.caption,
+      media_url,
+      media_type: newNp.mediaType
+    }]);
+
+    if (!error) {
+      showToast('পোস্ট সফলভাবে যুক্ত হয়েছে', 'success');
+      setNewNp({ caption: '', file: null, mediaType: 'image' });
+      fetchNoakhaliPosts();
+    } else {
+      showToast('পোস্ট করতে সমস্যা হয়েছে', 'error');
+    }
+    setIsUploadingNp(false);
+  };
+
+  const handleDeleteNp = async (post) => {
+    if(confirm('আপনি কি নিশ্চিতভাবে পোস্টটি ডিলিট করতে চান?')) {
+       if (post.media_url) {
+          const fileName = post.media_url.split('/').pop();
+          await supabase.storage.from('noakhali_media').remove([fileName]);
+       }
+       await supabase.from('noakhali_posts').delete().eq('id', post.id);
+       showToast('পোস্ট ডিলিট হয়েছে', 'success');
+       fetchNoakhaliPosts();
+    }
+  };
+
   // আপডেট করা ডাইনামিক ৬-স্তর বিশিষ্ট ডোনার ব্যাজ নির্ধারণকারী লজিক
   const getDonorBadge = (count) => {
     const num = Number(count) || 0;
