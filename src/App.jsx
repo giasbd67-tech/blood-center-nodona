@@ -2283,14 +2283,29 @@ const downloadDonorCertificate = (donor) => {
               <Lock className="w-3 h-3" /> অ্যাডমিন
             </button>
           ) : (
-            <div className="flex flex-col gap-1 items-end">
-              <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-[10px] font-bold px-2 py-1 rounded-lg text-white shadow flex items-center gap-0.5 w-full justify-center"><Lock className="w-2.5 h-2.5" /> পাসওয়ার্ড</button>
-              <button onClick={() => {
-                console.log("Admin log-out signal context fired. Revoking access states layout map.");
-                setIsAdmin(false);
-              }} className="bg-slate-800 text-[10px] font-bold px-2 py-1 rounded-lg text-white shadow flex items-center gap-0.5 w-full justify-center"><LogOut className="w-2.5 h-2.5" /> লগআউট</button>
-            </div>
-          )}
+            
+        <div className="flex flex-col gap-1 items-end">
+  {/* পাসওয়ার্ড বাটন */}
+  <button onClick={() => setShowPassModal(true)} className="bg-blue-700 text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white shadow flex items-center gap-0.5 w-full justify-center">
+    <Lock className="w-2 h-2" /> পাসওয়ার্ড
+  </button>
+  
+  {/* লগআউট বাটন */}
+  <button onClick={() => {
+    console.log("Admin log-out signal context fired.");
+    setIsAdmin(false);
+  }} className="bg-slate-800 text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white shadow flex items-center gap-0.5 w-full justify-center">
+    <LogOut className="w-2 h-2" /> লগআউট
+  </button>
+</div>
+)}
+
+{/* শেয়ার বাটন */}
+<button onClick={() => setShowShareModal(true)} className="bg-emerald-600 hover:bg-emerald-700 text-[9px] font-bold px-2 py-1 rounded-md text-white shadow flex items-center gap-1 mt-1 transition-colors w-full justify-center">
+  <Share2 className="w-2.5 h-2.5" /> শেয়ার
+</button>
+</div>
+)}
           
           {/* অ্যাডমিন বাটনের নিচে শেয়ার বাটন */}
           <button onClick={() => setShowShareModal(true)} className="bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold px-3 py-1.5 rounded-lg text-white shadow flex items-center gap-1 mt-1 transition-colors w-full justify-center">
