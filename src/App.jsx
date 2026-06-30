@@ -2293,8 +2293,8 @@ const downloadDonorCertificate = (donor) => {
           )}
           
           {/* অ্যাডমিন বাটনের নিচে শেয়ার বাটন */}
-          <button onClick={() => setShowShareModal(true)} className="bg-emerald-600 hover:bg-emerald-700 p-1 rounded-sm text-white shadow flex items-center justify-center mt-1 transition-colors w-fit ml-auto" title="শেয়ার">
-  <Share2 className="w-2.5 h-2.5" />
+          <button onClick={() => setShowShareModal(true)} className="bg-emerald-600 hover:bg-emerald-700 p-0.5 rounded-sm text-white shadow flex items-center justify-center mt-1 transition-colors self-center w-fit" title="শেয়ার">
+  <Share2 className="w-2 h-2" />
 </button>
           </div>
           )}
