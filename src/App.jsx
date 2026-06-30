@@ -2544,6 +2544,38 @@ const downloadDonorCertificate = (donor) => {
         )}
       </main>
 
+      {/* === নতুন পপ-আপ অ্যাডস মডিউল === */}
+      {activePopup && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden flex flex-col relative transform transition-all">
+            
+            {/* ক্লোজ বাটন */}
+            <button
+              onClick={() => setActivePopup(null)}
+              className="absolute top-3 right-3 bg-black/40 hover:bg-red-600 text-white rounded-full p-1.5 backdrop-blur-md shadow-sm transition-colors z-10"
+              title="বন্ধ করুন"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            {/* কন্টেন্ট (ছবি বা ভিডিও) */}
+            <div className="w-full bg-slate-100 flex items-center justify-center min-h-[250px]">
+              {activePopup.type === 'video' ? (
+                <video src={activePopup.content_url} controls autoPlay className="w-full max-h-[70vh] object-cover" />
+              ) : (
+                <img src={activePopup.content_url} alt="Notice/Ad" className="w-full max-h-[70vh] object-contain" />
+              )}
+            </div>
+            
+            {/* ব্র্যান্ডিং (ঐচ্ছিক, চাইলে রাখতে পারেন) */}
+            <div className="bg-white px-4 py-2 text-center border-t border-slate-100">
+              <p className="text-[10px] text-slate-400 font-bold">কারিগরি সহযোগিতায়: অ্যাপ ডেভেলপার: গিয়াস উদ্দিন</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* আপনার নির্দেশিত হুবহু ফুটার ডিজাইন ও লেখা */}
       <footer className="text-center text-sm text-slate-400 mt-16 space-y-3 px-4 leading-relaxed pb-8">
         <p>© ২০২৬ ব্লাড সেন্টার নদোনা নোয়াখালী। সর্বস্বত্ব সংরক্ষিত। <br />স্থাপিত - ২৭ মার্চ ২০১৩ ইং ।</p>
