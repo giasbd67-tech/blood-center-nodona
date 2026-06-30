@@ -66,7 +66,49 @@ export default function App() {
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
   // ---> এখানে নতুন পপ-আপ স্টেটটি বসান <---
   const [activePopup, setActivePopup] = useState(null); 
-  
+
+    // === পপ-আপ বিজ্ঞাপন লজিক (৩ ঘণ্টা পরপর এবং দিনে ৩টি) ===
+  useEffect(() => {
+    const checkAndShowPopup = async () => {
+      const today = new Date().toDateString();
+      const lastSessionDate = localStorage.getItem('lastSessionDate');
+      let shownCount = parseInt(localStorage.getItem('shownCount') || '0');
+      const lastShownTime = parseInt(localStorage.getItem('lastShownTime') || '0');
+      const currentTime = new Date().getTime();
+
+      // নতুন দিন হলে প্রথমেই কাউন্ট রিসেট করতে হবে (বাগ ফিক্স করা হয়েছে)
+      if (lastSessionDate !== today) {
+        shownCount = 0;
+      }
+
+      // দিনে ৩টি বিজ্ঞাপন দেখানো শেষ হলে আর কিছু করবে না
+      if (shownCount >= 3) return;
+
+      // ৩ ঘণ্টা (৩ * ৬০ * ৬০ * ১০০০ = ১০,৮০০,০০০ মিলিসেকেন্ড) চেক
+      if (shownCount === 0 || (currentTime - lastShownTime) >= 10800000) {
+        
+        try {
+          const { data, error } = await supabase
+            .from('ads_sequence')
+            .select('*')
+            .eq('sequence_order', shownCount + 1)
+            .single();
+
+          if (data) {
+            setActivePopup(data);
+            localStorage.setItem('lastSessionDate', today);
+            localStorage.setItem('shownCount', (shownCount + 1).toString());
+            localStorage.setItem('lastShownTime', currentTime.toString());
+          }
+        } catch (err) {
+          console.error("Popup fetch error:", err);
+        }
+      }
+    };
+
+    checkAndShowPopup();
+  }, []);
+
   // নতুন মোডাল এরর স্টেট
   const [error, setError] = useState(null);
 
