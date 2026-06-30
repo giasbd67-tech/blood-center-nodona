@@ -64,6 +64,8 @@ export default function App() {
   // কাস্টম নোটিফিকেশন স্টেট
   const [showShareModal, setShowShareModal] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
+  // ---> এখানে নতুন পপ-আপ স্টেটটি বসান <---
+  const [activePopup, setActivePopup] = useState(null); 
   
   // নতুন মোডাল এরর স্টেট
   const [error, setError] = useState(null);
