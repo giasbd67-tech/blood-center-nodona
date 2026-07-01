@@ -284,28 +284,30 @@ export default function App() {
     setIsUploadingNp(false);
   };
 
-    const handleDeleteNp = async (post) => {
+     const handleDeleteNp = async (post) => {
     if (confirm('আপনি কি নিশ্চিতভাবে পোস্টটি ডিলিট করতে চান?')) {
       try {
         // ১. 'noakhali_media' বাকেট থেকে ছবি বা ভিডিও স্থায়ীভাবে ডিলিট করা
         if (post.media_url) {
-          // URL থেকে ফাইলের সঠিক পাথ এবং নাম বের করা (ফোল্ডার স্ট্রাকচার থাকলেও কাজ করবে)
           const urlParts = post.media_url.split('/noakhali_media/');
           if (urlParts.length > 1) {
-            const filePath = urlParts[1].split('?')[0]; 
+            // decodeURIComponent ব্যবহার করা হলো যাতে নামের স্পেস বা %20 ঠিক হয়ে যায়
+            const filePath = decodeURIComponent(urlParts[1].split('?')[0]); 
+            
             const { error: storageError } = await supabase.storage
               .from('noakhali_media')
               .remove([filePath]);
             
             if (storageError) {
               console.error("Storage delete error:", storageError.message);
+              alert("সতর্কতা: টেবিল থেকে পোস্ট ডিলিট হলেও বাকেট থেকে ছবি ডিলিট হয়নি! এরর: " + storageError.message);
             }
           }
         }
 
         // ২. 'noakhali_posts' টেবিল থেকে পোস্টের ডাটা ডিলিট করা
         const { error: dbError } = await supabase
-          .from('noakhali_posts') // আপনার সঠিক টেবিলের নাম
+          .from('noakhali_posts')
           .delete()
           .eq('id', post.id);
 
@@ -314,7 +316,7 @@ export default function App() {
           showToast('ডাটাবেইজ থেকে ডিলিট হতে সমস্যা হয়েছে।', 'error');
         } else {
           showToast('পোস্ট এবং সংযুক্ত ছবি/ভিডিও সফলভাবে ডিলিট হয়েছে', 'success');
-          fetchNoakhaliPosts(); // স্ক্রিন আপডেট করার ফাংশন
+          fetchNoakhaliPosts(); 
         }
       } catch (error) {
         console.error("Delete function error:", error.message);
