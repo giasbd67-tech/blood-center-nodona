@@ -763,22 +763,30 @@ fetchVolunteers();
     }
   };
 
-  const handleChangePassword = async (e) => {
+    const handleChangePassword = async (e) => {
     e.preventDefault();
-    console.log("Initiating target master authentication code verification system to rewrite administrative backend password maps...");
-    if (masterCode !== 'BCNN2013') {
-      console.warn("Rewrite capability denied: Input parameter sequence does not match master safety configuration string values.");
+    console.log("Initiating secure RPC master authentication code verification system...");
+
+    // ১. সুপাবেস RPC এর মাধ্যমে ডাটাবেজ থেকে মাস্টার কোড চেক করা হচ্ছে
+    const { data, error } = await supabase.rpc('verify_master_code', { input_code: masterCode });
+
+    // ২. যদি কোড না মেলে বা এরর আসে, তবে পাসওয়ার্ড পরিবর্তন বাতিল
+    if (data !== true || error) {
+      console.warn("Rewrite capability denied: Database verification failed.");
       return showToast('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
     }
+
+    // ৩. কোড মিলে গেলে নতুন পাসওয়ার্ড ডাটাবেজে আপডেট করা হচ্ছে
     const { error: authError } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
+    
     if (!authError) {
-      console.log("Master override record database transactions confirmed. Secure backend target application keys rewritten safely.");
+      console.log("Master override confirmed securely. Password updated.");
       showToast('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!', 'success');
       setShowPassModal(false);
       setMasterCode('');
       setNewPassword('');
     } else {
-      console.error("Supabase mutations processing context rejected targeting administrative password reconfiguration parameters query tracking flow:", authError);
+      console.error("Error during password update:", authError);
       showToast('পাসওয়ার্ড পরিবর্তন ব্যর্থ: ' + authError.message, 'error');
     }
   };
