@@ -778,31 +778,45 @@ fetchVolunteers();
     }
   };
 
-    const handleChangePassword = async (e) => {
+      const handleChangePassword = async (e) => {
     e.preventDefault();
-    console.log("Initiating secure RPC master authentication code verification system...");
+    console.log("Verifying master code from admin_settings table...");
 
-    // ১. সুপাবেস RPC এর মাধ্যমে ডাটাবেজ থেকে মাস্টার কোড চেক করা হচ্ছে
-    const { data, error } = await supabase.rpc('verify_master_code', { input_code: masterCode });
+    try {
+      // ১. admin_settings টেবিল থেকে মাস্টার কোড চেক করা
+      const { data: adminData, error: adminError } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_name', 'master_code')
+        .single();
 
-    // ২. যদি কোড না মেলে বা এরর আসে, তবে পাসওয়ার্ড পরিবর্তন বাতিল
-    if (data !== true || error) {
-      console.warn("Rewrite capability denied: Database verification failed.");
-      return showToast('ভুল মাস্টার কোড! আপনি পাসওয়ার্ড পরিবর্তন করার অনুমতি পাননি।', 'error');
-    }
+      if (adminError) {
+        console.error("Error fetching master code:", adminError);
+        return showToast('ডাটাবেজ থেকে মাস্টার কোড পড়তে সমস্যা হচ্ছে!', 'error');
+      }
 
-    // ৩. কোড মিলে গেলে নতুন পাসওয়ার্ড ডাটাবেজে আপডেট করা হচ্ছে
-    const { error: authError } = await supabase.from('app_auth').update({ password: newPassword }).eq('user_id', 'BloodCenterNN');
-    
-    if (!authError) {
-      console.log("Master override confirmed securely. Password updated.");
-      showToast('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!', 'success');
-      setShowPassModal(false);
-      setMasterCode('');
-      setNewPassword('');
-    } else {
-      console.error("Error during password update:", authError);
-      showToast('পাসওয়ার্ড পরিবর্তন ব্যর্থ: ' + authError.message, 'error');
+      // ২. ইনপুট করা কোড এবং ডাটাবেজের কোড মেলানো
+      if (adminData.setting_value !== masterCode) {
+        return showToast('ভুল মাস্টার কোড! পাসওয়ার্ড পরিবর্তনের অনুমতি নেই।', 'error');
+      }
+
+      // ৩. কোড মিলে গেলে app_auth টেবিলে পাসওয়ার্ড আপডেট করা
+      const { error: authError } = await supabase
+        .from('app_auth')
+        .update({ password: newPassword })
+        .eq('user_id', 'BloodCenterNN');
+
+      if (!authError) {
+        showToast('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!', 'success');
+        setShowPassModal(false);
+        setMasterCode('');
+        setNewPassword('');
+      } else {
+        showToast('পাসওয়ার্ড পরিবর্তন ব্যর্থ: ' + authError.message, 'error');
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      showToast('একটি অপ্রত্যাশিত ত্রুটি হয়েছে।', 'error');
     }
   };
 
