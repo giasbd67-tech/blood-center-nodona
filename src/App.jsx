@@ -252,22 +252,36 @@ export default function App() {
     }
   };
 
-  const handleAddNp = async (e) => {
+    const handleAddNp = async (e) => {
     e.preventDefault();
     if (!newNp.caption && !newNp.file) return showToast('ক্যাপশন অথবা ছবি/ভিডিও দিন', 'error');
+
+    // লজিক: ৫০ MB এর বেশি যেকোনো ফাইল হলে আটকে দিবে (৫০ * ১০২৪ * ১০২৪ bytes)
+    if (newNp.file && newNp.file.size > 52428800) {
+      return showToast('ফাইলটি অনেক বড়! দয়া করে ৫০ MB এর নিচের ছবি বা ভিডিও ব্যবহার করুন।', 'error');
+    }
+
     setIsUploadingNp(true);
     
     let media_url = '';
+    
     if (newNp.file) {
-      const fileExt = newNp.file.name.split('.').pop();
+      const fileExt = newNp.file.name.split('.').pop() || 'jpg';
       const fileName = `${Math.random()}.${fileExt}`;
+      
+      // সুপাবেস স্টোরেজে আপলোড
       const { error: uploadError } = await supabase.storage.from('noakhali_media').upload(fileName, newNp.file);
+      
       if (!uploadError) {
         const { data } = supabase.storage.from('noakhali_media').getPublicUrl(fileName);
         media_url = data.publicUrl;
+      } else {
+        setIsUploadingNp(false);
+        return showToast('ফাইল আপলোডে সমস্যা হয়েছে: ' + uploadError.message, 'error');
       }
     }
 
+    // ডাটাবেজে পোস্টের তথ্য সেভ করা
     const { error } = await supabase.from('noakhali_posts').insert([{
       caption: newNp.caption,
       media_url,
@@ -281,6 +295,7 @@ export default function App() {
     } else {
       showToast('পোস্ট করতে সমস্যা হয়েছে', 'error');
     }
+    
     setIsUploadingNp(false);
   };
 
