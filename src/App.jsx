@@ -109,6 +109,36 @@ export default function App() {
     checkAndShowPopup();
   }, []);
 
+  useEffect(() => {
+    // ব্রাউজারে নোটিফিকেশনের পারমিশন চাওয়া
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+    // Supabase Realtime লিসেনার তৈরি
+    const requestChannel = supabase
+      .channel('public:emergency_requests')
+      .on('postgres', { event: 'INSERT', schema: 'public', table: 'emergency_requests' }, (payload) => {
+        
+        // নতুন ডাটা আসলে নোটিফিকেশন ট্রিগার করা
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('জরুরি রক্তের প্রয়োজন!', {
+            body: `রোগী: ${payload.new.patient_name} | গ্রুপ: ${payload.new.blood_group} \nস্থান: ${payload.new.hospital}`,
+            icon: '/logo.png' // আপনার প্রজেক্টের লোগো
+          });
+        }
+        
+        // ডাটাবেজ থেকে পুনরায় কল না করেই লোকাল স্টেট আপডেট করা
+        setEmergencyRequests(prev => [payload.new, ...prev]);
+      })
+      .subscribe();
+
+    // কম্পোনেন্ট আনমাউন্ট হলে লিসেনার রিমুভ করা
+    return () => {
+      supabase.removeChannel(requestChannel);
+    };
+  }, []);
+
   // নতুন মোডাল এরর স্টেট
   const [error, setError] = useState(null);
 
