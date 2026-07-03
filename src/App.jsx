@@ -824,47 +824,40 @@ fetchVolunteers();
     }
   };
 
-      const handleChangePassword = async (e) => {
+        const handleChangePassword = async (e) => {
     e.preventDefault();
-    console.log("Verifying master code from admin_settings table...");
+    console.log("Requesting secure password update via RPC...");
 
     try {
-      // ১. admin_settings টেবিল থেকে মাস্টার কোড চেক করা
-      const { data: adminData, error: adminError } = await supabase
-        .from('admin_settings')
-        .select('setting_value')
-        .eq('setting_name', 'master_code')
-        .single();
+      // ডাটাবেজের সিকিউর ফাংশনকে (RPC) কল করা হচ্ছে
+      const { data: isSuccess, error } = await supabase.rpc('update_password_with_master_code', {
+        p_user_id: 'BloodCenterNN',
+        p_master_code: masterCode,
+        p_new_password: newPassword
+      });
 
-      if (adminError) {
-        console.error("Error fetching master code:", adminError);
-        return showToast('ডাটাবেজ থেকে মাস্টার কোড পড়তে সমস্যা হচ্ছে!', 'error');
+      if (error) {
+        console.error("RPC Error Details:", error);
+        return showToast(`সার্ভার এরর: ${error.message}`, 'error');
       }
 
-      // ২. ইনপুট করা কোড এবং ডাটাবেজের কোড মেলানো
-      if (adminData.setting_value !== masterCode) {
-        return showToast('ভুল মাস্টার কোড! পাসওয়ার্ড পরিবর্তনের অনুমতি নেই।', 'error');
-      }
-
-      // ৩. কোড মিলে গেলে app_auth টেবিলে পাসওয়ার্ড আপডেট করা
-      const { error: authError } = await supabase
-        .from('app_auth')
-        .update({ password: newPassword })
-        .eq('user_id', 'BloodCenterNN');
-
-      if (!authError) {
+      // ডাটাবেজ থেকে TRUE বা FALSE রিটার্ন আসবে
+      if (isSuccess) {
+        console.log("Password updated successfully via secure function.");
         showToast('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!', 'success');
         setShowPassModal(false);
         setMasterCode('');
         setNewPassword('');
       } else {
-        showToast('পাসওয়ার্ড পরিবর্তন ব্যর্থ: ' + authError.message, 'error');
+        return showToast('ভুল মাস্টার কোড! পাসওয়ার্ড পরিবর্তনের অনুমতি নেই।', 'error');
       }
+      
     } catch (err) {
-      console.error("Unexpected error:", err);
-      showToast('একটি অপ্রত্যাশিত ত্রুটি হয়েছে।', 'error');
+      console.error("Unexpected Error during password change:", err);
+      showToast('একটি অপ্রত্যাশিত ত্রুটি হয়েছে। কনসোল চেক করুন।', 'error');
     }
   };
+
 
   // ==================== ক্যানভাস ভিত্তিক ডিজিটাল প্রিমিয়াম কার্ড এবং সার্টিফিকেট জেনারেটর ====================
   const downloadDonorCard = (donor) => {
