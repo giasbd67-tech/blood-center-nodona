@@ -109,7 +109,7 @@ export default function App() {
     checkAndShowPopup();
   }, []);
 
-  useEffect(() => {
+    useEffect(() => {
     // ব্রাউজারে নোটিফিকেশনের পারমিশন চাওয়া
     if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission();
@@ -120,12 +120,27 @@ export default function App() {
       .channel('public:emergency_requests')
       .on('postgres', { event: 'INSERT', schema: 'public', table: 'emergency_requests' }, (payload) => {
         
+        console.log("রিয়েলটাইম ডেটা এসেছে:", payload); // ডিবাগ করার জন্য
+        
         // নতুন ডাটা আসলে নোটিফিকেশন ট্রিগার করা
         if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('জরুরি রক্তের প্রয়োজন!', {
-            body: `রোগী: ${payload.new.patient_name} | গ্রুপ: ${payload.new.blood_group} \nস্থান: ${payload.new.hospital}`,
-            icon: '/logo.png' // আপনার প্রজেক্টের লোগো
-          });
+          // PWA এবং মোবাইলের জন্য Service Worker দিয়ে নোটিফিকেশন কল করা
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then((registration) => {
+              registration.showNotification('জরুরি রক্তের প্রয়োজন!', {
+                body: `রোগী: ${payload.new.patient_name} | গ্রুপ: ${payload.new.blood_group} \nস্থান: ${payload.new.hospital}`,
+                icon: '/logo.png', // আপনার প্রজেক্টের লোগো
+                vibrate: [200, 100, 200, 100, 200], // মোবাইলে ভাইব্রেশন হবে
+                badge: '/logo.png' // ছোট আইকন
+              });
+            });
+          } else {
+            // যদি কোনো কারণে Service Worker না থাকে (ডেস্কটপ ফলব্যাক)
+            new Notification('জরুরি রক্তের প্রয়োজন!', {
+              body: `রোগী: ${payload.new.patient_name} | গ্রুপ: ${payload.new.blood_group} \nস্থান: ${payload.new.hospital}`,
+              icon: '/logo.png'
+            });
+          }
         }
         
         // ডাটাবেজ থেকে পুনরায় কল না করেই লোকাল স্টেট আপডেট করা
@@ -138,6 +153,7 @@ export default function App() {
       supabase.removeChannel(requestChannel);
     };
   }, []);
+
 
   // নতুন মোডাল এরর স্টেট
   const [error, setError] = useState(null);
