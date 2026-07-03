@@ -12,7 +12,7 @@ export default defineConfig({
       },
       manifest: {
         name: 'Blood Center Nodona Noakhali',
-        short_name: 'BloodCenterN',
+        short_name: 'Blood Center',
         description: 'Blood donor management app',
         theme_color: '#ffffff',
         background_color: '#ffffff',
