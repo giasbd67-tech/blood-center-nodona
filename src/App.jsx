@@ -406,45 +406,45 @@ export default function App() {
     return { text: 'সক্রিয় সদস্য', classes: 'bg-blue-500 text-white' };
   };
 
-    const checkVolunteerAccess = async (phone, pass) => {
-    console.log(`Executing checkVolunteerAccess verification sequence targeting phone identifier: ${phone}`);
-    const { data, error: dbError } = await supabase
-      .from('volunteers')
-      .select('*')
-      .eq('phone', phone)
-      .eq('is_active', true)
-      .single();
-      
-    if (data) {
-      const dbPass = data.password || data.code || '';
-      if (dbPass === pass || !dbPass) {
-        console.log("Volunteer authentication parameters validated successfully.");
+      const handleVolunteerLogin = async (e) => {
+    e.preventDefault();
+    console.log(`Firing secure RPC authorization handshake for volunteer login...`);
+
+    try {
+      // Supabase এর নতুন সিকিউর RPC ফাংশন কল করা হচ্ছে
+      const { data, error } = await supabase.rpc('check_volunteer_auth', {
+        input_phone: volunteerPhone.trim(), // volunteerPhone ব্যবহার করা হয়েছে
+        input_password: volunteerPassword.trim() // volunteerPassword ব্যবহার করা হয়েছে
+      });
+
+      if (error) {
+        console.error("RPC Error Details:", error);
+        return showToast(`সার্ভার এরর: ${error.message}`, 'error');
+      }
+
+      // ডাটাবেজ থেকে গার্ড যদি 'true' (হ্যাঁ) বলে
+      if (data === true) {
+        console.log("Volunteer security credentials match evaluated successfully via RPC.");
+        
+        // ভলান্টিয়ার লগইন স্টেটগুলো আপডেট করা হচ্ছে
         setIsUnlocked(true);
-        localStorage.setItem('v_phone', phone);
-        localStorage.setItem('v_pass', pass);
-        setVolunteerPhone(phone);
-        setVolunteerPassword(pass);
-        showToast('ডাটা সফলভাবে আনলক হয়েছে!', 'success');
+        localStorage.setItem('v_phone', volunteerPhone);
+        localStorage.setItem('v_pass', volunteerPassword);
+        
+        showToast('ভলান্টিয়ার ভেরিফিকেশন সফল হয়েছে!', 'success');
       } else {
-        console.warn("Credential mismatch captured during volunteer security authorization.");
-        showToast('দুঃখিত! ভলান্টিয়ার সিকিউরিটি কোড বা পাসওয়ার্ডটি সঠিক নয়।', 'error');
-        setIsUnlocked(false);
-      }
-    } else {
-      if (dbError && dbError.code === 'PGRST116') {
-        console.warn(`Target phone identity record status is inactive or does not exist inside directory parameters: ${phone}`);
-        showToast('দুঃখিত! এই মোবাইল নাম্বারটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
-        setIsUnlocked(false);
-        localStorage.removeItem('v_phone');
-        localStorage.removeItem('v_pass');
-      } else if (dbError) {
-        console.error("Database querying pipelines failure during auth checking procedures:", dbError);
-        showToast('নেটওয়ার্ক সমস্যা! অনুগ্রহ করে আবার চেষ্টা করুন।', 'error');
-      } else {
+        // ডাটাবেজ থেকে গার্ড যদি 'false' (না) বলে
+        console.warn("Volunteer security module verification failed due to unmatched credentials.");
+        showToast('ভুল ফোন নাম্বার অথবা পাসওয়ার্ড, অথবা একাউন্টটি সক্রিয় নেই!', 'error');
+        
         setIsUnlocked(false);
         localStorage.removeItem('v_phone');
         localStorage.removeItem('v_pass');
       }
+      
+    } catch (err) {
+      console.error("Unexpected Error during volunteer login:", err);
+      showToast('একটি অপ্রত্যাশিত ত্রুটি হয়েছে। কনসোল চেক করুন।', 'error');
     }
   };
 
