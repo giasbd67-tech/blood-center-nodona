@@ -406,25 +406,26 @@ export default function App() {
     return { text: 'সক্রিয় সদস্য', classes: 'bg-blue-500 text-white' };
   };
 
-  const handleVolunteerUnlock = async (e) => {
+    const handleVolunteerUnlock = async (e) => {
     e.preventDefault();
-    console.log(`Form trigger: Processing volunteer verification request via client layer. Phone: ${volunteerPhone}`);
     await checkVolunteerAccess(volunteerPhone, volunteerPassword);
   };
 
   const checkVolunteerAccess = async (phone, pass) => {
-    console.log(`Executing checkVolunteerAccess verification sequence targeting phone identifier: ${phone}`);
-    const { data, error: dbError } = await supabase
-      .from('volunteers')
-      .select('*')
-      .eq('phone', phone)
-      .eq('is_active', true)
-      .single();
-      
-    if (data) {
-      const dbPass = data.password || data.code || '';
-      if (dbPass === pass || !dbPass) {
-        console.log("Volunteer authentication parameters validated successfully.");
+    try {
+      // Supabase এর নতুন সিকিউর RPC ফাংশন কল করা হচ্ছে
+      const { data, error } = await supabase.rpc('check_volunteer_auth', {
+        input_phone: phone.trim(),
+        input_password: pass.trim()
+      });
+
+      if (error) {
+        console.error("RPC Error Details:", error);
+        return showToast(`সার্ভার এরর: ${error.message}`, 'error');
+      }
+
+      if (data === true) {
+        console.log("Volunteer verified successfully via RPC.");
         setIsUnlocked(true);
         localStorage.setItem('v_phone', phone);
         localStorage.setItem('v_pass', pass);
@@ -432,25 +433,15 @@ export default function App() {
         setVolunteerPassword(pass);
         showToast('ডাটা সফলভাবে আনলক হয়েছে!', 'success');
       } else {
-        console.warn("Credential mismatch captured during volunteer security authorization.");
-        showToast('দুঃখিত! ভলান্টিয়ার সিকিউরিটি কোড বা পাসওয়ার্ডটি সঠিক নয়।', 'error');
-        setIsUnlocked(false);
-      }
-    } else {
-      if (dbError && dbError.code === 'PGRST116') {
-        console.warn(`Target phone identity record status is inactive or does not exist inside directory parameters: ${phone}`);
-        showToast('দুঃখিত! এই মোবাইল নাম্বারটি ভলান্টিয়ার তালিকায় নেই অথবা ব্লক করা আছে।', 'error');
-        setIsUnlocked(false);
-        localStorage.removeItem('v_phone');
-        localStorage.removeItem('v_pass');
-      } else if (dbError) {
-        console.error("Database querying pipelines failure during auth checking procedures:", dbError);
-        showToast('নেটওয়ার্ক সমস্যা! অনুগ্রহ করে আবার চেষ্টা করুন।', 'error');
-      } else {
+        console.warn("Verification failed.");
+        showToast('ভুল ফোন নাম্বার অথবা পাসওয়ার্ড, অথবা একাউন্টটি সক্রিয় নেই!', 'error');
         setIsUnlocked(false);
         localStorage.removeItem('v_phone');
         localStorage.removeItem('v_pass');
       }
+    } catch(err) {
+      console.error("Unexpected Error:", err);
+      showToast('একটি অপ্রত্যাশিত ত্রুটি হয়েছে। কনসোল চেক করুন।', 'error');
     }
   };
 
