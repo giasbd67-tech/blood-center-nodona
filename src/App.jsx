@@ -406,13 +406,7 @@ export default function App() {
     return { text: 'সক্রিয় সদস্য', classes: 'bg-blue-500 text-white' };
   };
 
-  const handleVolunteerUnlock = async (e) => {
-    e.preventDefault();
-    console.log(`Form trigger: Processing volunteer verification request via client layer. Phone: ${volunteerPhone}`);
-    await checkVolunteerAccess(volunteerPhone, volunteerPassword);
-  };
-
-  const checkVolunteerAccess = async (phone, pass) => {
+    const checkVolunteerAccess = async (phone, pass) => {
     console.log(`Executing checkVolunteerAccess verification sequence targeting phone identifier: ${phone}`);
     const { data, error: dbError } = await supabase
       .from('volunteers')
