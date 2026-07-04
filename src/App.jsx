@@ -809,15 +809,15 @@ fetchVolunteers();
     }
   };
 
-    const handleAdminLogin = async (e) => {
+      const handleAdminLogin = async (e) => {
     e.preventDefault();
     console.log(`Firing secure RPC authorization handshake for admin login...`);
 
     try {
-      // Supabase এর সিকিউর RPC ফাংশন কল করা হচ্ছে
+      // Supabase এর সিকিউর RPC ফাংশন কল করা হচ্ছে (.trim() যুক্ত করা হয়েছে)
       const { data, error } = await supabase.rpc('check_app_auth', {
-        input_user_id: userId,
-        input_password: password
+        input_user_id: userId.trim(),
+        input_password: password.trim()
       });
 
       if (error) {
@@ -842,7 +842,6 @@ fetchVolunteers();
       showToast('একটি অপ্রত্যাশিত ত্রুটি হয়েছে। কনসোল চেক করুন।', 'error');
     }
   };
-
 
         const handleChangePassword = async (e) => {
     e.preventDefault();
