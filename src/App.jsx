@@ -809,20 +809,40 @@ fetchVolunteers();
     }
   };
 
-  const handleAdminLogin = async (e) => {
+    const handleAdminLogin = async (e) => {
     e.preventDefault();
-    console.log(`Firing internal security subsystem authorization handshake targeting admin login parameter lookup identity user string text mapping: ${userId}`);
-    const { data, error: authQueryError } = await supabase.from('app_auth').select('*').eq('user_id', userId).eq('password', password).single();
-    if (data) {
-      console.log("Admin security credentials match evaluated successfully. Granted elevated privileges tracking context.");
-      setIsAdmin(true);
-      setShowAdminLogin(false);
-      showToast('অ্যাডমিন ভেরিফিকেশন সফল হয়েছে!', 'success');
-    } else {
-      console.warn("Admin security module verification failed due to unmatched credentials query trace path.", authQueryError);
-      showToast('ভুল ইউজার আইডি অথবা পাসওয়ার্ড!', 'error');
+    console.log(`Firing secure RPC authorization handshake for admin login...`);
+
+    try {
+      // Supabase এর সিকিউর RPC ফাংশন কল করা হচ্ছে
+      const { data, error } = await supabase.rpc('check_app_auth', {
+        input_user_id: userId,
+        input_password: password
+      });
+
+      if (error) {
+        console.error("RPC Error Details:", error);
+        return showToast(`সার্ভার এরর: ${error.message}`, 'error');
+      }
+
+      // ডাটাবেজ থেকে গার্ড যদি 'true' (হ্যাঁ) বলে
+      if (data === true) {
+        console.log("Admin security credentials match evaluated successfully via RPC.");
+        setIsAdmin(true);
+        setShowAdminLogin(false);
+        showToast('অ্যাডমিন ভেরিফিকেশন সফল হয়েছে!', 'success');
+      } else {
+        // ডাটাবেজ থেকে গার্ড যদি 'false' (না) বলে
+        console.warn("Admin security module verification failed due to unmatched credentials.");
+        showToast('ভুল ইউজার আইডি অথবা পাসওয়ার্ড!', 'error');
+      }
+      
+    } catch (err) {
+      console.error("Unexpected Error during admin login:", err);
+      showToast('একটি অপ্রত্যাশিত ত্রুটি হয়েছে। কনসোল চেক করুন।', 'error');
     }
   };
+
 
         const handleChangePassword = async (e) => {
     e.preventDefault();
