@@ -406,10 +406,10 @@ export default function App() {
     return { text: 'সক্রিয় সদস্য', classes: 'bg-blue-500 text-white' };
   };
 
-      const handleVolunteerLogin = async (e) => {
+        const handleVolunteerLogin = async (e) => {
     e.preventDefault();
     console.log(`Firing secure RPC authorization handshake for volunteer login...`);
-
+    
     try {
       // Supabase এর নতুন সিকিউর RPC ফাংশন কল করা হচ্ছে
       const { data, error } = await supabase.rpc('check_volunteer_auth', {
@@ -425,38 +425,25 @@ export default function App() {
       // ডাটাবেজ থেকে গার্ড যদি 'true' (হ্যাঁ) বলে
       if (data === true) {
         console.log("Volunteer security credentials match evaluated successfully via RPC.");
-        
         // ভলান্টিয়ার লগইন স্টেটগুলো আপডেট করা হচ্ছে
         setIsUnlocked(true);
         localStorage.setItem('v_phone', volunteerPhone);
         localStorage.setItem('v_pass', volunteerPassword);
-        
         showToast('ভলান্টিয়ার ভেরিফিকেশন সফল হয়েছে!', 'success');
       } else {
         // ডাটাবেজ থেকে গার্ড যদি 'false' (না) বলে
         console.warn("Volunteer security module verification failed due to unmatched credentials.");
         showToast('ভুল ফোন নাম্বার অথবা পাসওয়ার্ড, অথবা একাউন্টটি সক্রিয় নেই!', 'error');
-        
         setIsUnlocked(false);
         localStorage.removeItem('v_phone');
         localStorage.removeItem('v_pass');
       }
-      
     } catch (err) {
       console.error("Unexpected Error during volunteer login:", err);
       showToast('একটি অপ্রত্যাশিত ত্রুটি হয়েছে। কনসোল চেক করুন।', 'error');
     }
   };
 
-  const handleLockData = () => {
-    console.log("Revoking application authorization level. Locking modules data components...");
-    setIsUnlocked(false);
-    localStorage.removeItem('v_phone');
-    localStorage.removeItem('v_pass');
-    setVolunteerPhone('');
-    setVolunteerPassword('');
-    showToast('ডাটা পুনরায় লক করা হয়েছে।', 'info');
-  };
 
   const checkEligibility = (lastDate, gender) => {
     if (!lastDate) return { isEligible: true, statusText: 'বর্তমানে রক্তদানের জন্য উপযুক্ত (যোগ্য)', percent: 100, remainingDays: 0 };
