@@ -257,12 +257,23 @@ export default function App() {
     } catch (e) { console.log("Offline mode, keeping cached requests."); }
   };
 
-  const fetchVolunteers = async () => {
+    const fetchVolunteers = async () => {
     try {
-      const orderByField = leaderboardType === 'monthly' ? 'monthly_points' : 'points';
-      const { data, error: fetchErr } = await supabase.from('volunteers').select('*').order(orderByField, { ascending: false });
-      if (data) setVolunteers(data);
-    } catch (e) { console.error("Volunteer fetch error", e); }
+      // ডাটাবেজ থেকে সিকিউর RPC এর মাধ্যমে ডাটা আনা হচ্ছে
+      const { data, error } = await supabase.rpc('get_safe_volunteers');
+      if (error) throw error;
+      
+      if (data) {
+        // লিডারবোর্ড টাইপ অনুযায়ী ডাটা সর্টিং করা হচ্ছে
+        const sortedData = [...data].sort((a, b) => {
+          const field = leaderboardType === 'monthly' ? 'monthly_points' : 'points';
+          return (b[field] || 0) - (a[field] || 0);
+        });
+        setVolunteers(sortedData);
+      }
+    } catch (e) {
+      console.error("Volunteer fetch error", e);
+    }
   };
 
   // সামগ্রিক রক্তদানের ইতিহাস নিয়ে আসার ফাংশন
