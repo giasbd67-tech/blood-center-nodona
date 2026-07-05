@@ -765,12 +765,6 @@ fetchVolunteers();
     }
   };
 
-  const handleEditVolunteer = (v) => {
-    console.log(`Buffering targeted volunteer tracking reference attributes data onto control state management nodes. Target ID: ${v.id}`);
-    setNewVolunteer({ name: v.name, phone: v.phone, password: v.password || v.code || '', points: v.points === 0 ? '0' : String(v.points || '') });
-    setEditVolunteerId(v.id);
-  };
-
   const handleDeleteVolunteer = async (id) => {
     console.log(`Executing target capability validation check routine for deleting volunteer targeting profile registry ID index key map tracking context: ${id}`);
     if (confirm('আপনি কি নিশ্চিতভাবে এই ভলান্টিয়ারকে ডিলিট করতে চান?')) {
