@@ -412,8 +412,8 @@ export default function App() {
   // ভলান্টিয়ারদের সফল কাজের ওপর ভিত্তি করে রিয়েলটাইম মেডেল নির্ধারণ
   const getVolunteerBadge = (points) => {
     const pts = Number(points) || 0;
-    if (pts >= 50) return { text: 'প্লাটিনাম লিডার', classes: 'bg-purple-600 text-white' };
-    if (pts >= 20) return { text: 'গোল্ডেন স্টার', classes: 'bg-yellow-500 text-white' };
+    if (pts >= 100) return { text: 'প্লাটিনাম লিডার', classes: 'bg-purple-600 text-white' };
+    if (pts >= 50) return { text: 'গোল্ডেন স্টার', classes: 'bg-yellow-500 text-white' };
     return { text: 'সক্রিয় সদস্য', classes: 'bg-blue-500 text-white' };
   };
 
