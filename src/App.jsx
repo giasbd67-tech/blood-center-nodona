@@ -765,15 +765,79 @@ fetchVolunteers();
     }
   };
 
+    const handleAddVolunteer = async (e) => {
+    e.preventDefault();
+    console.log("Processing RPC volunteer transaction...", newVolunteer);
+    
+    if (editVolunteerId) {
+      // ডাটাবেজের সিকিউর RPC ফাংশনের মাধ্যমে আপডেট
+      const { error: volError } = await supabase.rpc('update_volunteer_rpc', {
+        v_id: editVolunteerId,
+        v_name: newVolunteer.name,
+        v_phone: newVolunteer.phone,
+        v_password: newVolunteer.password,
+        v_points: Number(newVolunteer.points) || 0,
+        v_monthly_points: Number(newVolunteer.monthly_points) || 0
+      });
+      
+      if (!volError) {
+        showToast('ভলান্টিয়ারের তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
+        setNewVolunteer({ name: '', phone: '', password: '', points: '', monthly_points: '' });
+        setEditVolunteerId(null);
+        fetchVolunteers();
+      } else {
+        console.error("Update failed:", volError);
+        showToast('সংশোধন ব্যর্থ: ' + volError.message, 'error');
+      }
+    } else {
+      // ডাটাবেজের সিকিউর RPC ফাংশনের মাধ্যমে নতুন ইনসার্ট
+      const { error: volError } = await supabase.rpc('insert_volunteer_rpc', {
+        v_name: newVolunteer.name,
+        v_phone: newVolunteer.phone,
+        v_password: newVolunteer.password,
+        v_points: Number(newVolunteer.points) || 0,
+        v_monthly_points: Number(newVolunteer.monthly_points) || 0
+      });
+      
+      if (!volError) {
+        showToast('নতুন ভলান্টিয়ার সফলভাবে অনুমোদিত হয়েছে!', 'success');
+        setNewVolunteer({ name: '', phone: '', password: '', points: '', monthly_points: '' });
+        fetchVolunteers();
+      } else {
+        console.error("Insert failed:", volError);
+        showToast('ভুল: ' + volError.message, 'error');
+      }
+    }
+  };
+
+  const handleEditVolunteer = (v) => {
+    console.log(`Buffering targeted volunteer tracking reference attributes data onto control state management nodes. Target ID: ${v.id}`);
+    setNewVolunteer({ name: v.name, phone: v.phone, password: v.password || v.code || '', points: v.points === 0 ? '0' : String(v.points || '') });
+    setEditVolunteerId(v.id);
+  };
+
+  const handleDeleteVolunteer = async (id) => {
+    if (confirm('আপনি কি নিশ্চিতভাবে এই ভলান্টিয়ারকে ডিলিট করতে চান?')) {
+      // RPC এর মাধ্যমে ডিলিট
+      const { error: volError } = await supabase.rpc('delete_volunteer_rpc', { v_id: id });
+      
+      if (!volError) {
+        showToast('ভলান্টিয়ার সফলভাবে মুছে ফেলা হয়েছে।', 'success');
+        fetchVolunteers();
+      } else {
+        showToast('মুছে ফেলতে ব্যর্থ: ' + volError.message, 'error');
+      }
+    }
+  };
+
   const toggleVolunteerStatus = async (id, currentStatus) => {
-    console.log(`Dispatching target capability mutation process mapping tracker state adjustment for volunteer object map targeting index: ${id}. Mutating active flag from baseline: ${currentStatus}`);
-    const { error: volError } = await supabase.from('volunteers').update({ is_active: !currentStatus }).eq('id', id);
+    // RPC এর মাধ্যমে স্ট্যাটাস আপডেট
+    const { error: volError } = await supabase.rpc('toggle_volunteer_status_rpc', { v_id: id, new_status: !currentStatus });
+    
     if (!volError) {
-      console.log(`Database transaction confirmed for state flag processing toggle parameters context index tracking code ID match routing: ${id}`);
       showToast('ভলান্টিয়ারের অবস্থা সফলভাবে পরিবর্তন করা হয়েছে।', 'info');
       fetchVolunteers();
     } else {
-      console.error(`Database operations engine reported failure handling toggle logic adjustments parameters sequencing tracker: ${id}`, volError);
       showToast('অবস্থা পরিবর্তন ব্যর্থ: ' + volError.message, 'error');
     }
   };
