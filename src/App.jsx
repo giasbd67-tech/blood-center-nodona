@@ -736,18 +736,6 @@ fetchVolunteers();
     }
   };
 
-  const handleAddVolunteer = async (e) => {
-    e.preventDefault();
-    console.log("Initiating target schema registration sequence routine layout for volunteer creation form systems handler...", newVolunteer);
-    const volunteerPayload = { 
-      name: newVolunteer.name, 
-      phone: newVolunteer.phone, 
-      password: newVolunteer.password,
-      code: newVolunteer.password,
-            points: Number(newVolunteer.points) || 0,
-      monthly_points: Number(newVolunteer.monthly_points) || 0
-    };
-
     if (editVolunteerId) {
       console.log(`Admin context dispatching volunteer adjustment update matrix properties dataset criteria key tracking target index lookup: ${editVolunteerId}`);
       const { error: volError } = await supabase.from('volunteers').update(volunteerPayload).eq('id', editVolunteerId);
