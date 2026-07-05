@@ -765,21 +765,6 @@ fetchVolunteers();
     }
   };
 
-  const handleDeleteVolunteer = async (id) => {
-    console.log(`Executing target capability validation check routine for deleting volunteer targeting profile registry ID index key map tracking context: ${id}`);
-    if (confirm('আপনি কি নিশ্চিতভাবে এই ভলান্টিয়ারকে ডিলিট করতে চান?')) {
-      const { error: volError } = await supabase.from('volunteers').delete().eq('id', id);
-      if (!volError) {
-        console.log(`Resource object securely unlinked and cleared from internal table infrastructure matrix target tracking code trace context reference path: ${id}`);
-        showToast('ভলান্টিয়ার সফলভাবে মুছে ফেলা হয়েছে।', 'success');
-        fetchVolunteers();
-      } else {
-        console.error(`Wipe sequencing routines process engine error reported mapping targets configurations on parameter layout index: ${id}`, volError);
-        showToast('মুছে ফেলতে ব্যর্থ: ' + volError.message, 'error');
-      }
-    }
-  };
-
   const toggleVolunteerStatus = async (id, currentStatus) => {
     console.log(`Dispatching target capability mutation process mapping tracker state adjustment for volunteer object map targeting index: ${id}. Mutating active flag from baseline: ${currentStatus}`);
     const { error: volError } = await supabase.from('volunteers').update({ is_active: !currentStatus }).eq('id', id);
