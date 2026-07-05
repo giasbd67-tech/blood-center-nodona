@@ -736,35 +736,6 @@ fetchVolunteers();
     }
   };
 
-    if (editVolunteerId) {
-      console.log(`Admin context dispatching volunteer adjustment update matrix properties dataset criteria key tracking target index lookup: ${editVolunteerId}`);
-      const { error: volError } = await supabase.from('volunteers').update(volunteerPayload).eq('id', editVolunteerId);
-      if (!volError) {
-        console.log("Target tracking records mutations adjusted securely inside records infrastructure mapping database.");
-        showToast('ভলান্টিয়ারের তথ্য ও সিকিউরিটি পাসওয়ার্ড সফলভাবে সংশোধন করা হয়েছে!', 'success');
-        setNewVolunteer({ name: '', phone: '', password: '', points: '' });
-        setEditVolunteerId(null);
-        fetchVolunteers();
-      } else {
-        console.error(`Supabase database mutation pipelines threw standard processing exception targeting unique identifier tracking: ${editVolunteerId}`, volError);
-        showToast('সংশোধন ব্যর্থ: ' + volError.message, 'error');
-      }
-    } else {
-      console.log("Inserting completely new structural volunteer user interface permissions context node layout item.");
-      const { error: volError } = await supabase.from('volunteers').insert([volunteerPayload]);
-     if (volError) {
-  console.error("Error Details:", volError);
-  alert("ডাটাবেজ এরর: " + volError.message + "\nডিটেইলস: " + (volError.details || 'নেই'));
-  showToast('ভুল: ' + volError.message, 'error');
-} else {
-        console.log("Target operations sequence confirmed. Volunteer database record created securely.");
-        showToast('নতুন ভলান্টিয়ার কাস্টম সিকিউরিটি পাসওয়ার্ড সহ অনুমোদিত হয়েছে!', 'success');
-        setNewVolunteer({ name: '', phone: '', password: '', points: '' });
-        fetchVolunteers();
-      }
-    }
-  };
-
     const handleAddVolunteer = async (e) => {
     e.preventDefault();
     console.log("Processing RPC volunteer transaction...", newVolunteer);
