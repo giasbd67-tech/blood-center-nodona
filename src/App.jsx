@@ -85,7 +85,19 @@ const LocalAdSlot = ({ localAd }) => {
 export default function App() {
   // অ্যাপ স্টেটসমূহ
   const [donors, setDonors] = useState([]);
-  const [emergencyRequests, setEmergencyRequests] = useState([]);
+    const [emergencyRequests, setEmergencyRequests] = useState([]);
+  const [localSponsors, setLocalSponsors] = useState([]);
+
+  // লোকাল স্পনসর ডাটাবেজ থেকে আনার ফাংশন
+  const fetchLocalSponsors = async () => {
+    try {
+      const { data, error } = await supabase.from('local_ads').select('*').eq('is_active', true);
+      if (data) setLocalSponsors(data);
+    } catch (e) {
+      console.error("Local Sponsors fetch error:", e);
+    }
+  };
+
   const [volunteers, setVolunteers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('All');
