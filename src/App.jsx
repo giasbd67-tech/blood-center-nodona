@@ -1787,13 +1787,18 @@ const downloadDonorCertificate = (donor) => {
               <Info className="w-4 h-4" /> বর্তমানে কোনো জরুরি রক্তের অনুরোধ নেই।
             </p>
           ) : (
-            emergencyRequests.map(req => {
+              emergencyRequests.map((req, index) => {
+              const safeLocalAd = localSponsors.length > 0 ? localSponsors[Math.floor(index / 3) % localSponsors.length] : null;
               const formattedPhone = req.phone.replace(/[^0-9]/g, '');
               const waNoticeText = encodeURIComponent(`আসসালামু আলাইকুম, ব্লাড সেন্টার নদোনা নোয়াখালী থেকে আপনার জরুরি রক্তের নোটিশটির (গ্রুপ: ${req.blood_group}) পরিপ্রেক্ষিতে যোগাযোগ করছি।`);
               const waNoticeUrl = `https://wa.me/${formattedPhone}?text=${waNoticeText}`;
 
               return (
-                <div key={req.id} className="border-2 border-red-100 bg-red-50/20 p-4 rounded-xl relative shadow-xs space-y-1">
+                <React.Fragment key={req.id}>
+                  {index > 0 && index % 3 === 0 && <GoogleAdSlot />}
+                  {index > 0 && index % 5 === 0 && <LocalAdSlot localAd={safeLocalAd} />}
+                  <div className="border-2 border-red-100 bg-red-50/20 p-4 rounded-xl relative shadow-xs space-y-1">
+
                   <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-black px-2 py-0.5 rounded-full flex items-center gap-0.5">
                     <Droplet className="w-3 h-3 fill-white" /> {req.blood_group}
                   </span>
