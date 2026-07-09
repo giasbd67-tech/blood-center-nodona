@@ -1835,6 +1835,7 @@ const downloadDonorCertificate = (donor) => {
                     <Megaphone className="w-3.5 h-3.5" /> সোশ্যাল মিডিয়ায় শেয়ার নোটিশ (কপি)
                   </button>
                 </div>
+               </React.Fragment>
               );
             })
           )}
@@ -1917,9 +1918,9 @@ const downloadDonorCertificate = (donor) => {
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নিজাম উদ্দিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> তুহিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নাজমুল হাসান</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> ইয়াসিন</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🩸 তুচ্ছ নয় রক্তদান</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🌱 বাঁচাতে পারে একটি প্রাণ</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> সোয়েব আহামেদ ইয়াছিন</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🩸 তুচ্ছ নয় রক্তদান </div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🌱 বাঁচাতে পারে একটি প্রাণ </div>
               </div>
             </div>
           </div>
