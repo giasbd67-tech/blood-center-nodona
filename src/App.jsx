@@ -74,7 +74,15 @@ const LocalAdSlot = ({ localAd }) => {
     <div className="bg-amber-50/50 p-4 rounded-2xl shadow-sm border border-amber-200 my-4 text-center w-full">
       <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold mb-2 inline-block">স্পনসরড</span>
       <h4 className="font-bold text-slate-800 text-sm">{localAd.title}</h4>
-      {localAd.image_url && <img src={localAd.image_url} alt="Sponsor" className="w-full h-32 object-cover rounded-xl mt-2 border border-amber-100" />}
+      
+      {/* ছবি বা ভিডিও রেন্ডার করার লজিক */}
+      {localAd.media_url && localAd.media_type === 'image' && (
+        <img src={localAd.media_url} alt="Sponsor" className="w-full h-32 object-cover rounded-xl mt-2 border border-amber-100" />
+      )}
+      {localAd.media_url && localAd.media_type === 'video' && (
+        <video src={localAd.media_url} controls muted className="w-full max-h-48 object-cover rounded-xl mt-2 border border-amber-100 bg-black"></video>
+      )}
+
       <p className="text-xs text-slate-600 mt-2">{localAd.description}</p>
       {localAd.action_url && <a href={localAd.action_url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block bg-amber-600 text-white text-[11px] font-bold py-1.5 px-4 rounded-lg shadow-xs">বিস্তারিত দেখুন</a>}
     </div>
