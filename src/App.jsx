@@ -1990,16 +1990,21 @@ const downloadDonorCertificate = (donor) => {
           </p>
         ) : (
           <>
-            {filteredDonors.slice(0, visibleDonorsCount).map(donor => {
+                        {filteredDonors.slice(0, visibleDonorsCount).map((donor, index) => {
               const elg = checkEligibility(donor.last_donation_date, donor.gender);
               const badge = getDonorBadge(donor.activity_count || 0);
               
               const cleanedDonorPhone = donor.phone ? donor.phone.replace(/[^0-9]/g, '') : '';
               const waDonorText = encodeURIComponent(`আসসালামু আলাইকুম, ব্লাড সেন্টার নদোনা নোয়াখালী থেকে যোগাযোগ করছি। আমাদের জরুরি একটি ${donor.blood_group} রক্তের প্রয়োজন। আপনি কি এই মুহূর্তে রক্তদানে আগ্রহী আছেন?`);
               const waDonorUrl = `https://wa.me/${cleanedDonorPhone}?text=${waDonorText}`;
+              
+              const safeLocalAd = localSponsors.length > 0 ? localSponsors[Math.floor(index / 7) % localSponsors.length] : null;
 
               return (
-                <div key={donor.id} className="bg-white p-5 rounded-2xl shadow-md border border-slate-100 space-y-4 relative">
+                <React.Fragment key={donor.id}>
+                  {index > 0 && index % 4 === 0 && <GoogleAdSlot />}
+                  {index > 0 && index % 7 === 0 && <LocalAdSlot localAd={safeLocalAd} />}
+                  <div className="bg-white p-5 rounded-2xl shadow-md border border-slate-100 space-y-4 relative">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                       <span className="w-12 h-12 rounded-full bg-red-100 text-red-600 font-black text-lg flex items-center justify-center shadow-inner">
@@ -2111,6 +2116,7 @@ const downloadDonorCertificate = (donor) => {
                     </button>
                   )}
                 </div>
+               </React.Fragment>
               );
             })}
 
