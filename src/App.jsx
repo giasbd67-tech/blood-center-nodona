@@ -272,7 +272,8 @@ export default function App() {
     if (cachedDonors) setDonors(JSON.parse(cachedDonors));
     if (cachedRequests) setEmergencyRequests(JSON.parse(cachedRequests));
 
-    fetchDonors(); fetchRequests(); fetchAllLogs(); fetchNoakhaliPosts();
+        fetchDonors(); fetchRequests(); fetchAllLogs(); fetchNoakhaliPosts();
+    fetchLocalSponsors();
 
     const savedPhone = localStorage.getItem('v_phone');
     const savedPass = localStorage.getItem('v_pass');
