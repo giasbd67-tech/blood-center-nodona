@@ -48,6 +48,40 @@ import {
   WifiOff
 } from 'lucide-react';
 
+// ১. গুগল অ্যাডসেন্স কম্পোনেন্ট
+const GoogleAdSlot = () => {
+  React.useEffect(() => {
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) { console.error("AdSense script push error:", e); }
+  }, []);
+
+  return (
+    <div className="my-4 overflow-hidden flex justify-center bg-slate-50 p-2 rounded-2xl border border-slate-200 shadow-sm min-h-[100px] items-center w-full">
+      <ins className="adsbygoogle"
+        style={{ display: 'block', width: '100%' }}
+        data-ad-client="ca-pub-আপনার-অ্যাডসেন্স-আইডি" 
+        data-ad-slot="আপনার-স্লট-আইডি" 
+        data-ad-format="auto" data-full-width-responsive="true"></ins>
+    </div>
+  );
+};
+
+// ২. লোকাল স্পনসর কম্পোনেন্ট
+const LocalAdSlot = ({ localAd }) => {
+  if (!localAd) return null;
+  return (
+    <div className="bg-amber-50/50 p-4 rounded-2xl shadow-sm border border-amber-200 my-4 text-center w-full">
+      <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold mb-2 inline-block">স্পনসরড</span>
+      <h4 className="font-bold text-slate-800 text-sm">{localAd.title}</h4>
+      {localAd.image_url && <img src={localAd.image_url} alt="Sponsor" className="w-full h-32 object-cover rounded-xl mt-2 border border-amber-100" />}
+      <p className="text-xs text-slate-600 mt-2">{localAd.description}</p>
+      {localAd.action_url && <a href={localAd.action_url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block bg-amber-600 text-white text-[11px] font-bold py-1.5 px-4 rounded-lg shadow-xs">বিস্তারিত দেখুন</a>}
+    </div>
+  );
+};
+
+
 export default function App() {
   // অ্যাপ স্টেটসমূহ
   const [donors, setDonors] = useState([]);
