@@ -1779,11 +1779,11 @@ const downloadDonorCertificate = (donor) => {
                 </div>
                 {post.caption && <div className="p-4 text-sm text-slate-800 whitespace-pre-wrap font-medium">{post.caption}</div>}
                 {post.media_url && post.media_type === 'image' && (
-                  <img src={post.media_url} alt="Post media" className="w-full object-cover max-h-96 bg-slate-100" />
-                )}
-                {post.media_url && post.media_type === 'video' && (
-                  <video src={post.media_url} controls className="w-full max-h-96 bg-black"></video>
-                )}
+              <img src={post.media_url} alt="Post media" className="w-full h-auto object-contain bg-slate-100" />
+             )}
+            {post.media_url && post.media_type === 'video' && (
+          <video src={post.media_url} controls className="w-full h-auto object-contain bg-black"></video>
+         )}
               </div>
             ))
           )}
