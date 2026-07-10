@@ -1820,7 +1820,7 @@ const downloadDonorCertificate = (donor) => {
           </form>
         )}
 
-        <div className="max-h-[350px] overflow-y-auto space-y-3 pr-1">
+        <div className="space-y-3">
           {emergencyRequests.length === 0 ? (
             <p className="text-center text-xs text-slate-400 py-6 leading-normal flex items-center justify-center gap-1">
               <Info className="w-4 h-4" /> বর্তমানে কোনো জরুরি রক্তের অনুরোধ নেই।
