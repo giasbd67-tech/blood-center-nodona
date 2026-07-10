@@ -48,7 +48,7 @@ import {
   WifiOff
 } from 'lucide-react';
 
-// ১. গুগল অ্যাডসেন্স কম্পোনেন্ট
+// ১. গুগল অ্যাডসেন্স কম্পোনেন্ট (স্বাধীন)
 const GoogleAdSlot = () => {
   React.useEffect(() => {
     try {
@@ -57,34 +57,65 @@ const GoogleAdSlot = () => {
   }, []);
 
   return (
-    <div className="my-4 overflow-hidden flex justify-center bg-slate-50 p-2 rounded-2xl border border-slate-200 shadow-sm min-h-[100px] items-center w-full">
-      <ins className="adsbygoogle"
-        style={{ display: 'block', width: '100%' }}
-        data-ad-client="ca-pub-আপনার-অ্যাডসেন্স-আইডি" 
-        data-ad-slot="আপনার-স্লট-আইডি" 
-        data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <div className="my-4 overflow-hidden bg-white rounded-2xl shadow-md border border-slate-100 w-full relative">
+      <div className="p-3 pb-2 flex items-center justify-between border-b border-slate-50">
+        <span className="font-bold text-slate-700 text-sm">Google Ad</span>
+        <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-medium">Sponsored</span>
+      </div>
+      <div className="flex justify-center bg-slate-50 min-h-[100px]">
+        <ins className="adsbygoogle"
+          style={{ display: 'block', width: '100%' }}
+          data-ad-client="ca-pub-আপনার-অ্যাডসেন্স-আইডি" 
+          data-ad-slot="আপনার-স্লট-আইডি" 
+          data-ad-format="auto" data-full-width-responsive="true"></ins>
+      </div>
     </div>
   );
 };
 
-// ২. লোকাল স্পনসর কম্পোনেন্ট
+// ২. লোকাল স্পনসর কম্পোনেন্ট (স্বাধীন - ফেসবুক স্টাইল)
 const LocalAdSlot = ({ localAd }) => {
   if (!localAd) return null;
+
   return (
-    <div className="bg-amber-50/50 p-4 rounded-2xl shadow-sm border border-amber-200 my-4 text-center w-full">
-      <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold mb-2 inline-block">স্পনসরড</span>
-      <h4 className="font-bold text-slate-800 text-sm">{localAd.title}</h4>
-      
-      {/* ছবি বা ভিডিও রেন্ডার করার লজিক */}
-      {localAd.media_url && localAd.media_type === 'image' && (
-        <img src={localAd.media_url} alt="Sponsor" className="w-full h-32 object-cover rounded-xl mt-2 border border-amber-100" />
-      )}
-      {localAd.media_url && localAd.media_type === 'video' && (
-        <video src={localAd.media_url} controls muted className="w-full max-h-48 object-cover rounded-xl mt-2 border border-amber-100 bg-black"></video>
+    <div className="my-4 overflow-hidden bg-white rounded-2xl shadow-md border border-slate-100 w-full relative">
+      {/* হেডার / স্পনসরের নাম */}
+      <div className="p-3 pb-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold border border-amber-200 text-xs">
+            Ad
+          </div>
+          <div>
+            <h4 className="font-bold text-slate-800 text-sm leading-tight">{localAd.title}</h4>
+            <span className="text-[10px] text-slate-500 font-medium">Sponsored</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ডেসক্রিপশন */}
+      {localAd.description && localAd.description !== '(খালি)' && (
+        <p className="px-4 pb-3 text-sm text-slate-700 leading-relaxed">{localAd.description}</p>
       )}
 
-      <p className="text-xs text-slate-600 mt-2">{localAd.description}</p>
-      {localAd.action_url && <a href={localAd.action_url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block bg-amber-600 text-white text-[11px] font-bold py-1.5 px-4 rounded-lg shadow-xs">বিস্তারিত দেখুন</a>}
+      {/* মিডিয়া (ছবি বা ভিডিও সম্পূর্ণ স্ক্রিন জুড়ে) */}
+      <div className="w-full bg-slate-50 border-y border-slate-100 flex justify-center">
+        {localAd.media_url !== 'none' && (
+          localAd.media_type === 'video' ? (
+            <video src={localAd.media_url} controls muted loop playsInline className="w-full max-h-[350px] object-cover" />
+          ) : (
+            <img src={localAd.media_url} alt="Sponsor" className="w-full max-h-[350px] object-cover" />
+          )
+        )}
+      </div>
+
+      {/* বিস্তারিত দেখার বাটন (যদি লিংক থাকে) */}
+      {localAd.action_url && localAd.action_url !== '' && localAd.action_url !== 'EMPTY' && (
+        <div className="p-3 bg-slate-50">
+          <a href={localAd.action_url} target="_blank" rel="noopener noreferrer" className="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg shadow-sm transition-colors text-sm">
+            বিস্তারিত দেখুন
+          </a>
+        </div>
+      )}
     </div>
   );
 };
