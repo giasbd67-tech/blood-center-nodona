@@ -97,13 +97,13 @@ const LocalAdSlot = ({ localAd }) => {
         <p className="px-4 pb-3 text-sm text-slate-700 leading-relaxed">{localAd.description}</p>
       )}
 
-      {/* মিডিয়া (ছবি বা ভিডিও সম্পূর্ণ স্ক্রিন জুড়ে) */}
+      {/* মিডিয়া (ছবি বা ভিডিও সম্পূর্ণ স্ক্রিন জুড়ে - কোনো কাটাছেঁড়া ছাড়া) */}
       <div className="w-full bg-slate-50 border-y border-slate-100 flex justify-center">
         {localAd.media_url !== 'none' && (
           localAd.media_type === 'video' ? (
-            <video src={localAd.media_url} controls muted loop playsInline className="w-full max-h-[350px] object-cover" />
+            <video src={localAd.media_url} controls muted loop playsInline className="w-full h-auto object-contain" />
           ) : (
-            <img src={localAd.media_url} alt="Sponsor" className="w-full max-h-[350px] object-cover" />
+            <img src={localAd.media_url} alt="Sponsor" className="w-full h-auto object-contain" />
           )
         )}
       </div>
