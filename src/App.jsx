@@ -48,7 +48,7 @@ import {
   WifiOff
 } from 'lucide-react';
 
-// ১. গুগল অ্যাডসেন্স কম্পোনেন্ট (স্বাধীন)
+/ ১. গুগল অ্যাডসেন্স কম্পোনেন্ট (স্বাধীন)
 const GoogleAdSlot = () => {
   React.useEffect(() => {
     try {
@@ -62,7 +62,7 @@ const GoogleAdSlot = () => {
         <span className="font-bold text-slate-700 text-sm">Google Ad</span>
         <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-medium">Sponsored</span>
       </div>
-      <div className="flex justify-center bg-slate-50 min-h-[100px]">
+      <div className="flex justify-center bg-slate-50 min-h-[100px] h-auto p-2">
         <ins className="adsbygoogle"
           style={{ display: 'block', width: '100%' }}
           data-ad-client="ca-pub-আপনার-অ্যাডসেন্স-আইডি" 
