@@ -2218,16 +2218,9 @@ const downloadDonorCertificate = (donor) => {
               );
             })}
 
-            {filteredDonors.length > visibleDonorsCount && (
-              <button 
-                onClick={() => {
-                  console.log(`Paging boundary extension triggered. Increasing rows count visible thresholds map.`);
-                  setVisibleDonorsCount(prev => prev + 10);
-                }} 
-                className="w-full bg-slate-800 hover:bg-slate-950 text-white p-3 rounded-2xl font-black text-sm tracking-wide shadow transition-colors flex items-center justify-center gap-1"
-              >
-                <RefreshCw className="w-4 h-4" /> আরো রক্তদাতা দেখুন (Load More)
-              </button>
+               {filteredDonors.length > visibleDonorsCount && (
+              /* সম্পূর্ণ অদৃশ্য অংশ: ইউজার স্ক্রল করে এখানে আসলেই অটো নতুন কার্ড চলে আসবে */
+              <div ref={invisibleLoadRef} className="h-10 w-full opacity-0 pointer-events-none"></div>
             )}
           </>
         )}
