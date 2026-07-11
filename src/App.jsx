@@ -128,12 +128,19 @@ export default function App() {
   const [localSponsors, setLocalSponsors] = useState([]);
 
   // লোকাল স্পনসর ডাটাবেজ থেকে আনার ফাংশন
-  const fetchLocalSponsors = async () => {
+    const fetchLocalSponsors = async () => {
     try {
-      const { data, error } = await supabase.from('local_ads').select('*').eq('is_active', true);
-      if (data) setLocalSponsors(data);
-    } catch (e) {
-      console.error("Local Sponsors fetch error:", e);
+      const { data, error } = await supabase
+        .from('local_ads')
+        .select('*')
+        .eq('is_active', true);
+
+      if (error) throw error;
+      
+      const shuffledAds = data ? data.sort(() => Math.random() - 0.5) : [];
+      setLocalSponsors(shuffledAds);
+    } catch (error) {
+      console.error('Error fetching local ads:', error);
     }
   };
 
