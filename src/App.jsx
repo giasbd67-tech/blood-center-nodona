@@ -185,6 +185,21 @@ export default function App() {
   const [eligibilityFilter, setEligibilityFilter] = useState('All');
   const [activeTab, setActiveTab] = useState('home'); // ৫টি টগল ট্যাব: home, notice, search, register, volunteer
   const [visibleDonorsCount, setVisibleDonorsCount] = useState(10);
+
+  // --- ইনফিনিট স্ক্রল লজিক (ফেসবুক স্টাইল - সম্পূর্ণ অটোমেটিক) ---
+  const observer = React.useRef(null);
+  const invisibleLoadRef = React.useCallback(node => {
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        // যখনই স্ক্রল করে নিচে আসবে, অটোমেটিক আরও ১০ জন ডোনার অ্যাড হবে
+        setVisibleDonorsCount(prev => prev + 10);
+      }
+    }, { threshold: 0.1 });
+    if (node) observer.current.observe(node);
+  }, []);
+  // --- লজিক শেষ ---
+
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [leaderboardType, setLeaderboardType] = useState('monthly');
 
