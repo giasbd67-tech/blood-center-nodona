@@ -73,53 +73,88 @@ const GoogleAdSlot = () => {
   );
 };
 
-// ২. লোকাল স্পনসর কম্পোনেন্ট (স্বাধীন - ফেসবুক স্টাইল)
+// ২. লোকাল স্পনসর কম্পোনেন্ট (স্বাধীন)
 const LocalAdSlot = ({ localAd }) => {
+  const videoRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    // Intersection Observer তৈরি করা হচ্ছে (ভিডিও স্ক্রিনে আছে কিনা তা চেক করতে)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // ভিডিও স্ক্রিনে আসলে (অন্তত ৫০% দেখা গেলে) প্লে হবে
+            videoElement.muted = false; // সাউন্ড অন রাখা হচ্ছে
+            videoElement.play().catch(err => {
+              console.log("Browser blocked autoplay:", err);
+            });
+          } else {
+            // ভিডিও স্ক্রিন থেকে সরে গেলে অটোমেটিক পজ হবে
+            videoElement.pause();
+          }
+        });
+      },
+      { threshold: 0.5 } // ৫০% স্ক্রিনে ভিজিবল হলে ট্রিগার হবে
+    );
+
+    observer.observe(videoElement);
+
+    return () => {
+      if (videoElement) observer.unobserve(videoElement);
+    };
+  }, [localAd]);
+
   if (!localAd) return null;
 
   return (
-    <div className="my-4 overflow-hidden bg-white rounded-2xl shadow-md border border-slate-100 w-full relative">
-      {/* হেডার / স্পনসরের নাম */}
-      <div className="p-3 pb-2 flex items-center justify-between">
+    <div className="my-4 bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden relative">
+      <div className="p-3 pb-2 flex items-center justify-between border-b border-slate-50">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold border border-amber-200 text-xs">
-            Ad
-          </div>
-          <div>
-            <h4 className="font-bold text-slate-800 text-sm leading-tight">{localAd.title}</h4>
-            <span className="text-[10px] text-slate-500 font-medium">Sponsored</span>
-          </div>
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+          <span className="font-bold text-slate-700 text-sm">Local Sponsor</span>
         </div>
+        <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-medium border border-indigo-100">Ad</span>
       </div>
 
-      {/* ডেসক্রিপশন */}
-      {localAd.description && localAd.description !== '(খালি)' && (
-        <p className="px-4 pb-3 text-sm text-slate-700 leading-relaxed">{localAd.description}</p>
-      )}
-
-      {/* মিডিয়া (ছবি বা ভিডিও সম্পূর্ণ স্ক্রিন জুড়ে - কোনো কাটাছেঁড়া ছাড়া) */}
-      <div className="w-full bg-slate-50 border-y border-slate-100 flex justify-center">
-        {localAd.media_url !== 'none' && (
-          localAd.media_type === 'video' ? (
-            <video src={localAd.media_url} controls muted loop playsInline className="w-full h-auto object-contain" />
-          ) : (
-            <img src={localAd.media_url} alt="Sponsor" className="w-full h-auto object-contain" />
-          )
+      <div className="block relative group">
+        {localAd.media_type === 'video' ? (
+          <div className="relative bg-black flex justify-center">
+            {/* এখানে ভিডিওতে ref বসানো হয়েছে এবং loop যুক্ত করা হয়েছে */}
+            <video 
+              ref={videoRef}
+              src={localAd.media_url} 
+              controls 
+              loop
+              className="w-full h-auto max-h-[300px] object-contain"
+            />
+          </div>
+        ) : (
+          <div className="relative overflow-hidden bg-slate-50 flex justify-center">
+            <img 
+              src={localAd.media_url} 
+              alt={localAd.title || 'Local Ad'} 
+              className="w-full h-auto max-h-[300px] object-contain transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
         )}
+        
+        <a href={localAd.action_url || '#'} target="_blank" rel="noopener noreferrer" className="p-3 bg-white block">
+          <h4 className="font-bold text-slate-800 text-sm mb-1">{localAd.title}</h4>
+          <p className="text-xs text-slate-500 line-clamp-2 mb-2">{localAd.description}</p>
+          
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-indigo-600 text-xs font-bold hover:underline bg-indigo-50 px-3 py-1 rounded-full inline-block">
+              বিস্তারিত দেখুন
+            </span>
+          </div>
+        </a>
       </div>
-
-      {/* বিস্তারিত দেখার বাটন (যদি লিংক থাকে) */}
-      {localAd.action_url && localAd.action_url !== '' && localAd.action_url !== 'EMPTY' && (
-        <div className="p-3 bg-slate-50">
-          <a href={localAd.action_url} target="_blank" rel="noopener noreferrer" className="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg shadow-sm transition-colors text-sm">
-            বিস্তারিত দেখুন
-          </a>
-        </div>
-      )}
     </div>
   );
 };
-
 
 export default function App() {
   // অ্যাপ স্টেটসমূহ
