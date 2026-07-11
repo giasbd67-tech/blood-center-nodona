@@ -1824,7 +1824,7 @@ const downloadDonorCertificate = (donor) => {
                   <div className="flex items-center gap-2.5">
                     <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain rounded-full bg-white border p-0.5 shadow-xs" onError={(e) => {e.target.style.display='none'}} />
                     <div>
-                      <h4 className="font-bold text-sm text-slate-800 leading-none mb-1">ব্লাড সেন্টার পোস্ট</h4>
+                      <h4 className="font-bold text-sm text-slate-800 leading-none mb-1">ব্লাড সেন্টার নদোনা নোয়াখালী</h4>
                       <p className="text-[10px] text-slate-500 font-medium leading-none">{new Date(post.created_at || Date.now()).toLocaleString()}</p>
                     </div>
                   </div>
