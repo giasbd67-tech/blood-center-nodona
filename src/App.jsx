@@ -81,23 +81,21 @@ const LocalAdSlot = ({ localAd }) => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
 
-    // Intersection Observer তৈরি করা হচ্ছে (ভিডিও স্ক্রিনে আছে কিনা তা চেক করতে)
+    // Intersection Observer তৈরি (অ্যাড স্ক্রিনে ভিজিবল কিনা চেক করার জন্য)
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // ভিডিও স্ক্রিনে আসলে (অন্তত ৫০% দেখা গেলে) প্লে হবে
-            videoElement.muted = false; // সাউন্ড অন রাখা হচ্ছে
-            videoElement.play().catch(err => {
-              console.log("Browser blocked autoplay:", err);
-            });
+            // ভিডিও স্ক্রিনে আসলে প্লে হবে এবং সাউন্ড অন থাকবে
+            videoElement.muted = false; 
+            videoElement.play().catch(err => console.log("Autoplay blocked:", err));
           } else {
-            // ভিডিও স্ক্রিন থেকে সরে গেলে অটোমেটিক পজ হবে
+            // স্ক্রিন থেকে সরে গেলে ভিডিও পজ হয়ে যাবে
             videoElement.pause();
           }
         });
       },
-      { threshold: 0.5 } // ৫০% স্ক্রিনে ভিজিবল হলে ট্রিগার হবে
+      { threshold: 0.5 } // কার্ডের ৫০% স্ক্রিনে আসলেই ট্রিগার হবে
     );
 
     observer.observe(videoElement);
@@ -110,7 +108,8 @@ const LocalAdSlot = ({ localAd }) => {
   if (!localAd) return null;
 
   return (
-    <div className="my-4 bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden relative">
+    <div className="my-4 overflow-hidden bg-white rounded-2xl shadow-md border border-slate-100 w-full relative">
+      {/* কার্ডের হেডার (আপনার আগের অরিজিনাল ডিজাইন) */}
       <div className="p-3 pb-2 flex items-center justify-between border-b border-slate-50">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -119,28 +118,29 @@ const LocalAdSlot = ({ localAd }) => {
         <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-medium border border-indigo-100">Ad</span>
       </div>
 
-      <div className="block relative group">
+      {/* মিডিয়া সেকশন (আগের ফাইলের pb-[56.25%] এবং absolute লেআউট হুবহু রাখা হয়েছে যাতে না কাটে) */}
+      <div className="block relative group bg-slate-50">
         {localAd.media_type === 'video' ? (
-          <div className="relative bg-black flex justify-center">
-            {/* এখানে ভিডিওতে ref বসানো হয়েছে এবং loop যুক্ত করা হয়েছে */}
+          <div className="relative w-full pb-[56.25%] bg-black">
             <video 
               ref={videoRef}
               src={localAd.media_url} 
               controls 
               loop
-              className="w-full h-auto max-h-[300px] object-contain"
+              className="absolute top-0 left-0 w-full h-full object-contain"
             />
           </div>
         ) : (
-          <div className="relative overflow-hidden bg-slate-50 flex justify-center">
+          <div className="relative w-full pb-[56.25%] overflow-hidden bg-slate-50">
             <img 
               src={localAd.media_url} 
               alt={localAd.title || 'Local Ad'} 
-              className="w-full h-auto max-h-[300px] object-contain transition-transform duration-500 group-hover:scale-105"
+              className="absolute top-0 left-0 w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
             />
           </div>
         )}
         
+        {/* কার্ডের ফুটার টেক্সট ও বাটন */}
         <a href={localAd.action_url || '#'} target="_blank" rel="noopener noreferrer" className="p-3 bg-white block">
           <h4 className="font-bold text-slate-800 text-sm mb-1">{localAd.title}</h4>
           <p className="text-xs text-slate-500 line-clamp-2 mb-2">{localAd.description}</p>
@@ -155,6 +155,7 @@ const LocalAdSlot = ({ localAd }) => {
     </div>
   );
 };
+
 
 export default function App() {
   // অ্যাপ স্টেটসমূহ
