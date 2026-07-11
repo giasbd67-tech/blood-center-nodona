@@ -75,6 +75,34 @@ const GoogleAdSlot = () => {
 
 // ২. লোকাল স্পনসর কম্পোনেন্ট (স্বাধীন - ফেসবুক স্টাইল)
 const LocalAdSlot = ({ localAd }) => {
+  const videoRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    // স্ক্রল করে ভিডিও সামনে আসলে প্লে এবং সরে গেলে পজ করার লজিক
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            videoElement.muted = false; // অটো সাউন্ড অন করে দেওয়া হলো
+            videoElement.play().catch(err => console.log("Autoplay blocked by browser:", err));
+          } else {
+            videoElement.pause(); // স্ক্রিন থেকে সরে গেলে অফ হয়ে যাবে
+          }
+        });
+      },
+      { threshold: 0.5 } // ভিডিওর ৫০% স্ক্রিনে আসলেই চালু হবে
+    );
+
+    observer.observe(videoElement);
+
+    return () => {
+      if (videoElement) observer.unobserve(videoElement);
+    };
+  }, [localAd]);
+
   if (!localAd) return null;
 
   return (
@@ -101,7 +129,14 @@ const LocalAdSlot = ({ localAd }) => {
       <div className="w-full bg-slate-50 border-y border-slate-100 flex justify-center">
         {localAd.media_url !== 'none' && (
           localAd.media_type === 'video' ? (
-            <video src={localAd.media_url} controls muted loop playsInline className="w-full h-auto object-contain" />
+            <video 
+              ref={videoRef}
+              src={localAd.media_url} 
+              controls 
+              loop 
+              playsInline 
+              className="w-full h-auto object-contain" 
+            />
           ) : (
             <img src={localAd.media_url} alt="Sponsor" className="w-full h-auto object-contain" />
           )
