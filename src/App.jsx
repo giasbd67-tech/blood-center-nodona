@@ -1835,7 +1835,9 @@ const downloadDonorCertificate = (donor) => {
               return (
                 <React.Fragment key={req.id}>
                   {index > 0 && index % 3 === 0 && <GoogleAdSlot />}
-                  {index > 0 && index % 5 === 0 && <LocalAdSlot localAd={safeLocalAd} />}
+                  {index > 0 && index % 7 === 0 && localAds.length > 0 && (
+  <LocalAdSlot localAd={localAds[(Math.floor(index / 7) - 1) % localAds.length]} />
+)}
                   <div className="border-2 border-red-100 bg-red-50/20 p-4 rounded-xl relative shadow-xs space-y-1">
 
                   <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-black px-2 py-0.5 rounded-full flex items-center gap-0.5">
