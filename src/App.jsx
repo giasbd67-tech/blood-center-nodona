@@ -48,7 +48,7 @@ import {
   WifiOff
 } from 'lucide-react';
 
-/ ১. গুগল অ্যাডসেন্স কম্পোনেন্ট (স্বাধীন)
+// ১. গুগল অ্যাডসেন্স কম্পোনেন্ট (স্বাধীন)
 const GoogleAdSlot = () => {
   React.useEffect(() => {
     try {
