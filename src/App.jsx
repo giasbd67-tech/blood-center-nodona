@@ -797,13 +797,12 @@ fetchVolunteers();
     }
   };
 
-  const handleEditDonor = (donor) => {
-    console.log(`Triggering modify data state setup context structure interface targeting donor context: ${donor.id}`);
+    const handleEditDonor = (donor) => {
     if (!isAdmin && !isUnlocked) {
-      console.warn("Access intercept: Registry editing access verification parameters evaluation failed due to locked client instance.");
-      return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড বা নাম্বার দিয়ে ডাটা আনলক করুন', 'error');
+      return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড ও মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন', 'error');
     }
-    setNewDonor({
+    
+    const donorDataToEdit = {
       id: donor.id,
       name: donor.name,
       blood_group: donor.blood_group,
@@ -814,12 +813,17 @@ fetchVolunteers();
       weight: donor.weight || '',
       age: donor.age || '',
       activity_count: donor.activity_count || ''
-    });
+    };
+
+    setNewDonor(donorDataToEdit);
+    setOriginalDonor(donorDataToEdit); // ডাটা পরিবর্তনের আগের অবস্থা সেভ করে রাখলাম
     setActiveTab('register'); 
+    
     setTimeout(() => {
       document.getElementById('register-section')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   };
+
 
   const handleDeleteDonor = async (id) => {
     console.log(`Processing explicit data record termination mapping matrix array request target profile reference index tracker key ID: ${id}`);
@@ -2023,7 +2027,7 @@ const downloadDonorCertificate = (donor) => {
               <p className="text-xs font-bold text-slate-700 mb-1.5"> ৪ জন প্রতিষ্ঠাতা উদ্যোক্তা:</p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-600">
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নিজাম উদ্দিন</div>
-                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> তুহিন</div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> ফখরুদ্দীন তুহিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> নাজমুল হাসান</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> সোয়েব আহামেদ ইয়াছিন</div>
                 <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-400" /> 🩸 তুচ্ছ নয় রক্তদান </div>
