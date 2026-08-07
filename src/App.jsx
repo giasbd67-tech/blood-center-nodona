@@ -314,6 +314,9 @@ export default function App() {
     activity_count: ''
   });
 
+// অন্যান্য form স্টেটের সাথে এটি যুক্ত করুন
+const [originalDonor, setOriginalDonor] = useState(null);
+
   const [newRequest, setNewRequest] = useState({ patient_name: '', blood_group: 'A+', hospital: '', phone: '', needed_time: '' });
   const [editRequestId, setEditRequestId] = useState(null);
   
