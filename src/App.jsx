@@ -801,22 +801,53 @@ const [originalDonor, setOriginalDonor] = useState(null);
     }
   };
 
-  const handleIncrementActivity = async (id, currentCount) => {
-    console.log(`Admin processing activity tracking adjustments command routine layer sequence for target profile index tracker: ${id}. Initial baseline count: ${currentCount}`);
-    if (!isAdmin) {
-      console.warn("Authorization intercept: Non-admin trying to fire execution block on restricted incrementer logic context.");
-      return;
+   const handleQuickDonationUpdate = async (donor) => {
+    // ভলান্টিয়ার আনলক করা না থাকলে আটকে দিবে
+    if (!isUnlocked && !isAdmin) {
+      return showToast('অনুগ্রহ করে ভলান্টিয়ার কোড ও মোবাইল নাম্বার দিয়ে ডাটা আনলক করুন', 'error');
     }
-    const { error: actError } = await supabase.from('donors').update({ activity_count: currentCount + 1 }).eq('id', id);
-    if (!actError) {
-      console.log(`Target database mutations confirmed for object registry mapping ID index: ${id}. Transmitted value metrics updated.`);
-      showToast('রক্তদানের সংখ্যা বৃদ্ধি করা হয়েছে!', 'success');
-      fetchDonors();
-    } else {
-      console.error(`Mutation block runtime failure during metrics calculation execution sequence tracker ID key: ${id}`, actError);
-      showToast('আপডেট ব্যর্থ হয়েছে: ' + actError.message, 'error');
+
+    if (confirm(`আপনি কি নিশ্চিত যে ${donor.name} আজ রক্তদান করেছেন?`)) {
+      // আজকের তারিখ বের করা (YYYY-MM-DD ফরম্যাটে)
+      const today = new Date().toISOString().split('T')[0];
+      const newCount = (donor.activity_count || 0) + 1;
+
+      // ১. ডোনারের ডাটাবেজ আপডেট (সংখ্যা +১ এবং তারিখ আজকের দিন)
+      const { error: updateError } = await supabase
+        .from('donors')
+        .update({ 
+          activity_count: newCount,
+          last_donation_date: today
+        })
+        .eq('id', donor.id);
+
+      if (!updateError) {
+        showToast('রক্তদানের তথ্য সফলভাবে আপডেট হয়েছে!', 'success');
+        fetchDonors(); // ডোনার লিস্ট রিফ্রেশ
+
+        // ২. ভলান্টিয়ার পয়েন্ট বৃদ্ধি (যদি অ্যাডমিন না হয়ে সাধারণ ভলান্টিয়ার হয়)
+        if (isUnlocked && !isAdmin) {
+          await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
+          fetchVolunteers(); // ভলান্টিয়ার লিস্ট রিফ্রেশ
+          console.log("রক্তদানের তথ্য আপডেট হওয়ার কারণে ভলান্টিয়ারকে ১ পয়েন্ট দেওয়া হয়েছে।");
+        }
+
+        // ৩. হিস্ট্রি লগে অটোমেটিক সেভ করে রাখা (যাতে ডোনারের প্রোফাইলে লগ দেখা যায়)
+        const logPayload = {
+          donor_id: donor.id,
+          patient_name: 'কুইক আপডেট (+১)',
+          hospital: 'অজানা',
+          date: today
+        };
+        await supabase.from('donation_logs').insert([logPayload]);
+        fetchAllLogs(); // গ্লোবাল হিস্ট্রি রিফ্রেশ
+
+      } else {
+        showToast('আপডেট ব্যর্থ হয়েছে: ' + updateError.message, 'error');
+      }
     }
   };
+
 
     const handleEditDonor = (donor) => {
     if (!isAdmin && !isUnlocked) {
