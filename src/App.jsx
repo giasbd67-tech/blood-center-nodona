@@ -924,9 +924,15 @@ fetchVolunteers();
     }
   };
 
-  const handleEditVolunteer = (v) => {
+    const handleEditVolunteer = (v) => {
     console.log(`Buffering targeted volunteer tracking reference attributes data onto control state management nodes. Target ID: ${v.id}`);
-    setNewVolunteer({ name: v.name, phone: v.phone, password: v.password || v.code || '', points: v.points === 0 ? '0' : String(v.points || '') });
+    setNewVolunteer({ 
+      name: v.name, 
+      phone: v.phone, 
+      password: v.password || v.code || '', 
+      points: v.points === 0 ? '0' : String(v.points || ''),
+      monthly_points: v.monthly_points === 0 ? '0' : String(v.monthly_points || '') // <-- এই লাইনটি যুক্ত করা হয়েছে
+    });
     setEditVolunteerId(v.id);
   };
 
