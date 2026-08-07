@@ -670,44 +670,44 @@ const [originalDonor, setOriginalDonor] = useState(null);
     };
 
         if (newDonor.id) {
-      const { error: submitError } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
+  const { error: submitError } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
+  
+  if (submitError) {
+    showToast('তথ্য সংশোধন ব্যর্থ: ' + submitError.message, 'error');
+  } else {
+    if (isUnlocked && !isAdmin) {
+      // চেক করা হচ্ছে নির্দিষ্ট দুটি ফিল্ড পরিবর্তন হয়েছে কিনা
+      let isDonationHistoryUpdated = false;
       
-      if (submitError) {
-        showToast('তথ্য সংশোধন ব্যর্থ: ' + submitError.message, 'error');
-      } else {
-        if (isUnlocked && !isAdmin) {
-          // চেক করা হচ্ছে নির্দিষ্ট দুটি ফিল্ড পরিবর্তন হয়েছে কিনা
-          let isDonationHistoryUpdated = false;
-          
-          if (originalDonor) {
-            // ইনপুট ফিল্ড থেকে ডাটা স্ট্রিং হিসেবে আসতে পারে, তাই Number() ব্যবহার করে তুলনা করা নিরাপদ
-            const isActivityCountChanged = Number(newDonor.activity_count) !== Number(originalDonor.activity_count);
-            
-            // তারিখ পরিবর্তন হয়েছে কিনা তা চেক করা হচ্ছে
-            const isLastDonationDateChanged = newDonor.last_donation_date !== originalDonor.last_donation_date;
-
-            // দুটির যেকোনো একটি (অথবা দুটিই) পরিবর্তন হলে লজিক true হবে
-            if (isActivityCountChanged || isLastDonationDateChanged) {
-              isDonationHistoryUpdated = true;
-            }
-          }
-
-          // যদি রক্তদানের হিস্ট্রি পরিবর্তন হয়ে থাকে, তবেই পয়েন্ট যোগ হবে
-          if (isDonationHistoryUpdated) {
-            await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
-            fetchVolunteers();
-            console.log("রক্তদানের তথ্য আপডেট হওয়ার কারণে ভলান্টিয়ারকে ১ পয়েন্ট দেওয়া হয়েছে।");
-          } else {
-             console.log("রক্তদানের সংখ্যা বা তারিখ পরিবর্তন হয়নি, তাই পয়েন্ট দেওয়া হয়নি।");
-          }
-        }
+      if (originalDonor) {
+        // ইনপুট ফিল্ড থেকে ডাটা স্ট্রিং হিসেবে আসতে পারে, তাই Number() ব্যবহার করে তুলনা করা নিরাপদ
+        const isActivityCountChanged = Number(newDonor.activity_count) !== Number(originalDonor.activity_count);
         
-        showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
-        resetDonorForm();
-        setOriginalDonor(null); // কাজ শেষে স্টেট ক্লিয়ার করে দিন
-        fetchDonors();
-        setActiveTab('search'); 
+        // তারিখ পরিবর্তন হয়েছে কিনা তা চেক করা হচ্ছে
+        const isLastDonationDateChanged = newDonor.last_donation_date !== originalDonor.last_donation_date;
+
+        // দুটি ফিল্ড একসাথে পরিবর্তন হলেই কেবল লজিক true হবে (&& ব্যবহার করা হয়েছে)
+        if (isActivityCountChanged && isLastDonationDateChanged) {
+          isDonationHistoryUpdated = true;
+        }
       }
+
+      // যদি রক্তদানের হিস্ট্রি পরিবর্তন হয়ে থাকে, তবেই পয়েন্ট যোগ হবে
+      if (isDonationHistoryUpdated) {
+        await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
+        fetchVolunteers();
+        console.log("রক্তদানের সংখ্যা এবং তারিখ উভয়ই আপডেট হওয়ার কারণে ভলান্টিয়ারকে ১ পয়েন্ট দেওয়া হয়েছে।");
+      } else {
+         console.log("রক্তদানের সংখ্যা এবং তারিখ উভয় একসাথে পরিবর্তন হয়নি, তাই পয়েন্ট দেওয়া হয়নি।");
+      }
+    }
+    
+    showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
+    resetDonorForm();
+    setOriginalDonor(null); // কাজ শেষে স্টেট ক্লিয়ার করে দিন
+    fetchDonors();
+    setActiveTab('search'); 
+  }
           
     } else {
       console.log("Processing transactional insertion configuration for a new donor registry profile.");
