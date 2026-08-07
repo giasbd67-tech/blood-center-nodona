@@ -2273,11 +2273,15 @@ const downloadDonorCertificate = (donor) => {
                     </span>
                   </div>
 
-                  {isAdmin && (
-                    <button onClick={() => handleIncrementActivity(donor.id, donor.activity_count || 0)} className="w-full bg-slate-800 hover:bg-slate-900 text-white py-1.5 rounded-xl font-bold text-xs shadow mt-2 leading-normal flex items-center justify-center gap-1">
-                      <Plus className="w-4 h-4" />রক্তদানের সংখ্যা ১ বার বৃদ্ধি করুন (+1)
-                    </button>
-                  )}
+                  {/* ডাইনামিক +১ রক্তদান বাটন */}
+{(isUnlocked || isAdmin) && (
+  <button 
+    onClick={() => handleQuickDonationUpdate(donor)} 
+    className="w-full mt-3 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 border border-red-200 transition-colors shadow-sm"
+  >
+    <Plus className="w-4 h-4" /> রক্তদানের সংখ্যা ১ বার বৃদ্ধি করুন (+১)
+  </button>
+)}
                 </div>
                </React.Fragment>
               );
