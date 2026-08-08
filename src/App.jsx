@@ -2455,7 +2455,7 @@ const downloadDonorCertificate = (donor) => {
                   {/* পয়েন্ট সেকশন - মাসিক এবং সর্বমোট আলাদা */}
 <div className="flex gap-2">
   <div className="bg-blue-50 border border-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm flex-1 text-center">
-    মাসিক হিসাব: {v.monthly_points || 0}
+    মাসিক পয়েন্ট: {v.monthly_points || 0}
   </div>
   <div className="bg-purple-50 border border-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm flex-1 text-center">
     সর্বমোট: {v.points || 0}
