@@ -1716,10 +1716,15 @@ const downloadDonorCertificate = (donor) => {
   };
   
   // ==================== স্মার্ট ডোনার লগ ও হিস্ট্রি ট্র্যাকিং লজিক ====================
-  const openLogModal = async (donor) => {
+    const openLogModal = async (donor) => {
     console.log(`Invoking operational context view setup. Opening sub-logs history model dashboard for candidate parameter: ${donor.id}`);
     setActiveLogDonor(donor);
     setShowLogModal(true);
+    
+    // ফর্মে অটোমেটিক আজকের তারিখ সিলেক্ট করে দেওয়ার লজিক
+    const today = new Date().toISOString().split('T')[0];
+    setNewLog({ patient_name: '', hospital: '', date: today });
+
     const { data, error: fetchErr } = await supabase.from('donation_logs').select('*').eq('donor_id', donor.id).order('date', { ascending: false });
     if (fetchErr) console.error("Error loading targeted records from internal history indexes system configuration:", fetchErr);
     if (data) {
@@ -1728,12 +1733,13 @@ const downloadDonorCertificate = (donor) => {
     }
   };
 
-    const handleAddLog = async (e) => {
+
+      const handleAddLog = async (e) => {
     e.preventDefault();
-    console.log(`Processing historical ledger logs appending block action framework sequence layout criteria inputs... Target Donor: ${activeLogDonor?.id}`, newLog);
+    console.log(`Processing historical ledger logs appending... Target Donor: ${activeLogDonor?.id}`, newLog);
     
     if (!newLog.patient_name || !newLog.hospital || !newLog.date) {
-      console.warn("Log appending transaction blocked: Input verification parameters criteria failed standard schema tests.");
+      console.warn("Log appending transaction blocked: Missing inputs.");
       return showToast('সব তথ্য পূরণ করুন', 'error');
     }
     
@@ -1744,30 +1750,45 @@ const downloadDonorCertificate = (donor) => {
       date: newLog.date
     };
 
-    // এখানে logPayload এর বদলে সঠিক ভেরিয়েবল payload ব্যবহার করা হয়েছে
+    // ধাপ ১: donation_logs টেবিলে ম্যানুয়ালি রেকর্ড যুক্ত করা
     const { error: logErr } = await supabase.from('donation_logs').insert([payload]);
     
     if (!logErr) {
-        // সফলভাবে লগ এন্ট্রি হলে পয়েন্ট যোগ করার লজিক
-        if (isUnlocked && !isAdmin) {
-            await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
-            fetchVolunteers(); 
+        // ধাপ ২: ডোনারের মূল প্রোফাইলে রক্তদান সংখ্যা (+১) এবং সর্বশেষ তারিখ আপডেট করা
+        const newCount = (activeLogDonor.activity_count || 0) + 1;
+        const { error: updateError } = await supabase
+          .from('donors')
+          .update({ 
+            activity_count: newCount,
+            last_donation_date: newLog.date
+          })
+          .eq('id', activeLogDonor.id);
+
+        if (!updateError) {
+            // ধাপ ৩: দুটি কাজ একসাথে সফল হলে ভলান্টিয়ারকে ১ পয়েন্ট দেওয়া
+            if (isUnlocked && !isAdmin) {
+                await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
+                fetchVolunteers(); 
+            }
+            
+            showToast('ডোনেশন রেকর্ড এবং প্রোফাইল সফলভাবে আপডেট হয়েছে! (+১ পয়েন্ট)', 'success');
+            setNewLog({ patient_name: '', hospital: '', date: '' });
+            
+            // ডাটাবেজ থেকে সব রিফ্রেশ করা
+            fetchDonors(); // ডোনার লিস্ট রিফ্রেশ (যাতে কাউন্ট আপডেট দেখায়)
+            const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
+            if (data) setDonorLogs(data);
+            
+            fetchAllLogs(); // গ্লোবাল হিস্ট্রি রিফ্রেশ
+            setShowLogModal(false); // কাজ শেষে চাইলে মোডাল ক্লোজ করে দিতে পারেন
+        } else {
+            showToast('ডোনার প্রোফাইল আপডেট ব্যর্থ হয়েছে: ' + updateError.message, 'error');
         }
-        
-        showToast('রক্তদানের রেকর্ড এবং পয়েন্ট সফলভাবে যুক্ত হয়েছে!', 'success');
-        setNewLog({ patient_name: '', hospital: '', date: '' });
-        
-        // পুনরায় ডাটাবেজ থেকে রিফ্রেশ করা
-        const { data } = await supabase.from('donation_logs').select('*').eq('donor_id', activeLogDonor.id).order('date', { ascending: false });
-        if (data) setDonorLogs(data);
-        
-        fetchAllLogs(); // গ্লোবাল হিস্ট্রি রিফ্রেশ
     } else {
-        console.error("Supabase transactional database failures reported trying to ingest new layout trace indices details object:", logErr);
+        console.error("Supabase error:", logErr);
         showToast('লগ যুক্ত করতে সমস্যা হয়েছে: ' + logErr.message, 'error');
     }
   };
-
   
   const handleDeleteLog = async (logId) => {
     console.log(`Dispatching explicitly requested trace removal directive against specific history tracker identifier parameter node index: ${logId}`);
