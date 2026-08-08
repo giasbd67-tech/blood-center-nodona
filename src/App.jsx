@@ -2431,8 +2431,8 @@ const downloadDonorCertificate = (donor) => {
         <div className="flex justify-between items-center border-b pb-2">
           <h2 className="text-base font-black text-blue-600 flex items-center gap-1.5"><Trophy className="w-5 h-5 text-amber-500" /> ভলান্টিয়ার লিডারবোর্ড</h2>
           <div className="flex bg-slate-100 p-1 rounded-xl border text-[10px] font-bold">
-            <button onClick={() => setLeaderboardType('monthly')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'monthly' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>মাসিক হিসাব</button>
-            <button onClick={() => setLeaderboardType('lifetime')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'lifetime' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>সর্বমোট</button>
+            <button onClick={() => setLeaderboardType('monthly')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'monthly' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}> </button>
+            <button onClick={() => setLeaderboardType('lifetime')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'lifetime' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}> </button>
           </div>
         </div>
 
@@ -2456,10 +2456,10 @@ const downloadDonorCertificate = (donor) => {
                   {/* পয়েন্ট সেকশন - মাসিক এবং সর্বমোট আলাদা (সংশোধিত) */}
 <div className="flex flex-col gap-1 justify-center">
   <div className="bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap text-center">
-    মাসিক: {v.monthly_points || 0}
+    মাসিক পয়েন্ট {v.monthly_points || 0}
   </div>
   <div className="bg-purple-50 border border-purple-100 text-purple-700 px-2 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap text-center">
-    মোট: {v.points || 0}
+    মোট পয়েন্ট {v.points || 0}
   </div>
 </div>
 
