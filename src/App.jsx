@@ -1734,7 +1734,7 @@ const downloadDonorCertificate = (donor) => {
   };
 
 
-      const handleAddLog = async (e) => {
+        const handleAddLog = async (e) => {
     e.preventDefault();
     console.log(`Processing historical ledger logs appending... Target Donor: ${activeLogDonor?.id}`, newLog);
     
@@ -1765,13 +1765,9 @@ const downloadDonorCertificate = (donor) => {
           .eq('id', activeLogDonor.id);
 
         if (!updateError) {
-            // ধাপ ৩: দুটি কাজ একসাথে সফল হলে ভলান্টিয়ারকে ১ পয়েন্ট দেওয়া
-            if (isUnlocked && !isAdmin) {
-                await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
-                fetchVolunteers(); 
-            }
+            // পয়েন্ট দেওয়ার লজিক এখান থেকে সরিয়ে ফেলা হয়েছে
             
-            showToast('ডোনেশন রেকর্ড এবং প্রোফাইল সফলভাবে আপডেট হয়েছে! (+১ পয়েন্ট)', 'success');
+            showToast('ডোনেশন রেকর্ড এবং প্রোফাইল সফলভাবে আপডেট হয়েছে!', 'success');
             setNewLog({ patient_name: '', hospital: '', date: '' });
             
             // ডাটাবেজ থেকে সব রিফ্রেশ করা
@@ -1789,6 +1785,7 @@ const downloadDonorCertificate = (donor) => {
         showToast('লগ যুক্ত করতে সমস্যা হয়েছে: ' + logErr.message, 'error');
     }
   };
+
   
   const handleDeleteLog = async (logId) => {
     console.log(`Dispatching explicitly requested trace removal directive against specific history tracker identifier parameter node index: ${logId}`);
