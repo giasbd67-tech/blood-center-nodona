@@ -2461,11 +2461,10 @@ const downloadDonorCertificate = (donor) => {
     সর্বমোট: {v.points || 0}
   </div>
 </div>
+
 {(isAdmin || isUnlocked) && (
   <div className="flex items-center gap-1">
 
-                  {(isAdmin || isUnlocked) && (
-      <div className="flex items-center gap-1">
     {/* আইডি কার্ড বাটন - সুপার স্লিম */}
     <button onClick={() => downloadVolunteerCard(v)} title="কার্ড" className="flex items-center gap-0.5 px-1.5 py-0.5 bg-white border rounded-sm text-slate-600 hover:bg-slate-50 shadow-none text-[8px] font-bold transition-all border-slate-200">
       <Download className="w-2.5 h-2.5" />
