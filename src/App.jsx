@@ -1747,6 +1747,13 @@ const downloadDonorCertificate = (donor) => {
 
         if (!updateError) {
             
+            // ধাপ ৩: ভলান্টিয়ারের পয়েন্ট ১ বৃদ্ধি করা
+            if (isUnlocked && !isAdmin) {
+              await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
+              fetchVolunteers();
+              console.log("নতুন ডোনেশন রেকর্ড যুক্ত হওয়ার কারণে ভলান্টিয়ারকে ১ পয়েন্ট দেওয়া হয়েছে।");
+            }
+            
             showToast('ডোনেশন রেকর্ড এবং প্রোফাইল সফলভাবে আপডেট হয়েছে!', 'success');
             setNewLog({ patient_name: '', hospital: '', date: '' });
             
