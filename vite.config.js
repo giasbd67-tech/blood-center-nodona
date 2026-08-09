@@ -3,13 +3,14 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: './',
+  base: '/', // 🔴 পরিবর্তন ১: './' তুলে দিয়ে absolute path '/' করা হলো
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,txt}'], // 🔴 পরিবর্তন ২: txt ফরম্যাট যুক্ত করা হলো
+        navigateFallbackDenylist: [/^\/ads\.txt$/] // 🔴 পরিবর্তন ৩: PWA সার্ভিস ওয়ার্কারকে ads.txt ক্যাচ করতে নিষেধ করা হলো
       },
       manifest: {
         name: 'Blood Center Nodona Noakhali',
@@ -30,4 +31,3 @@ export default defineConfig({
     })
   ],
 })
-
