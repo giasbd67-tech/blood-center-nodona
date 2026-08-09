@@ -1747,12 +1747,14 @@ const downloadDonorCertificate = (donor) => {
 
         if (!updateError) {
             
-            // ধাপ ৩: ভলান্টিয়ারের পয়েন্ট ১ বৃদ্ধি করা
-            if (isUnlocked && !isAdmin) {
+            // ---> ভলান্টিয়ারের ১ পয়েন্ট বৃদ্ধি করার শর্তযুক্ত লজিক <---
+            // শুধুমাত্র লগ ফর্ম ও প্রোফাইল সফলভাবে আপডেট হলেই এটি কাজ করবে
+            if (typeof isUnlocked !== 'undefined' && isUnlocked && !isAdmin) {
               await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
-              fetchVolunteers();
-              console.log("নতুন ডোনেশন রেকর্ড যুক্ত হওয়ার কারণে ভলান্টিয়ারকে ১ পয়েন্ট দেওয়া হয়েছে।");
+              if (typeof fetchVolunteers === 'function') fetchVolunteers(); // ভলান্টিয়ার লিস্ট রিফ্রেশ
+              console.log("নতুন ডোনেশন রেকর্ড সফলভাবে যুক্ত হওয়ার কারণে ভলান্টিয়ারকে ১ পয়েন্ট দেওয়া হয়েছে।");
             }
+            // --------------------------------------------------------
             
             showToast('ডোনেশন রেকর্ড এবং প্রোফাইল সফলভাবে আপডেট হয়েছে!', 'success');
             setNewLog({ patient_name: '', hospital: '', date: '' });
@@ -1772,6 +1774,7 @@ const downloadDonorCertificate = (donor) => {
         showToast('লগ যুক্ত করতে সমস্যা হয়েছে: ' + logErr.message, 'error');
     }
 };
+
 
   
   const handleDeleteLog = async (logId) => {
