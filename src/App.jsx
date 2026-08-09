@@ -2431,8 +2431,8 @@ const downloadDonorCertificate = (donor) => {
         <div className="flex justify-between items-center border-b pb-2">
           <h2 className="text-base font-black text-blue-600 flex items-center gap-1.5"><Trophy className="w-5 h-5 text-amber-500" /> ভলান্টিয়ার লিডারবোর্ড</h2>
           <div className="flex bg-slate-100 p-1 rounded-xl border text-[10px] font-bold">
-            <button onClick={() => setLeaderboardType('monthly')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'monthly' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>মাসিক হিসাব</button>
-            <button onClick={() => setLeaderboardType('lifetime')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'lifetime' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>সর্বমোট হিসাব</button>
+            <button onClick={() => setLeaderboardType('monthly')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'monthly' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>মাসিক হিরো</button>
+            <button onClick={() => setLeaderboardType('lifetime')} className={`px-2 py-1 rounded-lg transition-all ${leaderboardType === 'lifetime' ? 'bg-blue-600 text-white shadow' : 'text-slate-600'}`}>সবার হিরো</button>
           </div>
         </div>
 
@@ -2527,13 +2527,13 @@ const downloadDonorCertificate = (donor) => {
         <div className="bg-white p-5 rounded-2xl shadow-t-4 border-blue-600 space-y-4">
           <div className="flex justify-between items-center border-b pb-2">
             <h3 className="text-lg font-black text-blue-600 flex items-center gap-2 leading-relaxed">
-              <Users className="w-5 h-5" /> ভলান্টিয়ার প্যানেল
+              <Users className="w-5 h-5" /> ভলান্টিয়ার অনুমোদন প্যানেল
             </h3>
             <button onClick={async () => {
-              if (confirm('সকল ভলান্টিয়ারের এই মাসের পয়েন্ট ০ করে নতুন মাসের লিডারবোর্ড শুরু করতে চান?')) {
-                await supabase.rpc('reset_monthly_leaderboard'); showToast('লিডারবোর্ড রিসেট হয়েছে!', 'success'); fetchVolunteers();
+              if (confirm('নতুন ভলান্টিয়ার অনুমোদন বোর্ড')) {
+                await supabase.rpc('reset_monthly_leaderboard'); showToast('নতুন ভলান্টিয়ার অনুমোদ বোর্ড', 'success'); fetchVolunteers();
               }
-            }} className="bg-red-50 text-red-600 border border-red-200 text-[10px] font-black px-2 py-1 rounded-lg">মাসিক রিসেট</button>
+            }} className="bg-red-50 text-red-600 border border-red-200 text-[10px] font-black px-2 py-1 rounded-lg">অনুমোদন বোর্ড</button>
           </div>
          
           <form onSubmit={handleAddVolunteer} className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
@@ -2567,7 +2567,7 @@ const downloadDonorCertificate = (donor) => {
                     <Shield className="w-4 h-4 text-slate-500" /> {v.name}
                   </p>
                   <p className="text-xs text-slate-500">
-                    মোবাইল: {v.phone} | কোড: <span className="font-bold text-blue-600 bg-blue-50 px-1 rounded">{v.password || v.code || 'ডিফল্ট'}</span> | স্কোর: <span className="text-amber-600 font-bold">{v.points || 0}pt</span> {v.is_active ? '' : '(ব্লকড)'}
+                    মোবাইল: {v.phone} | কোড: <span className="font-bold text-blue-600 bg-blue-50 px-1 rounded">{v.password || v.code || 'ডিফল্ট'}</span> | P <span className="text-amber-600 font-bold">{v.points || 0}pt</span> {v.is_active ? '' : '(ব্লকড)'}
                   </p>
                 </div>
                 <div className="flex gap-1 items-center">
