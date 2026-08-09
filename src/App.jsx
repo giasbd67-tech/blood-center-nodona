@@ -2567,7 +2567,7 @@ const downloadDonorCertificate = (donor) => {
                     <Shield className="w-4 h-4 text-slate-500" /> {v.name}
                   </p>
                   <p className="text-xs text-slate-500">
-                    মোবাইল: {v.phone}  কোড <span className="font-bold text-blue-600 bg-blue-50 px-1 rounded">{v.password || v.code || 'হাইড'}</span>|<span className="text-amber-600 font-bold">{v.points || 0} পয়েন্ট</span> {v.is_active ? '' : '(ব্লকড)'}
+                    মোবাইল: {v.phone} | কোড <span className="font-bold text-blue-600 bg-blue-50 px-1 rounded">{v.password || v.code || 'হাইড'}</span>|<span className="text-amber-600 font-bold">{v.points ||  0} পয়েন্ট</span> {v.is_active ? '' : '(ব্লকড)'}
                   </p>
                 </div>
                 <div className="flex gap-1 items-center">
