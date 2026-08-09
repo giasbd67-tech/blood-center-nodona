@@ -1747,7 +1747,14 @@ const downloadDonorCertificate = (donor) => {
 
         if (!updateError) {
             
-            showToast('ডোনেশন রেকর্ড এবং প্রোফাইল সফলভাবে আপডেট হয়েছে!', 'success');
+            // ---> ধাপ ৩: ভলান্টিয়ারকে ১ পয়েন্ট দেওয়ার লজিক <---
+            if (volunteerPhone) {
+              await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
+              fetchVolunteers(); // ভলান্টিয়ার লিস্ট/পয়েন্ট রিফ্রেশ
+            }
+            // -----------------------------------------------
+
+            showToast('ডোনেশন রেকর্ড, ডোনার প্রোফাইল এবং পয়েন্ট সফলভাবে আপডেট হয়েছে!', 'success');
             setNewLog({ patient_name: '', hospital: '', date: '' });
             
             // ডাটাবেজ থেকে সব রিফ্রেশ করা
@@ -1756,7 +1763,7 @@ const downloadDonorCertificate = (donor) => {
             if (data) setDonorLogs(data);
             
             fetchAllLogs(); // গ্লোবাল হিস্ট্রি রিফ্রেশ
-            setShowLogModal(false); // কাজ শেষে চাইলে মোডাল ক্লোজ করে দিতে পারেন
+            setShowLogModal(false); // মোডাল বন্ধ করা
         } else {
             showToast('ডোনার প্রোফাইল আপডেট ব্যর্থ হয়েছে: ' + updateError.message, 'error');
         }
