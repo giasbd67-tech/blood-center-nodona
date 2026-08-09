@@ -643,6 +643,7 @@ const [originalDonor, setOriginalDonor] = useState(null);
   const handleRegisterDonor = async (e) => {
     e.preventDefault();
     console.log("Initiating handleRegisterDonor event payload submission process...", newDonor);
+    
     if (!newDonor.name || !newDonor.phone || !newDonor.address) {
       console.warn("Validation intercept: Missing required registration properties.");
       return showToast('অনুগ্রহ করে সব তথ্য সঠিকভাবে দিন', 'error');
@@ -652,6 +653,7 @@ const [originalDonor, setOriginalDonor] = useState(null);
       console.warn(`Age boundaries validation failure detected for registry candidate: ${newDonor.age}`);
       return showToast('দুঃখিত, রক্তদাতার বয়স অবশ্যই ১৮ থেকে ৬৫ বছরের মধ্যে হতে হবে।', 'error');
     }
+    
     if (newDonor.weight && Number(newDonor.weight) < 45) {
       console.warn(`Weight specifications requirement validation failure: ${newDonor.weight}`);
       return showToast('দুঃখিত, রক্তদানের জন্য ন্যূনতম ওজন অন্তত ৪৫ থেকে ৫০ কেজি হওয়া আবশ্যক।', 'error');
@@ -669,49 +671,25 @@ const [originalDonor, setOriginalDonor] = useState(null);
       activity_count: Number(newDonor.activity_count) || 0
     };
 
-        if (newDonor.id) {
-  const { error: submitError } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
-  
-  if (submitError) {
-    showToast('তথ্য সংশোধন ব্যর্থ: ' + submitError.message, 'error');
-  } else {
-    if (isUnlocked && !isAdmin) {
-      // চেক করা হচ্ছে নির্দিষ্ট দুটি ফিল্ড পরিবর্তন হয়েছে কিনা
-      let isDonationHistoryUpdated = false;
+    if (newDonor.id) {
+      // 'হিস্ট্রি' বাটনের মাধ্যমে পুরনো তথ্য আপডেট করার লজিক (কোনো পয়েন্ট দেওয়া হবে না)
+      const { error: submitError } = await supabase.from('donors').update(donorPayload).eq('id', newDonor.id);
       
-      if (originalDonor) {
-        // ইনপুট ফিল্ড থেকে ডাটা স্ট্রিং হিসেবে আসতে পারে, তাই Number() ব্যবহার করে তুলনা করা নিরাপদ
-        const isActivityCountChanged = Number(newDonor.activity_count) !== Number(originalDonor.activity_count);
-        
-        // তারিখ পরিবর্তন হয়েছে কিনা তা চেক করা হচ্ছে
-        const isLastDonationDateChanged = newDonor.last_donation_date !== originalDonor.last_donation_date;
-
-        // দুটি ফিল্ড একসাথে পরিবর্তন হলেই কেবল লজিক true হবে (&& ব্যবহার করা হয়েছে)
-        if (isActivityCountChanged && isLastDonationDateChanged) {
-          isDonationHistoryUpdated = true;
-        }
-      }
-
-      // যদি রক্তদানের হিস্ট্রি পরিবর্তন হয়ে থাকে, তবেই পয়েন্ট যোগ হবে
-      if (isDonationHistoryUpdated) {
-        await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
-        fetchVolunteers();
-        console.log("রক্তদানের সংখ্যা এবং তারিখ উভয়ই আপডেট হওয়ার কারণে ভলান্টিয়ারকে ১ পয়েন্ট দেওয়া হয়েছে।");
+      if (submitError) {
+        showToast('তথ্য সংশোধন ব্যর্থ: ' + submitError.message, 'error');
       } else {
-         console.log("রক্তদানের সংখ্যা এবং তারিখ উভয় একসাথে পরিবর্তন হয়নি, তাই পয়েন্ট দেওয়া হয়নি।");
+        showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
+        resetDonorForm();
+        setOriginalDonor(null); // কাজ শেষে স্টেট ক্লিয়ার
+        fetchDonors();
+        setActiveTab('search'); 
       }
-    }
-    
-    showToast('রক্তদাতার তথ্য সফলভাবে সংশোধন করা হয়েছে!', 'success');
-    resetDonorForm();
-    setOriginalDonor(null); // কাজ শেষে স্টেট ক্লিয়ার করে দিন
-    fetchDonors();
-    setActiveTab('search'); 
-  }
           
     } else {
+      // নতুন ডোনার নিবন্ধনের লজিক (এখানে আগের মতোই ভলান্টিয়ার পয়েন্ট পাবে)
       console.log("Processing transactional insertion configuration for a new donor registry profile.");
       const { error: submitError } = await supabase.from('donors').insert([donorPayload]);
+      
       if (submitError) {
         console.error("Supabase record insertions exception captured during operations execution:", submitError);
         if (submitError.code === '23505') {
@@ -721,18 +699,21 @@ const [originalDonor, setOriginalDonor] = useState(null);
         }
       } else {
         console.log("New donor directory object registered safely inside tracking vectors.");
+        
         if (isUnlocked && !isAdmin) {
           console.log(`Attributing points configuration increments tracking reference key operator via phone parameter: ${volunteerPhone}`);
           await supabase.rpc('add_volunteer_points', { v_phone: volunteerPhone, amount: 1 });
           fetchVolunteers();
         }
+        
         showToast('রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন!', 'success');
         resetDonorForm();
         fetchDonors();
         setActiveTab('search'); 
       }
     }
-  };
+};
+
 
   const resetDonorForm = () => {
     console.log("Resetting structural donor state property attributes back to initial defaults configuration map.");
