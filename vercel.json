@@ -1,15 +1,6 @@
 {
   "routes": [
-    {
-      "src": "/ads.txt",
-      "dest": "/ads.txt"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/.*",
-      "dest": "/index.html"
-    }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
