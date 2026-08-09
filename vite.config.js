@@ -3,14 +3,14 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: '/', // 🔴 পরিবর্তন ১: './' তুলে দিয়ে absolute path '/' করা হলো
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,txt}'], // 🔴 পরিবর্তন ২: txt ফরম্যাট যুক্ত করা হলো
-        navigateFallbackDenylist: [/^\/ads\.txt$/] // 🔴 পরিবর্তন ৩: PWA সার্ভিস ওয়ার্কারকে ads.txt ক্যাচ করতে নিষেধ করা হলো
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // 🔴 আসল ট্রিক: PWA কে বলে দেয়া হচ্ছে যেন সে /ads.txt সহ কোনো টেক্সট ফাইল নিজের নিয়ন্ত্রণে না নেয়
+        navigateFallbackDenylist: [/^\/ads\.txt$/],
       },
       manifest: {
         name: 'Blood Center Nodona Noakhali',
