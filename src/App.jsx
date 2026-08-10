@@ -2673,7 +2673,7 @@ const downloadDonorCertificate = (donor) => {
         </div>
       </header>
 
-  <div className="bg-gradient-to-r from-[#D0364E] via-[#D0364E] to-[#f42a41] text-white py-2 px-3 text-center flex flex-col items-center">
+  <div className="bg-gradient-to-r from-[#006a4e] via-[#006a4e] to-[#f42a41] text-white py-2 px-3 text-center flex flex-col items-center">
   <span className="font-bold text-xs sm:text-sm mb-0.5 drop-shadow-sm">
     জরুরি রক্ত প্রয়োজনে যোগাযোগ করুন
   </span>
@@ -2681,7 +2681,7 @@ const downloadDonorCertificate = (donor) => {
     (কল দেওয়ার আগে "খুঁজুন" বাটনে ক্লিক করে প্রয়োজনীয় রক্তের ডোনার খুঁজে দেখুন)
   </span>
   
-  {/* পাশাপাশি দুটি বাটন */}
+  {/* কল বাটন এবং গুগল ম্যাপ বাটন - পাশাপাশি */}
   <div className="flex items-center justify-center gap-2 mt-0.5">
     {/* কল বাটন */}
     <a 
