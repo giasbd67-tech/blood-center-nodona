@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        // 🔴 আসল ট্রিক: PWA কে বলে দেয়া হচ্ছে যেন সে /ads.txt সহ কোনো টেক্সট ফাইল নিজের নিয়ন্ত্রণে না নেয়
-        navigateFallbackDenylist: [/^\/ads\.txt$/],
+        // 🔴 PWA-কে বলা হচ্ছে যেন সে ads.txt, sitemap.xml, এবং robots.txt ইন্টারসেপ্ট না করে
+        navigateFallbackDenylist: [/^\/ads\.txt$/, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
       },
       manifest: {
         name: 'Blood Center Nodona Noakhali',
