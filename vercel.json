@@ -6,7 +6,15 @@
       "destination": "/ads.txt"
     },
     {
-      "source": "/((?!ads\\.txt).*)",
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
+      "source": "/((?!ads\\.txt|sitemap\\.xml|robots\\.txt).*)",
       "destination": "/index.html"
     }
   ]
