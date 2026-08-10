@@ -2673,17 +2673,40 @@ const downloadDonorCertificate = (donor) => {
         </div>
       </header>
 
-                  <div className="bg-gradient-to-r from-[#006a4e] via-[#006a4e] to-[#f42a41] text-white py-2 px-3 text-center flex flex-col items-center justify-center shadow-md sticky top-0 z-40">
-        <span className="font-bold text-xs sm:text-sm mb-0.5 drop-shadow-sm">
-          জরুরি রক্ত প্রয়োজনে যোগাযোগ করুন
-        </span>
-        <span className="text-[9px] sm:text-[10px] font-medium opacity-90 leading-tight max-w-[90%] mb-1.5 text-green-50">
-          (কল দেওয়ার আগে "খুঁজুন" বাটনে ক্লিক করে প্রয়োজনীয় রক্তের ডোনার খুঁজে দেখুন)
-        </span>
-        <a href="tel:+8801813132013" className="bg-white text-[#f42a41] px-3 py-1 rounded-full text-[11px] font-black shadow-sm hover:shadow-md transition-all flex items-center gap-1.5">
-          <Phone className="w-3 h-3 text-[#006a4e]" /> +880 1813-132013
-        </a>
-      </div>
+  <div className="bg-gradient-to-r from-[#D0364E] via-[#D0364E] to-[#f42a41] text-white py-2 px-3 text-center flex flex-col items-center">
+  <span className="font-bold text-xs sm:text-sm mb-0.5 drop-shadow-sm">
+    জরুরি রক্ত প্রয়োজনে যোগাযোগ করুন
+  </span>
+  <span className="text-[9px] sm:text-[10px] font-medium opacity-90 leading-tight max-w-[90%] mb-1.5 text-green-50">
+    (কল দেওয়ার আগে "খুঁজুন" বাটনে ক্লিক করে প্রয়োজনীয় রক্তের ডোনার খুঁজে দেখুন)
+  </span>
+  
+  {/* পাশাপাশি দুটি বাটন */}
+  <div className="flex items-center justify-center gap-2 mt-0.5">
+    {/* কল বাটন */}
+    <a 
+      href="tel:+8801813132013" 
+      className="bg-white text-[#f42a41] px-3 py-1 rounded-full text-[11px] font-black shadow flex items-center gap-1 hover:bg-gray-100 transition-all"
+    >
+      <Phone className="w-3 h-3 text-[#D0364E]" /> +880 1813-132013
+    </a>
+
+    {/* গুগল ম্যাপ বাটন */}
+    <a 
+      href="https://www.google.com/maps/search/?api=1&query=336G%2B7CG,+Nadana,+Bangladesh" 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      className="bg-white text-slate-800 px-3 py-1 rounded-full text-[11px] font-bold shadow flex items-center gap-1 hover:bg-gray-100 transition-all"
+      title="গুগল ম্যাপে লোকেশন দেখুন"
+    >
+      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+        <circle cx="12" cy="9" r="2.5" fill="#FFFFFF" />
+      </svg>
+      <span>গুগল ম্যাপ</span>
+    </a>
+  </div>
+</div>
 
 
       {/* আপনার দেওয়া নতুন নেভিগেশন ট্যাবের অর্ডার (ঠিক আগের মতো) */}
